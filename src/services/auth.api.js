@@ -40,6 +40,7 @@ export const getCurrentUser = async () => {
   const response = await fetch("/api/auth/me", {
     method: "GET",
     credentials: "include",
+    cache: "no-store",
   });
 
   const data = await response.json();

@@ -11,12 +11,29 @@ const generatedContentSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
+        // Creator
         "hook",
         "script",
         "caption",
         "hashtag",
+        "thumbnail-title",
+        "video-description",
+        "content-rewriter",
+        "viral-idea",
+        "cta",
+
+        // Business
+        "business-post",
+        "business-caption",
+        "business-hashtag",
+        "business-thumbnail-title",
+        "business-video-description",
+        "ad-copy",
+        "product-description",
         "local-seo",
         "review-reply",
+        "whatsapp-reply",
+
         "weekly-plan",
       ],
       required: true,

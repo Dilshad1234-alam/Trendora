@@ -139,56 +139,84 @@ export default function SelectRolePage() {
 
   if (checkingUser) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f7f7fb]">
-        <div className="flex items-center gap-3 text-violet-700">
+      <main className="min-h-screen bg-[#030014] text-white flex items-center justify-center relative overflow-hidden font-sans">
+        {/* Background Glows */}
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
+        {/* Background Dots Grid Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+
+        <div className="relative z-10 flex items-center gap-3 text-violet-400">
           <LoaderCircle className="animate-spin" size={24} />
-          <span className="font-medium">Checking your account...</span>
+          <span className="font-medium text-zinc-300">Checking your account...</span>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7fb] px-4 py-10 sm:px-6">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-700 text-white shadow-lg shadow-violet-200">
-            <Sparkles size={27} />
+    <main className="min-h-screen bg-[#030014] text-white flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
+      {/* Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-[30%] left-[35%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+      
+      {/* Background Dots Grid Pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+
+      {/* Main Glassmorphic Container */}
+      <div className="relative w-full max-w-4xl p-6 sm:p-12 md:p-16 rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl shadow-2xl shadow-violet-950/20">
+        
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+            <Sparkles size={26} className="animate-pulse" />
           </div>
 
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
             Welcome to Trendora
           </p>
 
-          <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl">
-            How do you want to grow?
+          <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+            How do you want to <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">grow</span>?
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">
             Select the option that best describes you. Trendora will personalize
             your dashboard, AI tools and growth suggestions.
           </p>
 
           {user?.fullname && (
-            <p className="mt-3 text-sm font-medium text-zinc-600">
-              Signed in as {user.fullname}
+            <p className="mt-3 text-xs font-semibold text-violet-300/80 uppercase tracking-wider">
+              Signed in as <span className="text-white">{user.fullname}</span>
             </p>
           )}
         </div>
 
+        {/* Message alerts */}
         {message.text && (
           <div
-            className={`mx-auto mb-6 max-w-3xl rounded-xl border px-4 py-3 text-sm ${
+            className={`mx-auto mb-8 max-w-2xl rounded-xl border p-4 text-sm flex items-start gap-3 backdrop-blur-md transition-all duration-300 ${
               message.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-red-200 bg-red-50 text-red-700"
+                ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                : "border-red-500/25 bg-red-500/10 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
             }`}
           >
-            {message.text}
+            <div className={`p-1 rounded-md shrink-0 ${
+              message.type === "success" ? "bg-emerald-500/20" : "bg-red-500/20"
+            }`}>
+              {message.type === "success" ? (
+                <Sparkles size={16} className="text-emerald-400" />
+              ) : (
+                <span className="text-red-400 font-bold block leading-none w-4 h-4 text-center">!</span>
+              )}
+            </div>
+            <div>{message.text}</div>
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        {/* Role Cards */}
+        <div className="grid gap-6 md:grid-cols-2">
           {roleOptions.map((role) => {
             const Icon = role.icon;
             const isSelected = selectedRole === role.id;
@@ -204,50 +232,51 @@ export default function SelectRolePage() {
                     text: "",
                   });
                 }}
-                className={`relative rounded-3xl border-2 bg-white p-7 text-left transition duration-200 sm:p-8 ${
+                className={`relative rounded-3xl border text-left transition-all duration-300 p-6 sm:p-8 cursor-pointer ${
                   isSelected
-                    ? "border-violet-600 shadow-xl shadow-violet-100"
-                    : "border-zinc-200 shadow-sm hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg"
+                    ? "border-violet-500 bg-[#160d3d]/60 shadow-[0_0_30px_rgba(139,92,246,0.25)]"
+                    : "border-white/10 bg-[#120f2e]/45 hover:border-violet-500/30 hover:bg-white/5"
                 }`}
               >
+                {/* Check icon */}
                 <div
-                  className={`absolute right-6 top-6 flex h-7 w-7 items-center justify-center rounded-full border-2 ${
+                  className={`absolute right-6 top-6 flex h-6 w-6 items-center justify-center rounded-full border transition-colors duration-300 ${
                     isSelected
-                      ? "border-violet-600 bg-violet-600 text-white"
-                      : "border-zinc-300 bg-white text-transparent"
+                      ? "border-violet-500 bg-violet-600 text-white"
+                      : "border-white/10 bg-black/20 text-transparent"
                   }`}
                 >
-                  <Check size={16} />
+                  <Check size={14} />
                 </div>
 
+                {/* Icon box */}
                 <div
-                  className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${
+                  className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-300 ${
                     isSelected
-                      ? "bg-violet-700 text-white"
-                      : "bg-violet-50 text-violet-700"
+                      ? "bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+                      : "bg-violet-500/10 text-violet-300"
                   }`}
                 >
-                  <Icon size={27} />
+                  <Icon size={24} />
                 </div>
 
-                <h2 className="pr-10 text-2xl font-bold text-zinc-900">
+                <h2 className="pr-10 text-xl font-bold text-white">
                   {role.title}
                 </h2>
 
-                <p className="mt-3 min-h-14 text-sm leading-6 text-zinc-500">
+                <p className="mt-3 min-h-[3.5rem] text-sm leading-relaxed text-zinc-400">
                   {role.description}
                 </p>
 
-                <div className="mt-7 space-y-3">
+                <div className="mt-6 space-y-3">
                   {role.features.map((feature) => (
                     <div
                       key={feature}
-                      className="flex items-center gap-3 text-sm text-zinc-700"
+                      className="flex items-center gap-3 text-xs text-zinc-300"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <Check size={14} />
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <Check size={12} />
                       </span>
-
                       <span>{feature}</span>
                     </div>
                   ))}
@@ -257,27 +286,28 @@ export default function SelectRolePage() {
           })}
         </div>
 
-        <div className="mt-9 flex flex-col items-center">
+        {/* Action Button & Note */}
+        <div className="mt-10 flex flex-col items-center">
           <button
             type="button"
             onClick={handleContinue}
             disabled={!selectedRole || submitting}
-            className="flex min-w-56 items-center justify-center gap-2 rounded-xl bg-violet-700 px-7 py-3.5 font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+            className="group relative flex min-w-[240px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-7 py-4 font-semibold text-white transition hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_25px_rgba(139,92,246,0.55)] transition-all duration-300 overflow-hidden"
           >
             {submitting ? (
               <>
-                <LoaderCircle size={19} className="animate-spin" />
+                <LoaderCircle size={18} className="animate-spin" />
                 Saving role...
               </>
             ) : (
               <>
                 Continue
-                <ArrowRight size={18} />
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
 
-          <p className="mt-4 text-center text-xs leading-5 text-zinc-400">
+          <p className="mt-4 text-center text-xs leading-relaxed text-zinc-500">
             Role select hone ke baad aapka onboarding form open hoga.
           </p>
         </div>

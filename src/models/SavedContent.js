@@ -6,21 +6,57 @@ const savedContentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
+    },
+
+    generatedContent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "GeneratedContent",
+      default: null,
+      required: false,
     },
 
     title: {
       type: String,
       required: true,
+      trim: true,
     },
 
     type: {
       type: String,
+      enum: [
+        // Creator
+        "hook",
+        "script",
+        "caption",
+        "hashtag",
+        "thumbnail-title",
+        "video-description",
+        "content-rewriter",
+        "viral-idea",
+        "cta",
+
+        // Business
+        "business-post",
+        "business-caption",
+        "business-hashtag",
+        "business-thumbnail-title",
+        "business-video-description",
+        "ad-copy",
+        "product-description",
+        "local-seo",
+        "review-reply",
+        "whatsapp-reply",
+
+        "weekly-plan",
+      ],
       required: true,
     },
 
     content: {
       type: String,
       required: true,
+      trim: true,
     },
   },
   {

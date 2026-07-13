@@ -5,21 +5,20 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Copy,
-  Flame,
   LoaderCircle,
   RefreshCw,
   Sparkles,
-  Save,
+  MessageSquare,
 } from "lucide-react";
 
-import { generateHooks } from "@/services/ai.api";
-import { saveContent } from "@/services/saved.api";
+import { generateCaption } from "@/services/ai.api";
 
-export default function HookGeneratorPage() {
+export default function CaptionGeneratorPage() {
   const [formData, setFormData] = useState({
     topic: "",
     tone: "",
     goal: "",
+    captionLength: "medium",
   });
 
   const [result, setResult] = useState("");
@@ -27,15 +26,11 @@ export default function HookGeneratorPage() {
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState("");
 
-  const [generatedId, setGeneratedId] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormData((previousData) => ({
-      ...previousData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
     }));
 
@@ -52,19 +47,19 @@ export default function HookGeneratorPage() {
 
     try {
       setLoading(true);
-      setMessage("");
       setResult("");
+      setMessage("");
 
-      const data = await generateHooks({
+      const data = await generateCaption({
         topic: formData.topic.trim(),
         tone: formData.tone,
         goal: formData.goal,
+        captionLength: formData.captionLength,
       });
 
       setResult(data.data.output);
-      setGeneratedId(data.data.id || "");
     } catch (error) {
-      setMessage(error.message || "Unable to generate hooks.");
+      setMessage(error.message);
     } finally {
       setLoading(false);
     }
@@ -73,38 +68,13 @@ export default function HookGeneratorPage() {
   const handleCopy = async () => {
     if (!result) return;
 
-    try {
-      await navigator.clipboard.writeText(result);
-      setCopied(true);
+    await navigator.clipboard.writeText(result);
 
-      setTimeout(() => {
-        setCopied(false);
-      }, 1500);
-    } catch {
-      setMessage("Unable to copy hooks.");
-    }
-  };
+    setCopied(true);
 
-  const handleSave = async () => {
-    if (!result) return;
-
-    try {
-      setSaving(true);
-      setMessage("");
-
-      await saveContent({
-        title: formData.topic.trim() || "Generated Hooks",
-        type: "hook",
-        content: result,
-        generatedContentId: generatedId || null,
-      });
-
-      setSaved(true);
-    } catch (error) {
-      setMessage(error.message || "Unable to save hooks.");
-    } finally {
-      setSaving(false);
-    }
+    setTimeout(() => {
+      setCopied(false);
+    }, 1500);
   };
 
   return (
@@ -123,65 +93,51 @@ export default function HookGeneratorPage() {
           className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
         >
           <ArrowLeft size={17} />
-          Back to dashboard
+          Back to Dashboard
         </Link>
 
         <div className="mb-8">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-            <Flame size={22} className="animate-pulse" />
+            <MessageSquare size={22} className="animate-pulse" />
           </div>
 
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
-            AI Hook Generator
+            AI Caption Generator
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            Create Scroll-Stopping <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">Hooks</span>
+          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white">
+            Generate Engaging <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">Captions</span>
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            Enter your topic and Trendora will generate personalized hooks
-            using your niche, language, platform and creator goal.
+            Trendora will generate a platform-ready caption,
+            CTA and hashtags based on your creator profile.
           </p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          {/* Form Panel */}
-          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 sm:p-8">
-            <h2 className="text-xl font-bold text-white">
-              Hook Details
-            </h2>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          {/* Input Panel */}
+          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label
-                  htmlFor="topic"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
-                  Content topic
+                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Topic
                 </label>
-
                 <textarea
-                  id="topic"
-                  name="topic"
                   rows={5}
+                  name="topic"
                   value={formData.topic}
                   onChange={handleChange}
-                  placeholder="Example: AI tools se professional resume kaise banaye"
+                  placeholder="Example: AI tools for students"
                   className="w-full resize-none rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label
-                  htmlFor="tone"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Tone
                 </label>
-
                 <select
-                  id="tone"
                   name="tone"
                   value={formData.tone}
                   onChange={handleChange}
@@ -190,36 +146,44 @@ export default function HookGeneratorPage() {
                   <option value="">Use profile tone</option>
                   <option value="professional">Professional</option>
                   <option value="educational">Educational</option>
-                  <option value="emotional">Emotional</option>
                   <option value="friendly">Friendly</option>
-                  <option value="funny">Funny</option>
+                  <option value="emotional">Emotional</option>
                   <option value="motivational">Motivational</option>
                 </select>
               </div>
 
               <div>
-                <label
-                  htmlFor="goal"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Goal
                 </label>
-
                 <select
-                  id="goal"
                   name="goal"
                   value={formData.goal}
                   onChange={handleChange}
                   className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
                 >
                   <option value="">Use profile goal</option>
-                  <option value="followers">Grow followers</option>
-                  <option value="views">Increase views</option>
-                  <option value="personal-brand">
-                    Build personal brand
-                  </option>
-                  <option value="leads">Generate leads</option>
-                  <option value="community">Build community</option>
+                  <option value="followers">Grow Followers</option>
+                  <option value="views">Increase Views</option>
+                  <option value="personal-brand">Personal Brand</option>
+                  <option value="community">Community</option>
+                  <option value="leads">Generate Leads</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Caption Length
+                </label>
+                <select
+                  name="captionLength"
+                  value={formData.captionLength}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                >
+                  <option value="short">Short</option>
+                  <option value="medium">Medium</option>
+                  <option value="long">Long</option>
                 </select>
               </div>
 
@@ -239,13 +203,13 @@ export default function HookGeneratorPage() {
               >
                 {loading ? (
                   <>
-                    <LoaderCircle size={18} className="animate-spin" />
-                    Generating hooks...
+                    <LoaderCircle className="animate-spin" size={18} />
+                    Generating...
                   </>
                 ) : (
                   <>
                     <Sparkles size={18} />
-                    Generate hooks
+                    Generate Caption
                   </>
                 )}
               </button>
@@ -253,43 +217,25 @@ export default function HookGeneratorPage() {
           </section>
 
           {/* Result Panel */}
-          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 sm:p-8 flex flex-col">
-            <div className="mb-6 flex items-center justify-between gap-4">
+          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 flex flex-col">
+            <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-white">
-                  Generated Hooks
+                  Generated Caption
                 </h2>
-
                 <p className="mt-1 text-xs text-zinc-400">
-                  Your AI-generated result will appear here.
+                  AI output will appear here.
                 </p>
               </div>
 
               {result && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving || saved}
-                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    <Save size={16} />
-                    {saving
-                      ? "Saving..."
-                      : saved
-                        ? "Saved"
-                        : "Save"}
-                  </button>              
-
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-semibold text-violet-300 hover:bg-violet-500/20 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <Copy size={16} />
-                    {copied ? "Copied" : "Copy"}
-                  </button>
-                </div>
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-semibold text-violet-300 hover:bg-violet-500/20 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Copy size={16} />
+                  {copied ? "Copied" : "Copy"}
+                </button>
               )}
             </div>
 
@@ -300,20 +246,23 @@ export default function HookGeneratorPage() {
                     size={30}
                     className="mb-4 animate-spin text-violet-400"
                   />
-                  <p className="font-medium text-sm">Trendora is writing hooks...</p>
+                  <p className="text-sm">Trendora is writing your caption...</p>
                 </div>
               ) : result ? (
                 <div className="flex-1 min-h-80 whitespace-pre-wrap rounded-2xl border border-white/5 bg-[#120f2e]/35 p-5 text-sm leading-relaxed text-zinc-300">
                   {result}
                 </div>
               ) : (
-                <div className="flex-1 flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] px-6 text-center">
-                  <RefreshCw size={28} className="mb-4 text-zinc-600 animate-pulse" />
+                <div className="flex-1 flex min-h-80 flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01]">
+                  <RefreshCw
+                    size={28}
+                    className="mb-4 text-zinc-600 animate-pulse"
+                  />
                   <p className="font-bold text-zinc-300 text-sm">
-                    No hooks generated yet
+                    No caption generated yet
                   </p>
                   <p className="mt-2 text-xs text-zinc-500 text-center max-w-xs leading-relaxed">
-                    Enter your topic on the left and click Generate Hooks.
+                    Enter your topic on the left and click Generate Caption.
                   </p>
                 </div>
               )}
