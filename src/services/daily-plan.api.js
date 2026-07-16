@@ -1,42 +1,119 @@
-export const getDailyPlan = async () => {
-  const response = await fetch("/api/creator/daily-plan", {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
-  });
+const parseResponse = async (response) => {
+  const text = await response.text();
 
-  const data = await response.json();
+  let data = {};
+
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        `Invalid daily-plan API response. Status: ${response.status}`
+      );
+    }
+  }
 
   if (!response.ok) {
     throw new Error(
-      data.error ||
-        data.message ||
-        "Unable to fetch daily plan."
+      data.message ||
+        data.error ||
+        "Daily-plan request failed."
     );
   }
 
   return data;
 };
 
-export const updateDailyPlanStatus = async (completed) => {
-  const response = await fetch("/api/creator/daily-plan", {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ completed }),
-  });
+export const getDailyPlan = async () => {
+  const response = await fetch(
+    "/api/creator/daily-plan",
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    }
+  );
 
-  const data = await response.json();
+  return parseResponse(response);
+};
 
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-        data.message ||
-        "Unable to update daily plan."
-    );
-  }
+export const toggleDailyPlanStep = async (
+  stepId
+) => {
+  const response = await fetch(
+    "/api/creator/daily-plan",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        action: "toggle-step",
+        stepId,
+      }),
+    }
+  );
 
-  return data;
+  return parseResponse(response);
+};
+
+export const updateDailyPlan = async (
+  formData
+) => {
+  const response = await fetch(
+    "/api/creator/daily-plan",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        action: "edit",
+        ...formData,
+      }),
+    }
+  );
+
+  return parseResponse(response);
+};
+
+export const updateDailyPlanStatus = async (
+  completed
+) => {
+  const response = await fetch(
+    "/api/creator/daily-plan",
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        action: "complete",
+        completed,
+      }),
+    }
+  );
+
+  return parseResponse(response);
+};
+
+export const regenerateDailyPlan = async () => {
+  const response = await fetch(
+    "/api/creator/daily-plan",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        action: "regenerate",
+      }),
+    }
+  );
+
+  return parseResponse(response);
 };

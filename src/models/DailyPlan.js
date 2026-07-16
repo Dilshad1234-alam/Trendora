@@ -50,9 +50,46 @@ const dailyPlanSchema = new mongoose.Schema(
       default: "",
     },
 
+     aiTip: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    estimatedTime: {
+      type: String,
+      default: "45 minutes",
+      trim: true,
+    },
+
+    difficulty: {
+      type: String,
+      enum: ["easy", "medium", "hard"],
+      default: "easy",
+    },
+
+    contentGoal: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    source: {
+      type: String,
+      enum: ["ai", "fallback"],
+      default: "ai",
+    },
+
     completed: {
       type: Boolean,
       default: false,
+
+    },
+    
+    regenerationCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

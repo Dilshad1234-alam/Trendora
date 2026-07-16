@@ -9,17 +9,47 @@ import User from "@/models/User";
 import CreatorProfile from "@/models/CreatorProfile";
 import DailyPlan from "@/models/DailyPlan";
 
-const getDateKey = () => {
-  return new Intl.DateTimeFormat("en-CA", {
+const getDateKey = () =>
+  new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-};
+
+const normalizeActionSteps = (steps = []) =>
+  steps.map((step) => {
+    if (typeof step === "string") {
+      return {
+        text: step,
+        completed: false,
+      };
+    }
+
+    return {
+      id: step._id?.toString() || step.id || null,
+      text: step.text || "",
+      completed: Boolean(step.completed),
+    };
+  });
 
 const formatPlan = (plan) => {
   if (!plan) return null;
+
+  const actionSteps = normalizeActionSteps(
+    plan.actionSteps || []
+  );
+
+  const completedSteps = actionSteps.filter(
+    (step) => step.completed
+  ).length;
+
+  const stepsProgress =
+    actionSteps.length > 0
+      ? Math.round(
+          (completedSteps / actionSteps.length) * 100
+        )
+      : 0;
 
   return {
     id: plan._id?.toString() || null,
@@ -27,10 +57,21 @@ const formatPlan = (plan) => {
     topic: plan.topic,
     format: plan.format,
     hookIdea: plan.hookIdea,
-    actionSteps: plan.actionSteps || [],
+    actionSteps,
     cta: plan.cta,
     postingTime: plan.postingTime || "",
+    aiTip: plan.aiTip || "",
+    estimatedTime:
+      plan.estimatedTime || "45 minutes",
+    difficulty: plan.difficulty || "easy",
+    contentGoal: plan.contentGoal || "",
+    source: plan.source || "ai",
+    regenerationCount:
+      plan.regenerationCount || 0,
     completed: Boolean(plan.completed),
+    completedSteps,
+    totalSteps: actionSteps.length,
+    stepsProgress,
     createdAt: plan.createdAt,
     updatedAt: plan.updatedAt,
   };
@@ -76,42 +117,190 @@ const getAuthenticatedCreator = async () => {
 
   if (!user.onboardingCompleted) {
     return {
-      error: "Please complete creator onboarding first.",
+      error:
+        "Please complete creator onboarding first.",
       status: 403,
     };
   }
 
-  return {
-    user,
-  };
+  if (!user.planSelected || !user.plan) {
+    return {
+      error: "Please select a plan first.",
+      status: 403,
+    };
+  }
+
+  return { user };
 };
 
-const cleanJsonOutput = (output = "") => {
-  return output
+const cleanJsonOutput = (output = "") =>
+  output
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/```$/i, "")
     .trim();
-};
 
-const getFallbackPlan = (creatorProfile, dateKey) => {
-  const niche = creatorProfile?.niche || "your niche";
-  const platform = creatorProfile?.platform || "social media";
+const getFallbackPlan = (
+  creatorProfile,
+  dateKey
+) => {
+  const niche =
+    creatorProfile?.niche || "your niche";
+
+  const platform =
+    creatorProfile?.platform || "social media";
 
   return {
     dateKey,
     topic: `Share one practical tip about ${niche}`,
-    format: platform === "youtube" ? "short video" : "reel",
+    format:
+      platform === "youtube"
+        ? "short"
+        : "reel",
     hookIdea: `Most people make this mistake when learning about ${niche}.`,
     actionSteps: [
-      "Choose one common problem your audience faces.",
-      "Explain one simple and practical solution.",
-      "Record a short video using clear examples.",
-      "Add a direct call to action at the end.",
+      {
+        text: "Research one common audience problem.",
+        completed: false,
+      },
+      {
+        text: "Generate and save the hook.",
+        completed: false,
+      },
+      {
+        text: "Create and save the script.",
+        completed: false,
+      },
+      {
+        text: "Write and save the caption.",
+        completed: false,
+      },
+      {
+        text: "Generate and save hashtags.",
+        completed: false,
+      },
+      {
+        text: "Create thumbnail titles.",
+        completed: false,
+      },
+      {
+        text: "Write the video description.",
+        completed: false,
+      },
+      {
+        text: "Publish the content.",
+        completed: false,
+      },
     ],
     cta: "Save this post and follow for more practical tips.",
     postingTime: "7:00 PM",
-    completed: false,
+    aiTip:
+      "Make the first three seconds clear and attention-grabbing.",
+    estimatedTime: "45 minutes",
+    difficulty: "easy",
+    contentGoal:
+      "Publish one useful piece of content today.",
+    source: "fallback",
+  };
+};
+
+const generatePlan = async (
+  creatorProfile,
+  dateKey
+) => {
+  const prompt = `
+You are Trendora, an expert daily content planner.
+
+Create one realistic content plan for today.
+
+Creator profile:
+Niche: ${creatorProfile.niche}
+Platform: ${creatorProfile.platform}
+Language: ${creatorProfile.language}
+Tone: ${creatorProfile.tone}
+Audience size: ${creatorProfile.audienceSize}
+Goal: ${creatorProfile.goal}
+Date: ${dateKey}
+
+Return only valid JSON:
+
+{
+  "topic": "content topic",
+  "format": "reel, carousel, post or short",
+  "hookIdea": "one short hook",
+  "actionSteps": [
+    "Research one audience problem",
+    "Generate and save the hook",
+    "Create and save the script",
+    "Write and save the caption",
+    "Generate and save hashtags",
+    "Create thumbnail titles",
+    "Write the video description",
+    "Publish the content"
+  ],
+  "cta": "one clear call to action",
+  "postingTime": "7:00 PM",
+  "aiTip": "one short practical content tip",
+  "estimatedTime": "45 minutes",
+  "difficulty": "easy",
+  "contentGoal": "one realistic daily goal"
+}
+
+Rules:
+- Write in ${creatorProfile.language}.
+- difficulty must be easy, medium or hard.
+- Keep the plan realistic for one day.
+- Do not invent statistics.
+- Do not make guaranteed claims.
+- Return JSON only.
+`;
+
+  const interaction =
+    await gemini.interactions.create({
+      model: "gemini-3.5-flash",
+      input: prompt,
+    });
+
+  const rawOutput =
+    interaction.output_text?.trim();
+
+  if (!rawOutput) {
+    throw new Error(
+      "AI did not return a daily plan."
+    );
+  }
+
+  const parsedPlan = JSON.parse(
+    cleanJsonOutput(rawOutput)
+  );
+
+  if (
+    !parsedPlan.topic ||
+    !parsedPlan.format ||
+    !parsedPlan.hookIdea ||
+    !Array.isArray(parsedPlan.actionSteps) ||
+    parsedPlan.actionSteps.length === 0 ||
+    !parsedPlan.cta
+  ) {
+    throw new Error(
+      "AI returned incomplete daily-plan data."
+    );
+  }
+
+  return {
+    ...parsedPlan,
+    difficulty: ["easy", "medium", "hard"].includes(
+      parsedPlan.difficulty
+    )
+      ? parsedPlan.difficulty
+      : "easy",
+    actionSteps: parsedPlan.actionSteps.map(
+      (text) => ({
+        text,
+        completed: false,
+      })
+    ),
+    source: "ai",
   };
 };
 
@@ -127,37 +316,31 @@ export async function GET() {
           success: false,
           message: auth.error,
         },
-        {
-          status: auth.status,
-        }
+        { status: auth.status }
       );
     }
 
     const dateKey = getDateKey();
 
-    // 1. Aaj ka plan pehle MongoDB me check karein
     const existingPlan = await DailyPlan.findOne({
       user: auth.user._id,
       dateKey,
-    }).lean();
+    });
 
     if (existingPlan) {
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Today's plan fetched successfully.",
-          source: "database",
-          data: formatPlan(existingPlan),
-        },
-        {
-          status: 200,
-        }
-      );
+      return NextResponse.json({
+        success: true,
+        message:
+          "Today's plan fetched successfully.",
+        source: "database",
+        data: formatPlan(existingPlan),
+      });
     }
 
-    const creatorProfile = await CreatorProfile.findOne({
-      user: auth.user._id,
-    }).lean();
+    const creatorProfile =
+      await CreatorProfile.findOne({
+        user: auth.user._id,
+      }).lean();
 
     if (!creatorProfile) {
       return NextResponse.json(
@@ -165,107 +348,27 @@ export async function GET() {
           success: false,
           message: "Creator profile not found.",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
     }
-
-    const prompt = `
-You are Trendora, an expert daily content planner.
-
-Create one practical content plan for today.
-
-Creator profile:
-Niche: ${creatorProfile.niche}
-Platform: ${creatorProfile.platform}
-Language: ${creatorProfile.language}
-Tone: ${creatorProfile.tone}
-Audience size: ${creatorProfile.audienceSize}
-Goal: ${creatorProfile.goal}
-Date: ${dateKey}
-
-Return only valid JSON in this exact structure:
-
-{
-  "topic": "content topic",
-  "format": "reel, carousel, post or short",
-  "hookIdea": "one short hook",
-  "actionSteps": [
-    "step 1",
-    "step 2",
-    "step 3",
-    "step 4"
-  ],
-  "cta": "one call to action",
-  "postingTime": "suggested posting time"
-}
-
-Rules:
-- Write all content in ${creatorProfile.language}.
-- Make the plan realistic and easy to complete today.
-- Do not invent statistics.
-- Avoid guaranteed claims.
-- Return JSON only.
-`;
 
     let parsedPlan;
 
     try {
-      const interaction = await gemini.interactions.create({
-        model: "gemini-3.5-flash",
-        input: prompt,
-      });
+      parsedPlan = await generatePlan(
+        creatorProfile,
+        dateKey
+      );
+    } catch (error) {
+      console.error(
+        "Daily plan AI error:",
+        error
+      );
 
-      const rawOutput = interaction.output_text?.trim();
-
-      if (!rawOutput) {
-        throw new Error("AI did not return a daily plan.");
-      }
-
-      parsedPlan = JSON.parse(cleanJsonOutput(rawOutput));
-
-      if (
-        !parsedPlan.topic ||
-        !parsedPlan.format ||
-        !parsedPlan.hookIdea ||
-        !Array.isArray(parsedPlan.actionSteps) ||
-        parsedPlan.actionSteps.length === 0 ||
-        !parsedPlan.cta
-      ) {
-        throw new Error("AI returned incomplete daily-plan data.");
-      }
-    } catch (aiError) {
-      console.error("Daily plan AI error:", aiError);
-
-      // 2. Gemini fail hone par latest saved plan return karein
-      const latestPlan = await DailyPlan.findOne({
-        user: auth.user._id,
-      })
-        .sort({
-          dateKey: -1,
-          createdAt: -1,
-        })
-        .lean();
-
-      if (latestPlan) {
-        return NextResponse.json(
-          {
-            success: true,
-            message:
-              "AI limit reached. Showing your latest saved daily plan.",
-            source: "previous-plan",
-            quotaLimited: true,
-            data: formatPlan(latestPlan),
-          },
-          {
-            status: 200,
-          }
-        );
-      }
-
-      // 3. Koi purana plan bhi nahi hai to local fallback plan save karein
-      parsedPlan = getFallbackPlan(creatorProfile, dateKey);
+      parsedPlan = getFallbackPlan(
+        creatorProfile,
+        dateKey
+      );
     }
 
     let dailyPlan;
@@ -274,52 +377,51 @@ Rules:
       dailyPlan = await DailyPlan.create({
         user: auth.user._id,
         dateKey,
-        topic: parsedPlan.topic,
-        format: parsedPlan.format,
-        hookIdea: parsedPlan.hookIdea,
-        actionSteps: parsedPlan.actionSteps,
-        cta: parsedPlan.cta,
-        postingTime: parsedPlan.postingTime || "",
+        ...parsedPlan,
         completed: false,
+        regenerationCount: 0,
       });
-    } catch (databaseError) {
-      // Multiple simultaneous requests me duplicate plan create ho sakta hai
-      if (databaseError?.code === 11000) {
+    } catch (error) {
+      if (error?.code === 11000) {
         dailyPlan = await DailyPlan.findOne({
           user: auth.user._id,
           dateKey,
         });
       } else {
-        throw databaseError;
+        throw error;
       }
     }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Today's plan prepared successfully.",
-        source: parsedPlan.completed === false ? "fallback-or-ai" : "ai",
+        message:
+          parsedPlan.source === "ai"
+            ? "Today's AI plan prepared successfully."
+            : "Fallback daily plan prepared successfully.",
+        source: parsedPlan.source,
         data: formatPlan(dailyPlan),
       },
-      {
-        status: 201,
-      }
+      { status: 201 }
     );
   } catch (error) {
-    console.error("Daily plan API error:", error);
+    console.error(
+      "Daily plan GET error:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to load today's plan.",
+        message:
+          "Unable to load today's plan.",
         error:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV ===
+          "development"
             ? error.message
             : undefined,
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
@@ -336,44 +438,17 @@ export async function PATCH(request) {
           success: false,
           message: auth.error,
         },
-        {
-          status: auth.status,
-        }
+        { status: auth.status }
       );
     }
 
-    let body;
-
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Please send valid JSON data.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const completed = Boolean(body.completed);
+    const body = await request.json();
     const dateKey = getDateKey();
 
-    const dailyPlan = await DailyPlan.findOneAndUpdate(
-      {
-        user: auth.user._id,
-        dateKey,
-      },
-      {
-        completed,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const dailyPlan = await DailyPlan.findOne({
+      user: auth.user._id,
+      dateKey,
+    });
 
     if (!dailyPlan) {
       return NextResponse.json(
@@ -381,39 +456,300 @@ export async function PATCH(request) {
           success: false,
           message: "Today's plan not found.",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
+    }
+
+    if (body.action === "toggle-step") {
+      const step = dailyPlan.actionSteps.id(
+        body.stepId
+      );
+
+      if (!step) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Action step not found.",
+          },
+          { status: 404 }
+        );
+      }
+
+      step.completed = !step.completed;
+
+      const allStepsCompleted =
+        dailyPlan.actionSteps.length > 0 &&
+        dailyPlan.actionSteps.every(
+          (item) => item.completed
+        );
+
+      if (!allStepsCompleted) {
+        dailyPlan.completed = false;
+      }
+
+      await dailyPlan.save();
+
+      return NextResponse.json({
+        success: true,
+        message: "Action step updated.",
+        data: formatPlan(dailyPlan),
+      });
+    }
+
+    if (body.action === "edit") {
+      const editableFields = [
+        "topic",
+        "format",
+        "hookIdea",
+        "cta",
+        "postingTime",
+        "aiTip",
+        "estimatedTime",
+        "difficulty",
+        "contentGoal",
+      ];
+
+      editableFields.forEach((field) => {
+        if (
+          typeof body[field] === "string" &&
+          body[field].trim()
+        ) {
+          dailyPlan[field] =
+            body[field].trim();
+        }
+      });
+
+      await dailyPlan.save();
+
+      return NextResponse.json({
+        success: true,
+        message:
+          "Daily plan updated successfully.",
+        data: formatPlan(dailyPlan),
+      });
+    }
+
+    if (body.action === "complete") {
+      const allStepsCompleted =
+        dailyPlan.actionSteps.length > 0 &&
+        dailyPlan.actionSteps.every(
+          (step) => step.completed
+        );
+
+      if (body.completed && !allStepsCompleted) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Complete all action steps before marking the plan complete.",
+          },
+          { status: 400 }
+        );
+      }
+
+      dailyPlan.completed = Boolean(
+        body.completed
+      );
+
+      await dailyPlan.save();
+
+      return NextResponse.json({
+        success: true,
+        message: dailyPlan.completed
+          ? "Daily plan completed successfully."
+          : "Daily plan marked as pending.",
+        data: formatPlan(dailyPlan),
+      });
     }
 
     return NextResponse.json(
       {
-        success: true,
-        message: completed
-          ? "Daily plan completed successfully."
-          : "Daily plan marked as pending.",
-        data: formatPlan(dailyPlan),
+        success: false,
+        message: "Invalid daily-plan action.",
       },
-      {
-        status: 200,
-      }
+      { status: 400 }
     );
   } catch (error) {
-    console.error("Daily plan update error:", error);
+    console.error(
+      "Daily plan PATCH error:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to update daily plan.",
+        message:
+          "Unable to update daily plan.",
         error:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV ===
+          "development"
             ? error.message
             : undefined,
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request) {
+  try {
+    await connectDB();
+
+    const auth = await getAuthenticatedCreator();
+
+    if (auth.error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: auth.error,
+        },
+        { status: auth.status }
+      );
+    }
+
+    const body = await request.json();
+
+    if (body.action !== "regenerate") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid regenerate request.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const dateKey = getDateKey();
+
+    const currentPlan = await DailyPlan.findOne({
+      user: auth.user._id,
+      dateKey,
+    });
+
+    if (!currentPlan) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Generate today's plan first.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (
+      auth.user.plan === "free" &&
+      currentPlan.regenerationCount >= 1
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Free Plan allows one daily-plan regeneration per day.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const creatorProfile =
+      await CreatorProfile.findOne({
+        user: auth.user._id,
+      }).lean();
+
+    if (!creatorProfile) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Creator profile not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    let regeneratedPlan;
+
+    try {
+      regeneratedPlan = await generatePlan(
+        creatorProfile,
+        dateKey
+      );
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "AI could not regenerate the plan. Please try later.",
+          error:
+            process.env.NODE_ENV ===
+            "development"
+              ? error.message
+              : undefined,
+        },
+        { status: 503 }
+      );
+    }
+
+    currentPlan.topic =
+      regeneratedPlan.topic;
+
+    currentPlan.format =
+      regeneratedPlan.format;
+
+    currentPlan.hookIdea =
+      regeneratedPlan.hookIdea;
+
+    currentPlan.actionSteps =
+      regeneratedPlan.actionSteps;
+
+    currentPlan.cta =
+      regeneratedPlan.cta;
+
+    currentPlan.postingTime =
+      regeneratedPlan.postingTime || "";
+
+    currentPlan.aiTip =
+      regeneratedPlan.aiTip || "";
+
+    currentPlan.estimatedTime =
+      regeneratedPlan.estimatedTime ||
+      "45 minutes";
+
+    currentPlan.difficulty =
+      regeneratedPlan.difficulty || "easy";
+
+    currentPlan.contentGoal =
+      regeneratedPlan.contentGoal || "";
+
+    currentPlan.source = "ai";
+    currentPlan.completed = false;
+    currentPlan.regenerationCount += 1;
+
+    await currentPlan.save();
+
+    return NextResponse.json({
+      success: true,
+      message:
+        "Daily plan regenerated successfully.",
+      data: formatPlan(currentPlan),
+    });
+  } catch (error) {
+    console.error(
+      "Daily plan regenerate error:",
+      error
+    );
+
+    return NextResponse.json(
       {
-        status: 500,
-      }
+        success: false,
+        message:
+          "Unable to regenerate daily plan.",
+        error:
+          process.env.NODE_ENV ===
+          "development"
+            ? error.message
+            : undefined,
+      },
+      { status: 500 }
     );
   }
 }

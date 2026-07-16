@@ -8,18 +8,25 @@ import {
   ArrowRight,
   BarChart3,
   Bookmark,
+  Check,
   CheckCircle2,
   Clock3,
+  Edit3,
   FileText,
   Flame,
+  Gauge,
   Hash,
   ImageIcon,
   Lightbulb,
   LoaderCircle,
   LogOut,
+  RefreshCw,
   Sparkles,
+  Target,
+  Timer,
   TrendingUp,
   UserRound,
+  X,
 } from "lucide-react";
 
 import {
@@ -31,6 +38,9 @@ import { getSavedContents } from "@/services/saved.api";
 
 import {
   getDailyPlan,
+  regenerateDailyPlan,
+  toggleDailyPlanStep,
+  updateDailyPlan,
   updateDailyPlanStatus,
 } from "@/services/daily-plan.api";
 
@@ -115,77 +125,25 @@ export default function CreatorDashboardPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [message, setMessage] = useState("");
 
-  // const loadDashboard = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
-  //     setMessage("");
+  const [updatingStepId, setUpdatingStepId] = useState("");
 
-  //     const userResponse = await getCurrentUser();
-  //     const currentUser = userResponse.user;
+  const [regeneratingPlan, setRegeneratingPlan] = useState(false);
 
-  //     if (!currentUser) {
-  //       router.replace("/login");
-  //       return;
-  //     }
+  const [editingPlan, setEditingPlan] = useState(false);
 
-  //     if (!currentUser.role) {
-  //       router.replace("/onboarding/select-role");
-  //       return;
-  //     }
+  const [savingEdit, setSavingEdit] = useState(false);
 
-  //     if (currentUser.role !== "creator") {
-  //       if (currentUser.role === "business") {
-  //         router.replace("/business/dashboard");
-  //         return;
-  //       }
-
-  //       if (currentUser.role === "admin") {
-  //         router.replace("/admin/dashboard");
-  //         return;
-  //       }
-
-  //       router.replace("/");
-  //       return;
-  //     }
-
-  //     if (!currentUser.onboardingCompleted) {
-  //       router.replace("/onboarding/creator");
-  //       return;
-  //     }
-
-  //     setUser(currentUser);
-
-  //     try {
-  //       const savedResponse = await getSavedContents({
-  //         type: "all",
-  //         search: "",
-  //       });
-
-  //       setSavedContents(savedResponse.data || []);
-  //     } catch (savedError) {
-  //       console.error("Saved content fetch error:", savedError);
-  //       setSavedContents([]);
-  //     }
-
-  //     try {
-  //       setDailyPlanLoading(true);
-
-  //       const dailyPlanResponse = await getDailyPlan();
-
-  //       setDailyPlan(dailyPlanResponse.data || null);
-  //     } catch (dailyPlanError) {
-  //       console.error("Daily plan fetch error:", dailyPlanError);
-  //       setDailyPlan(null);
-  //     } finally {
-  //       setDailyPlanLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Dashboard loading error:", error);
-  //     router.replace("/login");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [router]);
+  const [editForm, setEditForm] = useState({
+    topic: "",
+    format: "",
+    hookIdea: "",
+    cta: "",
+    postingTime: "",
+    aiTip: "",
+    estimatedTime: "",
+    difficulty: "easy",
+    contentGoal: "",
+  });
 
   const loadDashboard = useCallback(async () => {
   try {
@@ -373,6 +331,12 @@ export default function CreatorDashboardPage() {
     (completedTasks / workflowTasks.length) * 100
   );
 
+  const allPlanStepsCompleted =
+    dailyPlan?.actionSteps?.length > 0 &&
+    dailyPlan.actionSteps.every(
+      (step) => step.completed
+  );
+
   const handlePlanStatus = async () => {
     if (!dailyPlan) return;
 
@@ -407,6 +371,104 @@ export default function CreatorDashboardPage() {
       setMessage(error.message || "Logout failed.");
     } finally {
       setLoggingOut(false);
+    }
+  };
+
+  const handleToggleStep = async (stepId) => {
+    if (!stepId) return;
+
+    try {
+      setUpdatingStepId(stepId);
+      setMessage("");
+
+      const response =
+        await toggleDailyPlanStep(stepId);
+
+      setDailyPlan(response.data);
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to update action step."
+      );
+    } finally {
+      setUpdatingStepId("");
+    }
+  };
+
+  const handleRegeneratePlan = async () => {
+    const confirmed = window.confirm(
+      "Generate a new plan for today?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setRegeneratingPlan(true);
+      setMessage("");
+
+      const response =
+        await regenerateDailyPlan();
+
+      setDailyPlan(response.data);
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to regenerate daily plan."
+      );
+    } finally {
+      setRegeneratingPlan(false);
+    }
+  };
+
+  const openEditPlan = () => {
+    setEditForm({
+      topic: dailyPlan?.topic || "",
+      format: dailyPlan?.format || "",
+      hookIdea: dailyPlan?.hookIdea || "",
+      cta: dailyPlan?.cta || "",
+      postingTime:
+        dailyPlan?.postingTime || "",
+      aiTip: dailyPlan?.aiTip || "",
+      estimatedTime:
+        dailyPlan?.estimatedTime || "",
+      difficulty:
+        dailyPlan?.difficulty || "easy",
+      contentGoal:
+        dailyPlan?.contentGoal || "",
+    });
+
+    setEditingPlan(true);
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+
+    setEditForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const handleSavePlanEdit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setSavingEdit(true);
+      setMessage("");
+
+      const response = await updateDailyPlan(
+        editForm
+      );
+
+      setDailyPlan(response.data);
+      setEditingPlan(false);
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to update daily plan."
+      );
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -543,10 +605,41 @@ export default function CreatorDashboardPage() {
                   </div>
                 </div>
 
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={openEditPlan}
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
+                  >
+                    <Edit3 size={17} />
+                    Edit plan
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRegeneratePlan}
+                    disabled={regeneratingPlan}
+                    className="inline-flex items-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300 transition hover:bg-violet-500/20 disabled:opacity-50"
+                  >
+                    {regeneratingPlan ? (
+                      <LoaderCircle
+                        size={17}
+                        className="animate-spin"
+                      />
+                    ) : (
+                      <RefreshCw size={17} />
+                    )}
+
+                    {regeneratingPlan
+                      ? "Regenerating..."
+                      : "Regenerate"}
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   onClick={handlePlanStatus}
-                  disabled={updatingPlan}
+                  disabled={updatingPlan || (!dailyPlan.completed && !allPlanStepsCompleted)}
                   className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                     dailyPlan.completed
                       ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/35 hover:bg-emerald-500/30"
@@ -562,6 +655,11 @@ export default function CreatorDashboardPage() {
                     <>
                       <CheckCircle2 size={18} />
                       Completed
+                    </>
+                  ) : !allPlanStepsCompleted ? (
+                    <>
+                      <CheckCircle2 size={18} />
+                      Complete all steps first
                     </>
                   ) : (
                     <>
@@ -592,28 +690,137 @@ export default function CreatorDashboardPage() {
                     {dailyPlan.cta}
                   </p>
                 </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <InfoCard
+                    icon={Target}
+                    label="Content goal"
+                    value={dailyPlan.contentGoal}
+                  />
+
+                  <InfoCard
+                    icon={Timer}
+                    label="Estimated time"
+                    value={dailyPlan.estimatedTime}
+                  />
+
+                  <InfoCard
+                    icon={Gauge}
+                    label="Difficulty"
+                    value={dailyPlan.difficulty}
+                  />
+
+                  <InfoCard
+                    icon={Sparkles}
+                    label="Plan source"
+                    value={
+                      dailyPlan.source === "fallback"
+                        ? "Fallback plan"
+                        : "AI generated"
+                    }
+                  />
+                </div>
+
+                {dailyPlan.aiTip && (
+                  <div className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5">
+                    <div className="flex items-start gap-3">
+                      <Lightbulb
+                        size={20}
+                        className="mt-0.5 shrink-0 text-amber-400"
+                      />
+
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+                          Today&apos;s AI Tip
+                        </p>
+
+                        <p className="mt-2 text-sm leading-7 text-amber-100/80">
+                          {dailyPlan.aiTip}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-4 rounded-2xl bg-white/[0.03] border border-white/5 p-5">
-                <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
-                  Today&apos;s action steps
-                </p>
+              <div className="mt-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+                      Today&apos;s action steps
+                    </p>
 
-                <div className="mt-4 space-y-3">
-                  {dailyPlan.actionSteps?.map((step, index) => (
-                    <div
-                      key={`${step}-${index}`}
-                      className="flex items-start gap-3"
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 text-xs font-bold text-white shadow-[0_0_10px_rgba(139,92,246,0.4)]">
-                        {index + 1}
-                      </span>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      {dailyPlan.completedSteps || 0} of{" "}
+                      {dailyPlan.totalSteps || 0} completed
+                    </p>
+                  </div>
 
-                      <p className="text-sm leading-relaxed text-zinc-300">
-                        {step}
-                      </p>
-                    </div>
-                  ))}
+                  <p className="text-lg font-bold text-violet-300">
+                    {dailyPlan.stepsProgress || 0}%
+                  </p>
+                </div>
+
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 transition-all"
+                    style={{
+                      width: `${
+                        dailyPlan.stepsProgress || 0
+                      }%`,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {dailyPlan.actionSteps?.map(
+                    (step, index) => (
+                      <button
+                        key={step.id || `${step.text}-${index}`}
+                        type="button"
+                        onClick={() =>
+                          handleToggleStep(step.id)
+                        }
+                        disabled={
+                          updatingStepId === step.id ||
+                          !step.id
+                        }
+                        className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition ${
+                          step.completed
+                            ? "border-emerald-500/20 bg-emerald-500/10"
+                            : "border-white/5 bg-[#120f2e]/35 hover:bg-white/5"
+                        }`}
+                      >
+                        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
+                                          step.completed
+                              ? "border-emerald-500 bg-emerald-500 text-white"
+                              : "border-white/15 text-zinc-500"
+                          }`}
+                        >
+                          {updatingStepId === step.id ? (
+                            <LoaderCircle
+                              size={14}
+                              className="animate-spin"
+                            />
+                          ) : step.completed ? (
+                            <Check size={15} />
+                          ) : (
+                            index + 1
+                          )}
+                        </span>
+
+                        <span
+                          className={`text-sm leading-6 ${
+                            step.completed
+                              ? "text-emerald-300 line-through"
+                              : "text-zinc-300"
+                          }`}
+                        >
+                          {step.text}
+                        </span>
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
 
@@ -628,6 +835,21 @@ export default function CreatorDashboardPage() {
                 >
                   Create today&apos;s script
                   <ArrowRight size={18} />
+                </Link>
+
+                <Link
+                  href={`/creator/caption-generator?topic=${encodeURIComponent(
+                    dailyPlan.topic
+                  )}&hook=${encodeURIComponent(
+                    dailyPlan.hookIdea
+                  )}`}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-zinc-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  Generate caption
+                  <FileText
+                    size={18}
+                    className="text-violet-400"
+                  />
                 </Link>
 
                 <Link
@@ -686,6 +908,8 @@ export default function CreatorDashboardPage() {
             </div>
           )}
         </section>
+
+
 
         {/* Stats Grid */}
         <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
@@ -949,7 +1173,142 @@ export default function CreatorDashboardPage() {
           </div>
         </section>
       </div>
+
+      {editingPlan && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+    <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-[#0a0520] p-6 shadow-2xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white">
+            Edit today&apos;s plan
+          </h2>
+
+          <p className="mt-1 text-sm text-zinc-400">
+            Update your plan details manually.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setEditingPlan(false)}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-zinc-400 hover:bg-white/10"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <form
+        onSubmit={handleSavePlanEdit}
+        className="mt-6 grid gap-5 sm:grid-cols-2"
+      >
+        {[
+          ["topic", "Topic"],
+          ["format", "Format"],
+          ["hookIdea", "Hook idea"],
+          ["cta", "Call to action"],
+          ["postingTime", "Posting time"],
+          ["aiTip", "AI tip"],
+          ["estimatedTime", "Estimated time"],
+          ["contentGoal", "Content goal"],
+        ].map(([name, label]) => (
+          <div
+            key={name}
+            className={
+              ["topic", "hookIdea", "cta"].includes(
+                name
+              )
+                ? "sm:col-span-2"
+                : ""
+            }
+          >
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              {label}
+            </label>
+
+            <input
+              name={name}
+              value={editForm[name]}
+              onChange={handleEditChange}
+              className="w-full rounded-xl border border-white/10 bg-[#120f2e] px-4 py-3 text-white outline-none focus:border-violet-500"
+            />
+          </div>
+        ))}
+
+        <div>
+          <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Difficulty
+          </label>
+
+          <select
+            name="difficulty"
+            value={editForm.difficulty}
+            onChange={handleEditChange}
+            className="w-full rounded-xl border border-white/10 bg-[#120f2e] px-4 py-3 text-white outline-none focus:border-violet-500"
+          >
+            <option value="easy">
+              Easy
+            </option>
+            <option value="medium">
+              Medium
+            </option>
+            <option value="hard">
+              Hard
+            </option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          disabled={savingEdit}
+          className="sm:col-span-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-4 font-semibold text-white disabled:opacity-50"
+        >
+          {savingEdit ? (
+            <>
+              <LoaderCircle
+                size={18}
+                className="animate-spin"
+              />
+              Saving changes...
+            </>
+          ) : (
+            <>
+              <Check size={18} />
+              Save changes
+            </>
+          )}
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
     </main>
+  );
+}
+
+function InfoCard({
+  icon: Icon,
+  label,
+  value,
+}) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5 shadow-sm">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400">
+          <Icon size={20} />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider text-zinc-500">
+            {label}
+          </p>
+
+          <p className="mt-1 text-sm font-semibold capitalize text-white">
+            {value || "Not available"}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
