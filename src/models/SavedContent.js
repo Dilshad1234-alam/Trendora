@@ -9,17 +9,25 @@ const savedContentSchema = new mongoose.Schema(
       index: true,
     },
 
+    ownerType: {
+      type: String,
+      enum: ["creator", "business"],
+      required: true,
+      index: true,
+    },
+
     generatedContent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "GeneratedContent",
       default: null,
-      required: false,
+      // required: false,
     },
 
     title: {
       type: String,
       required: true,
       trim: true,
+      maxlength: 150,
     },
 
     type: {
@@ -35,6 +43,7 @@ const savedContentSchema = new mongoose.Schema(
         "content-rewriter",
         "viral-idea",
         "cta",
+        "weekly-plan",
 
         // Business
         "business-post",
@@ -47,10 +56,9 @@ const savedContentSchema = new mongoose.Schema(
         "local-seo",
         "review-reply",
         "whatsapp-reply",
-
-        "weekly-plan",
       ],
       required: true,
+      index: true,
     },
 
     content: {

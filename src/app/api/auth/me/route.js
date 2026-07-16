@@ -61,9 +61,12 @@ export async function GET() {
           email: user.email,
           image: user.image || "",
           role: user.role,
-          onboardingCompleted: user.onboardingCompleted,
           plan: user.plan,
-          createdAt: user.createdAt,
+          planSelected: user.planSelected,
+          onboardingCompleted: user.onboardingCompleted,
+          // subscriptionStatus: user.subscriptionStatus
+          // plan: user.plan,
+          // createdAt: user.createdAt,
         },
       },
       { status: 200 }

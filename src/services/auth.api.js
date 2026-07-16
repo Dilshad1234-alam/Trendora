@@ -67,7 +67,6 @@ export const logoutUser = async () => {
   return data;
 };
 
-
 export const selectUserRole = async (role) => {
   const response = await fetch("/api/auth/select-role", {
     method: "PATCH",
@@ -86,3 +85,25 @@ export const selectUserRole = async (role) => {
 
   return data;
 };
+
+export const selectPlan = async (plan) => {
+  const response = await fetch("/api/auth/select-plan", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ plan }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to select plan."
+    );
+  }
+
+  return data;
+};
+

@@ -1,4 +1,6 @@
 export const saveContent = async (payload) => {
+  console.log("Save content payload:", payload);
+
   const response = await fetch("/api/saved", {
     method: "POST",
     headers: {
@@ -8,10 +10,28 @@ export const saveContent = async (payload) => {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const responseText = await response.text();
+
+  let data = {};
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        `Saved API returned invalid response. Status: ${response.status}`
+      );
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "Unable to save content.");
+    console.error("Save content response:", data);
+
+    throw new Error(
+      data.message ||
+        data.error ||
+        `Unable to save content. Status: ${response.status}`
+    );
   }
 
   return data;
@@ -23,9 +43,7 @@ export const getSavedContents = async ({
 } = {}) => {
   const params = new URLSearchParams();
 
-  if (type) {
-    params.set("type", type);
-  }
+  params.set("type", type);
 
   if (search.trim()) {
     params.set("search", search.trim());
@@ -40,10 +58,26 @@ export const getSavedContents = async ({
     }
   );
 
-  const data = await response.json();
+  const responseText = await response.text();
+
+  let data = {};
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        `Saved content API returned invalid response. Status: ${response.status}`
+      );
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "Unable to fetch saved content.");
+    throw new Error(
+      data.message ||
+        data.error ||
+        `Unable to fetch saved content. Status: ${response.status}`
+    );
   }
 
   return data;

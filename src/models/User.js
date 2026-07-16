@@ -47,8 +47,19 @@ const userSchema = new mongoose.Schema(
     plan: {
       type: String,
       enum: ["free", "creator-pro", "business-pro", "agency"],
-      default: "free",
+      default: null,
     },
+
+    planSelected: {
+      type: Boolean,
+      default: false,
+    },
+
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    
   },
   {
     timestamps: true,

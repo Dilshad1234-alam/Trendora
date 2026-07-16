@@ -93,10 +93,32 @@ export default function LoginPage() {
         return;
       }
 
+
+      // Creator onboarding complete but plan not selected
+      if (
+        user.role === "creator" &&
+        user.onboardingCompleted &&
+        !user.planSelected
+      ) {
+        router.replace("/onboarding/select-plan");
+        return;
+      }
+
+      // Business onboarding complete but plan not selected
+      if (
+        user.role === "business" &&
+        user.onboardingCompleted &&
+        !user.planSelected
+      ) {
+        router.replace("/onboarding/select-plan");
+        return;
+      }
+
       // Creator onboarding complete
       if (
         user.role === "creator" &&
-        user.onboardingCompleted
+        user.onboardingCompleted && 
+        user.planSelected
       ) {
         router.replace("/creator/dashboard");
         return;
@@ -105,7 +127,8 @@ export default function LoginPage() {
       // Business onboarding complete
       if (
         user.role === "business" &&
-        user.onboardingCompleted
+        user.onboardingCompleted && 
+        user.planSelected
       ) {
         router.replace("/business/dashboard");
         return;

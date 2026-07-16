@@ -122,42 +122,42 @@ export default function ThumbnailTitleGeneratorPage() {
   };
 
   const handleSave = async () => {
-    if (!result) return;
+  if (!result) return;
 
-    try {
-      setSaving(true);
+  try {
+    setSaving(true);
+    setMessage({
+      type: "",
+      text: "",
+    });
 
-      setMessage({
-        type: "",
-        text: "",
-      });
+    const data = await saveContent({
+      title:
+        formData.topic.trim() || "Thumbnail Titles",
+      type: "thumbnail-title",
+      content: result,
+      generatedContentId: generatedId || null,
+    });
 
-      await saveContent({
-        title:
-          formData.topic.trim() ||
-          "Thumbnail Titles",
-        type: "thumbnail-title",
-        content: result,
-        generatedContentId: generatedId || null,
-      });
+    setSaved(true);
 
-      setSaved(true);
-
-      setMessage({
-        type: "success",
-        text: "Thumbnail titles saved successfully.",
-      });
-    } catch (error) {
-      setMessage({
-        type: "error",
-        text:
-          error.message ||
-          "Unable to save thumbnail titles.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+    setMessage({
+      type: "success",
+      text:
+        data.message ||
+        "Thumbnail titles saved successfully.",
+    });
+  } catch (error) {
+    setMessage({
+      type: "error",
+      text:
+        error.message ||
+        "Unable to save thumbnail titles.",
+    });
+  } finally {
+    setSaving(false);
+  }
+};
 
   return (
     <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">

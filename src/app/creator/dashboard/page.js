@@ -115,77 +115,181 @@ export default function CreatorDashboardPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [message, setMessage] = useState("");
 
+  // const loadDashboard = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+  //     setMessage("");
+
+  //     const userResponse = await getCurrentUser();
+  //     const currentUser = userResponse.user;
+
+  //     if (!currentUser) {
+  //       router.replace("/login");
+  //       return;
+  //     }
+
+  //     if (!currentUser.role) {
+  //       router.replace("/onboarding/select-role");
+  //       return;
+  //     }
+
+  //     if (currentUser.role !== "creator") {
+  //       if (currentUser.role === "business") {
+  //         router.replace("/business/dashboard");
+  //         return;
+  //       }
+
+  //       if (currentUser.role === "admin") {
+  //         router.replace("/admin/dashboard");
+  //         return;
+  //       }
+
+  //       router.replace("/");
+  //       return;
+  //     }
+
+  //     if (!currentUser.onboardingCompleted) {
+  //       router.replace("/onboarding/creator");
+  //       return;
+  //     }
+
+  //     setUser(currentUser);
+
+  //     try {
+  //       const savedResponse = await getSavedContents({
+  //         type: "all",
+  //         search: "",
+  //       });
+
+  //       setSavedContents(savedResponse.data || []);
+  //     } catch (savedError) {
+  //       console.error("Saved content fetch error:", savedError);
+  //       setSavedContents([]);
+  //     }
+
+  //     try {
+  //       setDailyPlanLoading(true);
+
+  //       const dailyPlanResponse = await getDailyPlan();
+
+  //       setDailyPlan(dailyPlanResponse.data || null);
+  //     } catch (dailyPlanError) {
+  //       console.error("Daily plan fetch error:", dailyPlanError);
+  //       setDailyPlan(null);
+  //     } finally {
+  //       setDailyPlanLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Dashboard loading error:", error);
+  //     router.replace("/login");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [router]);
+
   const loadDashboard = useCallback(async () => {
-    try {
-      setLoading(true);
-      setMessage("");
+  try {
+    setLoading(true);
+    setMessage("");
 
-      const userResponse = await getCurrentUser();
-      const currentUser = userResponse.user;
+    const userResponse = await getCurrentUser();
 
-      if (!currentUser) {
-        router.replace("/login");
-        return;
-      }
+    const currentUser =
+      userResponse.user ||
+      userResponse.data?.user;
 
-      if (!currentUser.role) {
-        router.replace("/onboarding/select-role");
-        return;
-      }
-
-      if (currentUser.role !== "creator") {
-        if (currentUser.role === "business") {
-          router.replace("/business/dashboard");
-          return;
-        }
-
-        if (currentUser.role === "admin") {
-          router.replace("/admin/dashboard");
-          return;
-        }
-
-        router.replace("/");
-        return;
-      }
-
-      if (!currentUser.onboardingCompleted) {
-        router.replace("/onboarding/creator");
-        return;
-      }
-
-      setUser(currentUser);
-
-      try {
-        const savedResponse = await getSavedContents({
-          type: "all",
-          search: "",
-        });
-
-        setSavedContents(savedResponse.data || []);
-      } catch (savedError) {
-        console.error("Saved content fetch error:", savedError);
-        setSavedContents([]);
-      }
-
-      try {
-        setDailyPlanLoading(true);
-
-        const dailyPlanResponse = await getDailyPlan();
-
-        setDailyPlan(dailyPlanResponse.data || null);
-      } catch (dailyPlanError) {
-        console.error("Daily plan fetch error:", dailyPlanError);
-        setDailyPlan(null);
-      } finally {
-        setDailyPlanLoading(false);
-      }
-    } catch (error) {
-      console.error("Dashboard loading error:", error);
+    // User login nahi hai
+    if (!currentUser) {
       router.replace("/login");
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [router]);
+
+    // Role abhi select nahi hua
+    if (!currentUser.role) {
+      router.replace("/onboarding/select-role");
+      return;
+    }
+
+    // Creator dashboard ko sirf creator access karega
+    if (currentUser.role !== "creator") {
+      if (currentUser.role === "business") {
+        router.replace("/business/dashboard");
+        return;
+      }
+
+      if (currentUser.role === "admin") {
+        router.replace("/admin/dashboard");
+        return;
+      }
+
+      router.replace("/");
+      return;
+    }
+
+    // Creator onboarding pending hai
+    if (!currentUser.onboardingCompleted) {
+      router.replace("/onboarding/creator");
+      return;
+    }
+
+    // Onboarding complete hai, lekin plan select nahi hua
+    if (
+      !currentUser.planSelected ||
+      !currentUser.plan
+    ) {
+      router.replace("/onboarding/select-plan");
+      return;
+    }
+
+    // Sab conditions pass hone ke baad dashboard user set hoga
+    setUser(currentUser);
+
+    try {
+      const savedResponse = await getSavedContents({
+        type: "all",
+        search: "",
+      });
+
+      setSavedContents(savedResponse.data || []);
+    } catch (savedError) {
+      console.error(
+        "Saved content fetch error:",
+        savedError
+      );
+
+      setSavedContents([]);
+    }
+
+    try {
+      setDailyPlanLoading(true);
+
+      const dailyPlanResponse =
+        await getDailyPlan();
+
+      setDailyPlan(
+        dailyPlanResponse.data || null
+      );
+    } catch (dailyPlanError) {
+      console.error(
+        "Daily plan fetch error:",
+        dailyPlanError
+      );
+
+      setDailyPlan(null);
+    } finally {
+      setDailyPlanLoading(false);
+    }
+  } catch (error) {
+    console.error(
+      "Dashboard loading error:",
+      error
+    );
+
+    router.replace("/login");
+  } finally {
+    setLoading(false);
+  }
+}, [router]);
 
   useEffect(() => {
     loadDashboard();

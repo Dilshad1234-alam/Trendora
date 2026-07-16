@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  Bookmark,
   Copy,
   FileText,
   LoaderCircle,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 
 import { generateScript } from "@/services/ai.api";
+import { saveContent } from "@/services/saved.api";
+
 
 export default function ScriptGeneratorPage() {
   const [formData, setFormData] = useState({
@@ -21,9 +24,14 @@ export default function ScriptGeneratorPage() {
   });
 
   const [result, setResult] = useState("");
+  const [generatedId, setGeneratedId] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
+
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -48,6 +56,8 @@ export default function ScriptGeneratorPage() {
       setLoading(true);
       setMessage("");
       setResult("");
+      setGeneratedId("");
+      setSaved(false);
 
       const data = await generateScript({
         ...formData,
@@ -56,6 +66,7 @@ export default function ScriptGeneratorPage() {
       });
 
       setResult(data.data.output);
+      setGeneratedId(data.data.id);
     } catch (error) {
       setMessage(error.message || "Unable to generate script.");
     } finally {
@@ -77,6 +88,39 @@ export default function ScriptGeneratorPage() {
       setMessage("Unable to copy script.");
     }
   };
+
+  const handleSave = async () => {
+  if (!result) {
+    setMessage("Generate a script first.");
+    return;
+  }
+
+  try {
+    setSaving(true);
+    setMessage("");
+
+    const data = await saveContent({
+      title: formData.topic.trim() || "Generated Script",
+      type: "script",
+      content: result,
+      generatedContentId: generatedId || null,
+    });
+
+    setSaved(true);
+
+    setMessage(
+      data.message || "Script saved successfully."
+    );
+  } catch (error) {
+    console.error("Script save error:", error);
+
+    setMessage(
+      error.message || "Unable to save script."
+    );
+  } finally {
+    setSaving(false);
+  }
+};
 
   return (
     <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
@@ -232,15 +276,41 @@ export default function ScriptGeneratorPage() {
                 </p>
               </div>
 
-              {result && (
+              {result && (  
+                
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving || saved}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {saving ? (
+                    <LoaderCircle
+                      size={16}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Bookmark size={16} />
+                  )}
+
+                  {saving
+                    ? "Saving..."
+                    : saved
+                      ? "Saved"
+                      : "Save"}
+                </button>
+
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-semibold text-violet-300 hover:bg-violet-500/20 hover:text-white transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700"
                 >
                   <Copy size={16} />
                   {copied ? "Copied" : "Copy"}
                 </button>
+              </div>
+
               )}
             </div>
 

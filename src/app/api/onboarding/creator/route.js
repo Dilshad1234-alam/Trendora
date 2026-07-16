@@ -122,25 +122,40 @@ export async function POST(request) {
     });
 
     user.onboardingCompleted = true;
+    user.plan = null;
+    user.planSelected = false;
+
     await user.save();
 
     return NextResponse.json(
+
       {
         success: true,
         message: "Creator onboarding completed successfully.",
-        creatorProfile: {
-          id: creatorProfile._id.toString(),
-          user: creatorProfile.user.toString(),
-          niche: creatorProfile.niche,
-          language: creatorProfile.language,
-          platform: creatorProfile.platform,
-          tone: creatorProfile.tone,
-          audienceSize: creatorProfile.audienceSize,
-          goal: creatorProfile.goal,
+        data: {
+          role: user.role,
+          onboardingCompleted: user.onboardingCompleted,
+          planSelected: user.planSelected,
+          nextRoute: "/onboarding/select-plan",
         },
-        nextRoute: "/creator/dashboard",
       },
-      { status: 201 }
+      { status: 200 }
+      // {
+      //   success: true,
+      //   message: "Creator onboarding completed successfully.",
+      //   creatorProfile: {
+      //     id: creatorProfile._id.toString(),
+      //     user: creatorProfile.user.toString(),
+      //     niche: creatorProfile.niche,
+      //     language: creatorProfile.language,
+      //     platform: creatorProfile.platform,
+      //     tone: creatorProfile.tone,
+      //     audienceSize: creatorProfile.audienceSize,
+      //     goal: creatorProfile.goal,
+      //   },
+      //   nextRoute: "/creator/dashboard",
+      // },
+      // { status: 201 }
     );
   } catch (error) {
     console.error("Creator onboarding API error:", error);

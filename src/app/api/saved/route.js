@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -5,70 +6,85 @@ import connectDB from "@/lib/db";
 import { verifyToken } from "@/lib/jwt";
 
 import User from "@/models/User";
-import SavedContent from "@/models/SavedContent";
 import GeneratedContent from "@/models/GeneratedContent";
+import SavedContent from "@/models/SavedContent";
 
 const allowedTypes = [
+  // Creator
   "hook",
   "script",
   "caption",
   "hashtag",
+  "thumbnail-title",
+  "video-description",
+  "content-rewriter",
+  "viral-idea",
+  "cta",
+  "weekly-plan",
+
+  // Business
+  "business-post",
+  "business-caption",
+  "business-hashtag",
+  "business-thumbnail-title",
+  "business-video-description",
+  "ad-copy",
+  "product-description",
   "local-seo",
   "review-reply",
-  "weekly-plan",
+  "whatsapp-reply",
 ];
 
-async function getAuthenticatedUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) {
-    return {
-      error: "Unauthorized. Please login first.",
-      status: 401,
-    };
-  }
-
-  let decoded;
-
-  try {
-    decoded = verifyToken(token);
-  } catch {
-    return {
-      error: "Invalid or expired token.",
-      status: 401,
-    };
-  }
-
-  const user = await User.findById(decoded.userId);
-
-  if (!user) {
-    return {
-      error: "User not found.",
-      status: 404,
-    };
-  }
-
-  return { user };
-}
-
-/*
-  POST /api/saved
-  Generated content ko save karega
-*/
 export async function POST(request) {
   try {
     await connectDB();
 
-    const auth = await getAuthenticatedUser();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
 
-    if (auth.error) {
+    if (!token) {
       return NextResponse.json(
         {
           success: false,
-          message: auth.error,
+          message: "Unauthorized. Please login first.",
         },
-        { status: auth.status }
+        { status: 401 }
+      );
+    }
+
+    let decoded;
+
+    try {
+      decoded = verifyToken(token);
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid or expired token.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "User not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (!["creator", "business"].includes(user.role)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid account role.",
+        },
+        { status: 403 }
       );
     }
 
@@ -80,86 +96,127 @@ export async function POST(request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Please send saved content details in JSON format.",
+          message: "Please send valid JSON data.",
         },
         { status: 400 }
       );
     }
 
-    const title = body.title?.trim();
-    const type = body.type?.trim().toLowerCase();
-    const content = body.content?.trim();
-    const generatedContentId = body.generatedContentId?.trim() || null;
+    const title =
+      typeof body.title === "string"
+        ? body.title.trim()
+        : "";
 
-    if (!title || !type || !content) {
+    const type =
+      typeof body.type === "string"
+        ? body.type.trim()
+        : "";
+
+    const content =
+      typeof body.content === "string"
+        ? body.content.trim()
+        : "";
+
+    const generatedContentId =
+      body.generatedContentId ||
+      body.generatedContent ||
+      null;
+
+    if (!title) {
       return NextResponse.json(
         {
           success: false,
-          message: "Title, type and content are required.",
+          message: "Title is required.",
         },
         { status: 400 }
       );
     }
 
-    if (!allowedTypes.includes(type)) {
+    if (!type || !allowedTypes.includes(type)) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid content type.",
+          message: `Invalid content type: ${type || "missing"}.`,
         },
         { status: 400 }
       );
     }
 
+    if (!content) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Content is required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // GeneratedContent optional hai.
     let generatedContent = null;
 
-    if (generatedContentId) {
-      generatedContent = await GeneratedContent.findOne({
-        _id: generatedContentId,
-        user: auth.user._id,
-      });
+    if (
+      generatedContentId &&
+      mongoose.Types.ObjectId.isValid(
+        String(generatedContentId)
+      )
+    ) {
+      const generatedRecord =
+        await GeneratedContent.findOne({
+          _id: generatedContentId,
+          user: user._id,
+        }).select("_id");
 
-      if (!generatedContent) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Generated content not found.",
-          },
-          { status: 404 }
-        );
+      if (generatedRecord) {
+        generatedContent = generatedRecord._id;
       }
     }
 
-    const alreadySavedQuery = generatedContent
-      ? {
-          user: auth.user._id,
-          generatedContent: generatedContent._id,
-        }
-      : {
-          user: auth.user._id,
-          type,
-          content,
-        };
+    const duplicateQuery = {
+      user: user._id,
+      ownerType: user.role,
+      type,
+      content,
+    };
 
-    const alreadySaved = await SavedContent.findOne(alreadySavedQuery);
+    if (generatedContent) {
+      duplicateQuery.generatedContent =
+        generatedContent;
+    }
+
+    const alreadySaved =
+      await SavedContent.findOne(duplicateQuery);
 
     if (alreadySaved) {
       return NextResponse.json(
         {
-          success: false,
-          message: "This content is already saved.",
+          success: true,
+          message: "Content is already saved.",
+          data: {
+            id: alreadySaved._id.toString(),
+            title: alreadySaved.title,
+            type: alreadySaved.type,
+            content: alreadySaved.content,
+            ownerType: alreadySaved.ownerType,
+            generatedContent:
+              alreadySaved.generatedContent?.toString() ||
+              null,
+            createdAt: alreadySaved.createdAt,
+          },
         },
-        { status: 409 }
+        { status: 200 }
       );
     }
 
-    const savedContent = await SavedContent.create({
-      user: auth.user._id,
-      generatedContent: generatedContent?._id || null,
-      title,
-      type,
-      content,
-    });
+    const savedContent =
+      await SavedContent.create({
+        user: user._id,
+        ownerType: user.role,
+        generatedContent,
+        title,
+        type,
+        content,
+      });
 
     return NextResponse.json(
       {
@@ -170,8 +227,10 @@ export async function POST(request) {
           title: savedContent.title,
           type: savedContent.type,
           content: savedContent.content,
-          generatedContentId:
-            savedContent.generatedContent?.toString() || null,
+          ownerType: savedContent.ownerType,
+          generatedContent:
+            savedContent.generatedContent?.toString() ||
+            null,
           createdAt: savedContent.createdAt,
         },
       },
@@ -194,36 +253,60 @@ export async function POST(request) {
   }
 }
 
-/*
-  GET /api/saved
-  Logged-in user ka saved content return karega
-*/
 export async function GET(request) {
   try {
     await connectDB();
 
-    const auth = await getAuthenticatedUser();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
 
-    if (auth.error) {
+    if (!token) {
       return NextResponse.json(
         {
           success: false,
-          message: auth.error,
+          message: "Unauthorized. Please login first.",
         },
-        { status: auth.status }
+        { status: 401 }
+      );
+    }
+
+    let decoded;
+
+    try {
+      decoded = verifyToken(token);
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid or expired token.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "User not found.",
+        },
+        { status: 404 }
       );
     }
 
     const { searchParams } = new URL(request.url);
 
-    const type = searchParams.get("type")?.trim().toLowerCase();
-    const search = searchParams.get("search")?.trim();
+    const type = searchParams.get("type") || "all";
+    const search = searchParams.get("search")?.trim() || "";
 
     const query = {
-      user: auth.user._id,
+      user: user._id,
+      ownerType: user.role,
     };
 
-    if (type && type !== "all") {
+    if (type !== "all") {
       query.type = type;
     }
 
@@ -245,28 +328,33 @@ export async function GET(request) {
     }
 
     const savedContents = await SavedContent.find(query)
-      .sort({ createdAt: -1 })
+      .sort({
+        createdAt: -1,
+      })
       .lean();
+
+    const formattedContents = savedContents.map((item) => ({
+      id: item._id.toString(),
+      title: item.title,
+      type: item.type,
+      content: item.content,
+      ownerType: item.ownerType,
+      generatedContent:
+        item.generatedContent?.toString() || null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
 
     return NextResponse.json(
       {
         success: true,
-        count: savedContents.length,
-        data: savedContents.map((item) => ({
-          id: item._id.toString(),
-          title: item.title,
-          type: item.type,
-          content: item.content,
-          generatedContentId:
-            item.generatedContent?.toString() || null,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
-        })),
+        message: "Saved content fetched successfully.",
+        data: formattedContents,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Get saved contents API error:", error);
+    console.error("Get saved content API error:", error);
 
     return NextResponse.json(
       {
