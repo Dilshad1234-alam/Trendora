@@ -1,43 +1,82 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import Link from "next/link";
-import {
-  ArrowRight,
-  BarChart3,
-  Bookmark,
-  Building2,
-  FileText,
-  Lightbulb,
+import { useRouter } from "next/navigation";
+import { ArrowRight, BarChart3, Bookmark, Building2, Check, CheckCircle2, Clock3, FileText, Lightbulb, LoaderCircle, LogOut,
   MapPin,
   MessageSquareText,
+  RefreshCw,
   Search,
   Sparkles,
   Star,
+  Target,
+  Timer,
   TrendingUp,
+  UserRound,
 } from "lucide-react";
+
+import { getCurrentUser, logoutUser } from "@/services/auth.api";
+import { getSavedContents } from "@/services/saved.api";
+import { getBusinessProfile } from "@/services/business-profile.api";
+import { getBusinessDailyPlan, regenerateBusinessDailyPlan, toggleBusinessPlanStep, updateBusinessPlanStatus } from "@/services/business-daily-plan.api";
+
 
 const quickTools = [
   {
     title: "Post Generator",
-    description: "Create social media posts for your local business.",
+    description:
+      "Create promotional and educational social media posts.",
     icon: FileText,
     href: "/business/post-generator",
   },
   {
-    title: "Local SEO",
-    description: "Find local keywords for better Google visibility.",
+    title: "Caption Generator",
+    description:
+      "Create business captions, offers and calls to action.",
+    icon: FileText,
+    href: "/business/caption-generator",
+  },
+  {
+    title: "Hashtag Generator",
+    description:
+      "Generate local, niche and service-related hashtags.",
     icon: Search,
-    href: "/business/local-seo",
+    href: "/business/hashtag-generator",
+  },
+  {
+    title: "Ad Copy",
+    description:
+      "Create ad headlines, primary text and CTAs.",
+    icon: TrendingUp,
+    href: "/business/ad-copy-generator",
+  },
+  {
+    title: "Local SEO",
+    description:
+      "Generate local keywords and Google Business content.",
+    icon: MapPin,
+    href: "/business/local-seo-generator",
   },
   {
     title: "Review Reply",
-    description: "Generate professional replies for customer reviews.",
+    description:
+      "Generate professional replies for customer reviews.",
+    icon: Star,
+    href: "/business/review-reply-generator",
+  },
+  {
+    title: "WhatsApp Reply",
+    description:
+      "Create short and professional customer replies.",
     icon: MessageSquareText,
-    href: "/business/review-reply",
+    href: "/business/whatsapp-reply-generator",
   },
   {
     title: "Saved Content",
-    description: "View your saved posts, keywords and replies.",
+    description:
+      "Open your saved posts, ads, SEO content and replies.",
     icon: Bookmark,
     href: "/business/saved",
   },
@@ -59,6 +98,315 @@ const localKeywords = [
 ];
 
 export default function BusinessDashboardPage() {
+
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+  const [businessProfile, setBusinessProfile] = useState(null);
+  const [dailyPlan, setDailyPlan] = useState(null);
+  const [savedContents, setSavedContents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dailyPlanLoading, setDailyPlanLoading] = useState(true);
+  const [updatingStepId, setUpdatingStepId] = useState("");
+  const [updatingPlan, setUpdatingPlan] = useState(false);
+  const [regeneratingPlan, setRegeneratingPlan] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [message, setMessage] = useState("");
+
+  
+  const loadDashboard = useCallback(async () => {
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const authResponse =
+        await getCurrentUser();
+
+      const currentUser =
+        authResponse.user ||
+        authResponse.data?.user;
+
+      if (!currentUser) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!currentUser.role) {
+        router.replace(
+          "/onboarding/select-role"
+        );
+        return;
+      }
+
+      if (currentUser.role !== "business") {
+        if (currentUser.role === "creator") {
+          router.replace(
+            "/creator/dashboard"
+          );
+          return;
+        }
+
+        if (currentUser.role === "admin") {
+          router.replace(
+            "/admin/dashboard"
+          );
+          return;
+        }
+
+        router.replace("/");
+        return;
+      }
+
+      if (!currentUser.onboardingCompleted) {
+        router.replace(
+          "/onboarding/business"
+        );
+        return;
+      }
+
+      if (
+        !currentUser.planSelected ||
+        !currentUser.plan
+      ) {
+        router.replace(
+          "/onboarding/select-plan"
+        );
+        return;
+      }
+
+      setUser(currentUser);
+
+      const [
+        profileResult,
+        savedResult,
+        dailyPlanResult,
+      ] = await Promise.allSettled([
+        getBusinessProfile(),
+
+        getSavedContents({
+          type: "all",
+          search: "",
+        }),
+
+        getBusinessDailyPlan(),
+      ]);
+
+      if (
+        profileResult.status === "fulfilled"
+      ) {
+        setBusinessProfile(
+          profileResult.value.data || null
+        );
+      } else {
+        console.error(
+          "Business profile fetch error:",
+          profileResult.reason
+        );
+
+        setBusinessProfile(null);
+      }
+
+      if (
+        savedResult.status === "fulfilled"
+      ) {
+        setSavedContents(
+          savedResult.value.data || []
+        );
+      } else {
+        console.error(
+          "Business saved content error:",
+          savedResult.reason
+        );
+
+        setSavedContents([]);
+      }
+
+      if (
+        dailyPlanResult.status === "fulfilled"
+      ) {
+        setDailyPlan(
+          dailyPlanResult.value.data || null
+        );
+      } else {
+        console.error(
+          "Business daily-plan error:",
+          dailyPlanResult.reason
+        );
+
+        setDailyPlan(null);
+      }
+    } catch (error) {
+      console.error(
+        "Business dashboard loading error:",
+        error
+      );
+
+      router.replace("/login");
+    } finally {
+      setDailyPlanLoading(false);
+      setLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+
+  const stats = useMemo(() => {
+    const countType = (type) =>
+      savedContents.filter(
+        (item) => item.type === type
+      ).length;
+
+    return {
+      posts: countType("business-post"),
+      captions: countType(
+        "business-caption"
+      ),
+      hashtags: countType(
+        "business-hashtag"
+      ),
+      thumbnails: countType(
+        "business-thumbnail-title"
+      ),
+      videoDescriptions: countType(
+        "business-video-description"
+      ),
+      adCopies: countType("ad-copy"),
+      productDescriptions: countType(
+        "product-description"
+      ),
+      localSeo: countType("local-seo"),
+      reviewReplies: countType(
+        "review-reply"
+      ),
+      whatsappReplies: countType(
+        "whatsapp-reply"
+      ),
+      totalSaved: savedContents.length,
+    };
+  }, [savedContents]);
+
+  const recentSavedContents = useMemo(
+    () => savedContents.slice(0, 5),
+    [savedContents]
+  );
+
+  const allStepsCompleted =
+    dailyPlan?.actionSteps?.length > 0 &&
+    dailyPlan.actionSteps.every(
+      (step) => step.completed
+    );
+
+  const handleToggleStep = async (
+    stepId
+  ) => {
+    if (!stepId) return;
+
+    try {
+      setUpdatingStepId(stepId);
+      setMessage("");
+
+      const response =
+        await toggleBusinessPlanStep(
+          stepId
+        );
+
+      setDailyPlan(response.data);
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to update business step."
+      );
+    } finally {
+      setUpdatingStepId("");
+    }
+  };
+
+  const handlePlanStatus = async () => {
+    if (!dailyPlan) return;
+
+    try {
+      setUpdatingPlan(true);
+      setMessage("");
+
+      const response =
+        await updateBusinessPlanStatus(
+          !dailyPlan.completed
+        );
+
+      setDailyPlan(response.data);
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to update business plan."
+      );
+    } finally {
+      setUpdatingPlan(false);
+    }
+  };
+
+  const handleRegeneratePlan = async () => {
+    const confirmed = window.confirm(
+      "Generate a new business plan for today?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setRegeneratingPlan(true);
+      setMessage("");
+
+      const response =
+        await regenerateBusinessDailyPlan();
+
+      setDailyPlan(response.data);
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to regenerate business plan."
+      );
+    } finally {
+      setRegeneratingPlan(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      setMessage("");
+
+      await logoutUser();
+
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error.message || "Logout failed."
+      );
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
+        <div className="flex items-center gap-3 text-violet-300">
+          <LoaderCircle
+            size={24}
+            className="animate-spin"
+          />
+
+          <span>
+            Loading business dashboard...
+          </span>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
       {/* Background Glows */}
@@ -77,94 +425,380 @@ export default function BusinessDashboardPage() {
             </p>
 
             <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-              Grow your <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">local business</span>
+              Welcome,{" "}
+              <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
+                {businessProfile?.businessName ||
+                  user?.fullname ||
+                  "Business"}
+              </span>
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-              Create posts, improve local SEO, reply to reviews and follow your
-              weekly growth plan.
+              {businessProfile?.businessType ||
+                "Business"}
+              {" • "}
+              {businessProfile?.city || "City"}
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs capitalize text-zinc-300">
+                {user?.plan || "free"} plan
+              </span>
+
+              <span className="rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs text-violet-300">
+                Goal:{" "}
+                {businessProfile?.goal ||
+                  "Grow business"}
+              </span>
+
+              <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
+                {businessProfile?.onlinePresence ||
+                  "No online platform"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/business/post-generator"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 font-semibold text-white"
+            >
+              Create a post
+              <ArrowRight size={18} />
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 font-semibold text-red-300 disabled:opacity-50"
+            >
+              {loggingOut ? (
+                <LoaderCircle
+                  size={18}
+                  className="animate-spin"
+                />
+              ) : (
+                <LogOut size={18} />
+              )}
+
+              Logout
+            </button>
+          </div>
+        </header>
+
+        {message && (
+          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+            {message}
+          </div>
+        )}
+
+        {/* Growth Action Card */}
+        <section className="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-violet-900/60 via-indigo-950/40 to-cyan-950/20 p-6 sm:p-8">
+  {dailyPlanLoading ? (
+    <div className="flex min-h-56 items-center justify-center">
+      <LoaderCircle
+        size={24}
+        className="animate-spin text-violet-300"
+      />
+    </div>
+  ) : dailyPlan ? (
+    <div>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-500/20">
+            <Sparkles
+              size={24}
+              className="text-violet-300"
+            />
+          </div>
+
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+            Today&apos;s Business Plan
+          </p>
+
+          <h2 className="mt-2 max-w-3xl text-2xl font-bold text-white sm:text-3xl">
+            {dailyPlan.topic}
+          </h2>
+
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300">
+            {dailyPlan.businessGoal}
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
+              {dailyPlan.contentType}
+            </span>
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
+              {dailyPlan.platform}
+            </span>
+
+            {dailyPlan.postingTime && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
+                <Clock3 size={13} />
+                {dailyPlan.postingTime}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleRegeneratePlan}
+            disabled={regeneratingPlan}
+            className="inline-flex items-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300 disabled:opacity-50"
+          >
+            {regeneratingPlan ? (
+              <LoaderCircle
+                size={17}
+                className="animate-spin"
+              />
+            ) : (
+              <RefreshCw size={17} />
+            )}
+
+            {regeneratingPlan
+              ? "Regenerating..."
+              : "Regenerate"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePlanStatus}
+            disabled={
+              updatingPlan ||
+              (!dailyPlan.completed &&
+                !allStepsCompleted)
+            }
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {updatingPlan ? (
+              <>
+                <LoaderCircle
+                  size={17}
+                  className="animate-spin"
+                />
+                Updating...
+              </>
+            ) : dailyPlan.completed ? (
+              <>
+                <CheckCircle2 size={17} />
+                Completed
+              </>
+            ) : allStepsCompleted ? (
+              <>
+                <CheckCircle2 size={17} />
+                Mark complete
+              </>
+            ) : (
+              <>
+                <CheckCircle2 size={17} />
+                Complete all steps first
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <BusinessInfoCard
+          icon={Target}
+          label="Target customer"
+          value={dailyPlan.targetCustomer}
+        />
+
+        <BusinessInfoCard
+          icon={TrendingUp}
+          label="Offer idea"
+          value={
+            dailyPlan.offerIdea ||
+            "No offer required"
+          }
+        />
+
+        <BusinessInfoCard
+          icon={Timer}
+          label="Estimated time"
+          value={dailyPlan.estimatedTime}
+        />
+
+        <BusinessInfoCard
+          icon={BarChart3}
+          label="Difficulty"
+          value={dailyPlan.difficulty}
+        />
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+            CTA
+          </p>
+
+          <p className="mt-2 text-sm leading-7 text-zinc-300">
+            {dailyPlan.cta}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+            AI Tip
+          </p>
+
+          <p className="mt-2 text-sm leading-7 text-amber-100/80">
+            {dailyPlan.aiTip}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+              Today&apos;s Actions
+            </p>
+
+            <p className="mt-1 text-sm text-zinc-400">
+              {dailyPlan.completedSteps || 0} of{" "}
+              {dailyPlan.totalSteps || 0} completed
             </p>
           </div>
 
-          <Link
-            href="/business/post-generator"
-            className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 font-semibold text-white transition hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-400 active:scale-[0.98] shadow-[0_0_15px_rgba(139,92,246,0.35)] hover:shadow-[0_0_20px_rgba(139,92,246,0.55)] transition-all duration-300"
-          >
-            Create a post
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </header>
+          <p className="text-lg font-bold text-violet-300">
+            {dailyPlan.stepsProgress || 0}%
+          </p>
+        </div>
 
-        {/* Growth Action Card */}
-        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-violet-900/60 via-indigo-950/40 to-cyan-950/20 border border-white/10 p-6 text-white backdrop-blur-2xl shadow-xl shadow-violet-950/20 sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/20 border border-violet-500/30">
-                <Sparkles size={24} className="text-violet-300" />
-              </div>
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 transition-all"
+            style={{
+              width: `${
+                dailyPlan.stepsProgress || 0
+              }%`,
+            }}
+          />
+        </div>
 
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
-                Today&apos;s Growth Action
-              </p>
+        <div className="mt-5 space-y-3">
+          {dailyPlan.actionSteps?.map(
+            (step, index) => (
+              <button
+                key={
+                  step.id ||
+                  `${step.text}-${index}`
+                }
+                type="button"
+                onClick={() =>
+                  handleToggleStep(step.id)
+                }
+                disabled={
+                  updatingStepId === step.id ||
+                  !step.id
+                }
+                className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left ${
+                  step.completed
+                    ? "border-emerald-500/20 bg-emerald-500/10"
+                    : "border-white/5 bg-[#120f2e]/35"
+                }`}
+              >
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
+                    step.completed
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : "border-white/15 text-zinc-500"
+                  }`}
+                >
+                  {updatingStepId ===
+                  step.id ? (
+                    <LoaderCircle
+                      size={14}
+                      className="animate-spin"
+                    />
+                  ) : step.completed ? (
+                    <Check size={15} />
+                  ) : (
+                    index + 1
+                  )}
+                </span>
 
-              <h2 className="mt-2 max-w-2xl text-2xl font-bold sm:text-3xl text-white">
-                Publish a customer-focused post with a strong local CTA.
-              </h2>
+                <span
+                  className={`text-sm leading-6 ${
+                    step.completed
+                      ? "text-emerald-300 line-through"
+                      : "text-zinc-300"
+                  }`}
+                >
+                  {step.text}
+                </span>
+              </button>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div className="flex min-h-52 flex-col items-center justify-center text-center">
+      <Lightbulb
+        size={30}
+        className="text-violet-400"
+      />
 
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-300">
-                Mention your city, explain one clear benefit and ask customers
-                to call, message or visit your business.
-              </p>
-            </div>
+      <p className="mt-3 text-zinc-300">
+        Today&apos;s business plan could not be loaded.
+      </p>
 
-            <Link
-              href="/business/post-generator"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 font-semibold text-white transition hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-400 shadow-[0_0_15px_rgba(139,92,246,0.3)]"
-            >
-              Generate post
-              <ArrowRight size={18} />
-            </Link>
-          </div>
-        </section>
+      <button
+        type="button"
+        onClick={loadDashboard}
+        className="mt-4 rounded-xl bg-white px-5 py-3 font-semibold text-violet-700"
+      >
+        Try again
+      </button>
+    </div>
+  )}
+</section>
 
         {/* Stats Grid */}
-        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5 shadow-sm hover:border-white/10 transition-colors">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
-              <TrendingUp size={21} />
-            </div>
+        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+  <StatCard
+    title="Business posts"
+    value={stats.posts}
+    icon={FileText}
+  />
 
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Growth suggestions</p>
-            <p className="mt-1.5 text-2xl font-bold text-white">8</p>
-          </div>
+  <StatCard
+    title="Ad copies"
+    value={stats.adCopies}
+    icon={TrendingUp}
+  />
 
-          <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5 shadow-sm hover:border-white/10 transition-colors">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <FileText size={21} />
-            </div>
+  <StatCard
+    title="Local SEO"
+    value={stats.localSeo}
+    icon={Search}
+  />
 
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Generated posts</p>
-            <p className="mt-1.5 text-2xl font-bold text-white">0</p>
-          </div>
+  <StatCard
+    title="Review replies"
+    value={stats.reviewReplies}
+    icon={Star}
+  />
 
-          <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5 shadow-sm hover:border-white/10 transition-colors">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Star size={21} />
-            </div>
+  <StatCard
+    title="WhatsApp replies"
+    value={stats.whatsappReplies}
+    icon={MessageSquareText}
+  />
 
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Review replies</p>
-            <p className="mt-1.5 text-2xl font-bold text-white">0</p>
-          </div>
-
-          <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5 shadow-sm hover:border-white/10 transition-colors">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <BarChart3 size={21} />
-            </div>
-
-            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Visibility score</p>
-            <p className="mt-1.5 text-2xl font-bold text-white">42%</p>
-          </div>
-        </section>
+  <StatCard
+    title="Total saved"
+    value={stats.totalSaved}
+    icon={Bookmark}
+  />
+</section>
 
         {/* Quick Tools */}
         <section className="mb-8">
@@ -207,6 +841,62 @@ export default function BusinessDashboardPage() {
             })}
           </div>
         </section>
+
+        <section className="mb-8 rounded-3xl border border-white/10 bg-[#0a0520]/40 p-6">
+  <div className="flex items-center justify-between">
+    <div>
+      <h2 className="text-xl font-bold text-white">
+        Recent saved business content
+      </h2>
+
+      <p className="mt-1 text-sm text-zinc-400">
+        Your latest saved posts, ads, SEO content and replies.
+      </p>
+    </div>
+
+    <Link
+      href="/business/saved"
+      className="text-sm font-semibold text-violet-400"
+    >
+      View all
+    </Link>
+  </div>
+
+  <div className="mt-5 space-y-3">
+    {recentSavedContents.length > 0 ? (
+      recentSavedContents.map((item) => (
+        <div
+          key={item.id}
+          className="rounded-xl border border-white/5 bg-[#120f2e]/35 p-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-semibold text-white">
+              {item.title}
+            </p>
+
+            <span className="rounded-full bg-violet-500/10 px-3 py-1 text-xs capitalize text-violet-300">
+              {item.type.replaceAll(
+                "-",
+                " "
+              )}
+            </span>
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-zinc-400">
+            {item.content?.slice(0, 150)}
+            {item.content?.length > 150
+              ? "..."
+              : ""}
+          </p>
+        </div>
+      ))
+    ) : (
+      <p className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-zinc-500">
+        No saved business content yet.
+      </p>
+    )}
+  </div>
+</section>
 
         {/* Local Keywords & Weekly Plan */}
         <section className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
@@ -316,4 +1006,52 @@ export default function BusinessDashboardPage() {
       </div>
     </main>
   );
+
+
+  function BusinessInfoCard({
+  icon: Icon,
+  label,
+  value,
+}) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
+      <Icon
+        size={19}
+        className="text-violet-400"
+      />
+
+      <p className="mt-3 text-xs uppercase tracking-wider text-zinc-500">
+        {label}
+      </p>
+
+      <p className="mt-1 text-sm font-semibold capitalize text-white">
+        {value || "Not available"}
+      </p>
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+}) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-400">
+        <Icon size={20} />
+      </div>
+
+      <p className="text-xs uppercase tracking-wider text-zinc-400">
+        {title}
+      </p>
+
+      <p className="mt-1 text-2xl font-bold text-white">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+
 }

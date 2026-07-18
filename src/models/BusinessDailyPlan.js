@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const actionStepSchema = new mongoose.Schema(
+const businessActionStepSchema = new mongoose.Schema(
   {
     text: {
       type: String,
@@ -18,7 +18,7 @@ const actionStepSchema = new mongoose.Schema(
   }
 );
 
-const dailyPlanSchema = new mongoose.Schema(
+const businessDailyPlanSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,26 +32,44 @@ const dailyPlanSchema = new mongoose.Schema(
       required: true,
     },
 
+    businessGoal: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     topic: {
       type: String,
       required: true,
       trim: true,
     },
 
-    format: {
+    platform: {
       type: String,
       required: true,
       trim: true,
     },
 
-    hookIdea: {
+    contentType: {
       type: String,
       required: true,
+      trim: true,
+    },
+
+    offerIdea: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    targetCustomer: {
+      type: String,
+      default: "",
       trim: true,
     },
 
     actionSteps: {
-      type: [actionStepSchema],
+      type: [businessActionStepSchema],
       default: [],
     },
 
@@ -85,12 +103,6 @@ const dailyPlanSchema = new mongoose.Schema(
       default: "easy",
     },
 
-    contentGoal: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
     source: {
       type: String,
       enum: ["ai", "fallback"],
@@ -113,7 +125,7 @@ const dailyPlanSchema = new mongoose.Schema(
   }
 );
 
-dailyPlanSchema.index(
+businessDailyPlanSchema.index(
   {
     user: 1,
     dateKey: 1,
@@ -123,8 +135,11 @@ dailyPlanSchema.index(
   }
 );
 
-const DailyPlan =
-  mongoose.models.DailyPlan ||
-  mongoose.model("DailyPlan", dailyPlanSchema);
+const BusinessDailyPlan =
+  mongoose.models.BusinessDailyPlan ||
+  mongoose.model(
+    "BusinessDailyPlan",
+    businessDailyPlanSchema
+  );
 
-export default DailyPlan;
+export default BusinessDailyPlan;
