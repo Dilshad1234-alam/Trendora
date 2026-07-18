@@ -293,11 +293,9 @@ export default function BusinessDashboardPage() {
     [savedContents]
   );
 
-  const allStepsCompleted =
-    dailyPlan?.actionSteps?.length > 0 &&
+  const allStepsCompleted = dailyPlan?.actionSteps?.length > 0 &&
     dailyPlan.actionSteps.every(
-      (step) => step.completed
-    );
+      (step) => step.completed );
 
   const handleToggleStep = async (
     stepId
