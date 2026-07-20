@@ -136,38 +136,33 @@ export default function BusinessPostGeneratorPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[35%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      {/* Background Dots Grid Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans">
+      {/* Subtle top gradient */}
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/business/dashboard"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 transition-colors"
         >
           <ArrowLeft size={17} />
           Back to dashboard
         </Link>
 
         <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-            <FileText size={22} className="animate-pulse" />
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+            <FileText size={22} />
           </div>
 
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
             AI Business Post Generator
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            Create a Business <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">Post</span>
+          <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
+            Create a Business <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">Post</span>
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
             Generate a ready-to-publish local-business post using your
             business profile.
           </p>
@@ -175,10 +170,10 @@ export default function BusinessPostGeneratorPage() {
 
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           {/* Form Panel */}
-          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 sm:p-8">
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Post topic
                 </label>
 
@@ -188,12 +183,12 @@ export default function BusinessPostGeneratorPage() {
                   value={formData.topic}
                   onChange={handleChange}
                   placeholder="Example: Admission open for digital marketing course"
-                  className="w-full resize-none rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
+                  className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Platform
                 </label>
 
@@ -201,7 +196,7 @@ export default function BusinessPostGeneratorPage() {
                   name="platform"
                   value={formData.platform}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="instagram">Instagram</option>
                   <option value="facebook">Facebook</option>
@@ -213,7 +208,7 @@ export default function BusinessPostGeneratorPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Post type
                 </label>
 
@@ -221,7 +216,7 @@ export default function BusinessPostGeneratorPage() {
                   name="postType"
                   value={formData.postType}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="promotional">Promotional</option>
                   <option value="educational">Educational</option>
@@ -234,7 +229,7 @@ export default function BusinessPostGeneratorPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Tone
                 </label>
 
@@ -242,7 +237,7 @@ export default function BusinessPostGeneratorPage() {
                   name="tone"
                   value={formData.tone}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="professional">Professional</option>
                   <option value="friendly">Friendly</option>
@@ -253,7 +248,7 @@ export default function BusinessPostGeneratorPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Offer
                 </label>
 
@@ -262,12 +257,12 @@ export default function BusinessPostGeneratorPage() {
                   value={formData.offer}
                   onChange={handleChange}
                   placeholder="Example: 20% off until Sunday"
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Custom CTA
                 </label>
 
@@ -276,25 +271,25 @@ export default function BusinessPostGeneratorPage() {
                   value={formData.cta}
                   onChange={handleChange}
                   placeholder="Example: Call us today"
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 />
               </div>
 
               {message.text && (
                 <div
-                  className={`rounded-xl border p-4 text-sm flex items-start gap-3 backdrop-blur-md transition-all duration-300 ${
+                  className={`rounded-xl border p-4 text-sm flex items-start gap-3 transition-all duration-300 ${
                     message.type === "success"
-                      ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-                      : "border-red-500/25 bg-red-500/10 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-red-200 bg-red-50 text-red-700"
                   }`}
                 >
                   <div className={`p-1 rounded-md shrink-0 ${
-                    message.type === "success" ? "bg-emerald-500/20" : "bg-red-500/20"
+                    message.type === "success" ? "bg-emerald-100" : "bg-red-100"
                   }`}>
                     {message.type === "success" ? (
-                      <Sparkles size={16} className="text-emerald-400" />
+                      <Sparkles size={16} className="text-emerald-600" />
                     ) : (
-                      <span className="text-red-400 font-bold block leading-none w-4 h-4 text-center">!</span>
+                      <span className="text-red-600 font-bold block leading-none w-4 h-4 text-center">!</span>
                     )}
                   </div>
                   <div>{message.text}</div>
@@ -304,7 +299,7 @@ export default function BusinessPostGeneratorPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-4 font-semibold text-white transition hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_25px_rgba(139,92,246,0.55)] transition-all duration-300 overflow-hidden"
+                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-4 font-semibold text-white transition hover:bg-violet-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-violet-200 hover:shadow-xl hover:shadow-violet-200 transition-all duration-300 overflow-hidden"
               >
                 {loading ? (
                   <>
@@ -322,14 +317,14 @@ export default function BusinessPostGeneratorPage() {
           </section>
 
           {/* Result Panel */}
-          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 sm:p-8 flex flex-col">
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 flex flex-col">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-zinc-900">
                   Generated Post
                 </h2>
 
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-zinc-500">
                   Your AI-generated post will appear here.
                 </p>
               </div>
@@ -340,7 +335,7 @@ export default function BusinessPostGeneratorPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     <Bookmark size={16} />
                     {saving ? "Saving..." : saved ? "Saved" : "Save"}
@@ -349,7 +344,7 @@ export default function BusinessPostGeneratorPage() {
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-semibold text-violet-300 hover:bg-violet-500/20 hover:text-white transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors cursor-pointer"
                   >
                     <Copy size={16} />
                     {copied ? "Copied" : "Copy"}
@@ -360,23 +355,23 @@ export default function BusinessPostGeneratorPage() {
 
             <div className="flex-1 flex flex-col justify-stretch">
               {loading ? (
-                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl bg-white/[0.02] border border-white/5 text-zinc-400">
+                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl bg-zinc-50 border border-zinc-200 text-zinc-500">
                   <LoaderCircle
                     size={30}
-                    className="mb-4 animate-spin text-violet-400"
+                    className="mb-4 animate-spin text-violet-600"
                   />
                   <p className="font-medium">
                     Trendora is writing your business post...
                   </p>
                 </div>
               ) : result ? (
-                <div className="flex-1 min-h-96 whitespace-pre-wrap rounded-2xl border border-white/5 bg-[#120f2e]/35 p-5 text-sm leading-relaxed text-zinc-300 overflow-y-auto">
+                <div className="flex-1 min-h-96 whitespace-pre-wrap rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm leading-relaxed text-zinc-700 overflow-y-auto">
                   {result}
                 </div>
               ) : (
-                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] px-6 text-center">
-                  <RefreshCw size={28} className="mb-4 text-zinc-600 animate-pulse" />
-                  <p className="font-bold text-zinc-300 text-sm">
+                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 px-6 text-center">
+                  <RefreshCw size={28} className="mb-4 text-zinc-400 animate-pulse" />
+                  <p className="font-bold text-zinc-700 text-sm">
                     No post generated yet
                   </p>
                   <p className="mt-2 text-xs text-zinc-500 text-center max-w-xs leading-relaxed">

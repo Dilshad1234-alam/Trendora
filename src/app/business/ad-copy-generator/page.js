@@ -303,8 +303,8 @@ ${adCopy.cta}`;
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
-        <div className="flex items-center gap-3 text-violet-300">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <div className="flex items-center gap-3 text-violet-700">
           <LoaderCircle
             size={25}
             className="animate-spin"
@@ -319,16 +319,14 @@ ${adCopy.cta}`;
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030014] px-4 py-6 text-white sm:px-6 md:px-8">
-      <div className="pointer-events-none absolute left-[-12%] top-[-12%] h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[140px]" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans">
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="pointer-events-none absolute bottom-[-12%] right-[-12%] h-[500px] w-[500px] rounded-full bg-cyan-600/10 blur-[140px]" />
-
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8">
           <Link
             href="/business/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-300 transition hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
           >
             <ArrowLeft size={17} />
             Back to dashboard
@@ -336,33 +334,33 @@ ${adCopy.cta}`;
 
           <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                 Business AI Tool
               </p>
 
-              <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
                 Ad Copy Generator
               </h1>
 
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
                 Generate persuasive advertising copy for
                 Facebook, Instagram, Google and LinkedIn
                 campaigns.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3">
               <Megaphone
                 size={22}
-                className="text-violet-300"
+                className="text-violet-700"
               />
 
               <div>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-500">
                   AI-powered
                 </p>
 
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-zinc-900">
                   Marketing copy
                 </p>
               </div>
@@ -371,13 +369,13 @@ ${adCopy.cta}`;
         </header>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {error}
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
             {successMessage}
           </div>
         )}
@@ -385,15 +383,15 @@ ${adCopy.cta}`;
         <div className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
           <form
             onSubmit={handleGenerate}
-            className="rounded-3xl border border-white/10 bg-[#0a0520]/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6"
+            className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
           >
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                 <Target size={21} />
               </div>
 
               <div>
-                <h2 className="font-bold text-white">
+                <h2 className="font-bold text-zinc-900">
                   Campaign details
                 </h2>
 
@@ -412,7 +410,7 @@ ${adCopy.cta}`;
             />
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Product or service
               </label>
 
@@ -422,12 +420,12 @@ ${adCopy.cta}`;
                 onChange={handleChange}
                 rows={4}
                 placeholder="Example: Website development service for local businesses"
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-7 text-white outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-7 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Target audience
               </label>
 
@@ -437,7 +435,7 @@ ${adCopy.cta}`;
                 value={formData.audience}
                 onChange={handleChange}
                 placeholder="Example: Small business owners in Patna"
-                className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
             </div>
 
@@ -470,9 +468,9 @@ ${adCopy.cta}`;
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Offer
-                <span className="ml-2 text-xs font-normal text-zinc-600">
+                <span className="ml-2 text-xs font-normal text-zinc-400">
                   Optional
                 </span>
               </label>
@@ -483,10 +481,10 @@ ${adCopy.cta}`;
                 value={formData.offer}
                 onChange={handleChange}
                 placeholder="Example: Free consultation"
-                className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
 
-              <p className="mt-2 text-xs leading-5 text-zinc-600">
+              <p className="mt-2 text-xs leading-5 text-zinc-400">
                 Leave this empty when your campaign does not
                 include a specific offer.
               </p>
@@ -495,7 +493,7 @@ ${adCopy.cta}`;
             <button
               type="submit"
               disabled={generating}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3.5 text-sm font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {generating ? (
                 <>
@@ -514,20 +512,20 @@ ${adCopy.cta}`;
             </button>
           </form>
 
-          <section className="flex min-h-[620px] flex-col rounded-3xl border border-white/10 bg-[#0a0520]/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6">
+          <section className="flex min-h-[620px] flex-col rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                   Generated Advertisement
                 </p>
 
-                <h2 className="mt-2 text-xl font-bold text-white">
+                <h2 className="mt-2 text-xl font-bold text-zinc-900">
                   Your ad copy
                 </h2>
               </div>
 
               {hasAdCopy && (
-                <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-400">
+                <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-500">
                   {totalCharacters} characters
                 </div>
               )}
@@ -566,7 +564,7 @@ ${adCopy.cta}`;
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300 transition hover:bg-violet-500/20"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
                   >
                     {copied ? (
                       <>
@@ -585,7 +583,7 @@ ${adCopy.cta}`;
                     type="button"
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {saving ? (
                       <>
@@ -612,7 +610,7 @@ ${adCopy.cta}`;
                     type="button"
                     onClick={handleGenerate}
                     disabled={generating}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {generating ? (
                       <LoaderCircle
@@ -629,11 +627,11 @@ ${adCopy.cta}`;
               </>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-100 text-violet-700">
                   <Megaphone size={34} />
                 </div>
 
-                <h2 className="mt-6 text-xl font-bold text-white">
+                <h2 className="mt-6 text-xl font-bold text-zinc-900">
                   Your advertisement will appear here
                 </h2>
 
@@ -667,7 +665,7 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-zinc-300">
+      <label className="mb-2 block text-sm font-semibold text-zinc-700">
         {label}
       </label>
 
@@ -675,7 +673,7 @@ function SelectField({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full rounded-xl border border-white/10 bg-[#120f2e] px-4 py-3 text-sm text-white outline-none focus:border-violet-500/50"
+        className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
       >
         {options.map((option) => (
           <option
@@ -698,23 +696,23 @@ function OutputCard({
 }) {
   return (
     <article
-      className={`rounded-2xl border border-white/10 bg-[#120f2e]/55 p-5 ${
+      className={`rounded-2xl border border-zinc-200 bg-zinc-50 p-5 ${
         large ? "min-h-[180px]" : ""
       }`}
     >
-      <div className="flex items-center gap-2 text-violet-300">
+      <div className="flex items-center gap-2 text-violet-700">
         {icon}
 
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em]">
           {label}
         </p>
       </div>
 
-      <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-zinc-300">
+      <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-zinc-700">
         {value || "Not generated"}
       </p>
 
-      <p className="mt-4 text-right text-xs text-zinc-600">
+      <p className="mt-4 text-right text-xs text-zinc-400">
         {(value || "").length} characters
       </p>
     </article>
@@ -723,7 +721,7 @@ function OutputCard({
 
 function EmptyPreview({ label }) {
   return (
-    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-4 text-xs text-zinc-600">
+    <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-3 py-4 text-xs text-zinc-400">
       {label}
     </div>
   );

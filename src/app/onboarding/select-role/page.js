@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Building2,
@@ -139,179 +141,202 @@ export default function SelectRolePage() {
 
   if (checkingUser) {
     return (
-      <main className="min-h-screen bg-[#030014] text-white flex items-center justify-center relative overflow-hidden font-sans">
-        {/* Background Glows */}
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
-        {/* Background Dots Grid Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-
-        <div className="relative z-10 flex items-center gap-3 text-violet-400">
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex items-center gap-3 text-violet-700">
           <LoaderCircle className="animate-spin" size={24} />
-          <span className="font-medium text-zinc-300">Checking your account...</span>
+          <span className="font-medium text-zinc-600">Checking your account...</span>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#030014] text-white flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[35%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      {/* Background Dots Grid Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+    <main className="min-h-screen bg-white text-zinc-900">
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/Trendora_Landing_Logo.png"
+              alt="Trendora Logo"
+              width={270}
+              height={104}
+              priority
+              className="h-14 w-auto object-contain sm:h-16"
+            />
+          </Link>
 
-      {/* Main Glassmorphic Container */}
-      <div className="relative w-full max-w-4xl p-6 sm:p-12 md:p-16 rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl shadow-2xl shadow-violet-950/20">
-        
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-            <Sparkles size={26} className="animate-pulse" />
+          <div className="flex items-center gap-2">
+            {user?.fullname && (
+              <span className="hidden text-sm text-zinc-500 sm:block">
+                Signed in as{" "}
+                <span className="font-semibold text-zinc-800">{user.fullname}</span>
+              </span>
+            )}
           </div>
+        </nav>
+      </header>
 
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
-            Welcome to Trendora
-          </p>
+      {/* Main Content */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-violet-50 via-white to-white">
+        <div className="absolute left-1/2 top-24 h-96 w-96 -translate-x-1/2 rounded-full bg-violet-300/25 blur-3xl" />
 
-          <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            How do you want to <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">grow</span>?
-          </h1>
-
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            Select the option that best describes you. Trendora will personalize
-            your dashboard, AI tools and growth suggestions.
-          </p>
-
-          {user?.fullname && (
-            <p className="mt-3 text-xs font-semibold text-violet-300/80 uppercase tracking-wider">
-              Signed in as <span className="text-white">{user.fullname}</span>
-            </p>
-          )}
-        </div>
-
-        {/* Message alerts */}
-        {message.text && (
-          <div
-            className={`mx-auto mb-8 max-w-2xl rounded-xl border p-4 text-sm flex items-start gap-3 backdrop-blur-md transition-all duration-300 ${
-              message.type === "success"
-                ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-                : "border-red-500/25 bg-red-500/10 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
-            }`}
-          >
-            <div className={`p-1 rounded-md shrink-0 ${
-              message.type === "success" ? "bg-emerald-500/20" : "bg-red-500/20"
-            }`}>
-              {message.type === "success" ? (
-                <Sparkles size={16} className="text-emerald-400" />
-              ) : (
-                <span className="text-red-400 font-bold block leading-none w-4 h-4 text-center">!</span>
-              )}
+        <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          {/* Header */}
+          <div className="mb-12 text-center">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+              <Sparkles size={26} />
             </div>
-            <div>{message.text}</div>
+
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
+              Welcome to Trendora
+            </p>
+
+            <h1 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight text-zinc-950 sm:text-5xl">
+              How do you want to{" "}
+              <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                grow
+              </span>
+              ?
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-zinc-600">
+              Select the option that best describes you. Trendora will personalize
+              your dashboard, AI tools and growth suggestions.
+            </p>
+
+            {user?.fullname && (
+              <p className="mt-3 text-sm text-zinc-500">
+                Signed in as{" "}
+                <span className="font-semibold text-zinc-800">{user.fullname}</span>
+              </p>
+            )}
           </div>
-        )}
 
-        {/* Role Cards */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {roleOptions.map((role) => {
-            const Icon = role.icon;
-            const isSelected = selectedRole === role.id;
-
-            return (
-              <button
-                key={role.id}
-                type="button"
-                onClick={() => {
-                  setSelectedRole(role.id);
-                  setMessage({
-                    type: "",
-                    text: "",
-                  });
-                }}
-                className={`relative rounded-3xl border text-left transition-all duration-300 p-6 sm:p-8 cursor-pointer ${
-                  isSelected
-                    ? "border-violet-500 bg-[#160d3d]/60 shadow-[0_0_30px_rgba(139,92,246,0.25)]"
-                    : "border-white/10 bg-[#120f2e]/45 hover:border-violet-500/30 hover:bg-white/5"
+          {/* Message alerts */}
+          {message.text && (
+            <div
+              className={`mx-auto mb-8 max-w-2xl rounded-xl border p-4 text-sm flex items-start gap-3 ${
+                message.type === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-red-200 bg-red-50 text-red-700"
+              }`}
+            >
+              <span
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                  message.type === "success"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-red-100 text-red-700"
                 }`}
               >
-                {/* Check icon */}
-                <div
-                  className={`absolute right-6 top-6 flex h-6 w-6 items-center justify-center rounded-full border transition-colors duration-300 ${
+                {message.type === "success" ? (
+                  <Check size={13} />
+                ) : (
+                  <span className="font-bold text-xs leading-none">!</span>
+                )}
+              </span>
+              <div>{message.text}</div>
+            </div>
+          )}
+
+          {/* Role Cards */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {roleOptions.map((role) => {
+              const Icon = role.icon;
+              const isSelected = selectedRole === role.id;
+
+              return (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole(role.id);
+                    setMessage({ type: "", text: "" });
+                  }}
+                  className={`relative rounded-3xl border text-left transition-all duration-200 p-6 sm:p-8 cursor-pointer ${
                     isSelected
-                      ? "border-violet-500 bg-violet-600 text-white"
-                      : "border-white/10 bg-black/20 text-transparent"
+                      ? "border-violet-400 bg-violet-50 shadow-lg shadow-violet-100"
+                      : "border-zinc-200 bg-white shadow-sm hover:border-violet-300 hover:shadow-md hover:-translate-y-0.5"
                   }`}
                 >
-                  <Check size={14} />
-                </div>
+                  {/* Check icon */}
+                  <div
+                    className={`absolute right-6 top-6 flex h-6 w-6 items-center justify-center rounded-full border transition-colors duration-200 ${
+                      isSelected
+                        ? "border-violet-600 bg-violet-700 text-white"
+                        : "border-zinc-300 bg-white"
+                    }`}
+                  >
+                    {isSelected && <Check size={14} />}
+                  </div>
 
-                {/* Icon box */}
-                <div
-                  className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-300 ${
-                    isSelected
-                      ? "bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]"
-                      : "bg-violet-500/10 text-violet-300"
-                  }`}
-                >
-                  <Icon size={24} />
-                </div>
+                  {/* Icon box */}
+                  <div
+                    className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-200 ${
+                      isSelected
+                        ? "bg-violet-700 text-white"
+                        : "bg-violet-100 text-violet-700"
+                    }`}
+                  >
+                    <Icon size={24} />
+                  </div>
 
-                <h2 className="pr-10 text-xl font-bold text-white">
-                  {role.title}
-                </h2>
+                  <h2 className="pr-10 text-xl font-bold text-zinc-900">
+                    {role.title}
+                  </h2>
 
-                <p className="mt-3 min-h-[3.5rem] text-sm leading-relaxed text-zinc-400">
-                  {role.description}
-                </p>
+                  <p className="mt-3 min-h-[3.5rem] text-sm leading-relaxed text-zinc-500">
+                    {role.description}
+                  </p>
 
-                <div className="mt-6 space-y-3">
-                  {role.features.map((feature) => (
-                    <div
-                      key={feature}
-                      className="flex items-center gap-3 text-xs text-zinc-300"
-                    >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <Check size={12} />
-                      </span>
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </button>
-            );
-          })}
+                  <div className="mt-6 space-y-3">
+                    {role.features.map((feature) => (
+                      <div
+                        key={feature}
+                        className="flex items-center gap-3 text-xs text-zinc-600"
+                      >
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                          <Check size={12} />
+                        </span>
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Action Button */}
+          <div className="mt-10 flex flex-col items-center">
+            <button
+              type="button"
+              onClick={handleContinue}
+              disabled={!selectedRole || submitting}
+              className="group inline-flex min-w-[240px] items-center justify-center gap-2 rounded-xl bg-violet-700 px-7 py-4 font-semibold text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 hover:bg-violet-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? (
+                <>
+                  <LoaderCircle size={18} className="animate-spin" />
+                  Saving role...
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight
+                    size={18}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
+                </>
+              )}
+            </button>
+
+            <p className="mt-4 text-center text-xs leading-relaxed text-zinc-500">
+              Role select hone ke baad aapka onboarding form open hoga.
+            </p>
+          </div>
         </div>
-
-        {/* Action Button & Note */}
-        <div className="mt-10 flex flex-col items-center">
-          <button
-            type="button"
-            onClick={handleContinue}
-            disabled={!selectedRole || submitting}
-            className="group relative flex min-w-[240px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-7 py-4 font-semibold text-white transition hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_25px_rgba(139,92,246,0.55)] transition-all duration-300 overflow-hidden"
-          >
-            {submitting ? (
-              <>
-                <LoaderCircle size={18} className="animate-spin" />
-                Saving role...
-              </>
-            ) : (
-              <>
-                Continue
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
-
-          <p className="mt-4 text-center text-xs leading-relaxed text-zinc-500">
-            Role select hone ke baad aapka onboarding form open hoga.
-          </p>
-        </div>
-      </div>
+      </section>
     </main>
   );
 }

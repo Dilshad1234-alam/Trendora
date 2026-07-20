@@ -390,14 +390,14 @@ export default function BusinessDashboardPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
-        <div className="flex items-center gap-3 text-violet-300">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <div className="flex items-center gap-3 text-violet-700">
           <LoaderCircle
             size={24}
             className="animate-spin"
           />
 
-          <span>
+          <span className="font-medium">
             Loading business dashboard...
           </span>
         </div>
@@ -406,32 +406,27 @@ export default function BusinessDashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[35%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      {/* Background Dots Grid Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans">
+      {/* Subtle top gradient like landing page */}
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
               Business Dashboard
             </p>
 
-            <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
               Welcome,{" "}
-              <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
                 {businessProfile?.businessName ||
                   user?.fullname ||
                   "Business"}
               </span>
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
               {businessProfile?.businessType ||
                 "Business"}
               {" • "}
@@ -439,17 +434,17 @@ export default function BusinessDashboardPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs capitalize text-zinc-300">
+              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium capitalize text-zinc-700">
                 {user?.plan || "free"} plan
               </span>
 
-              <span className="rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs text-violet-300">
+              <span className="rounded-full border border-violet-200 bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">
                 Goal:{" "}
                 {businessProfile?.goal ||
                   "Grow business"}
               </span>
 
-              <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
                 {businessProfile?.onlinePresence ||
                   "No online platform"}
               </span>
@@ -459,7 +454,7 @@ export default function BusinessDashboardPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/business/post-generator"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-5 py-3 font-semibold text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 hover:bg-violet-800"
             >
               Create a post
               <ArrowRight size={18} />
@@ -469,7 +464,7 @@ export default function BusinessDashboardPage() {
               type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 font-semibold text-red-300 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
             >
               {loggingOut ? (
                 <LoaderCircle
@@ -486,32 +481,32 @@ export default function BusinessDashboardPage() {
         </header>
 
         {message && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {message}
           </div>
         )}
 
         {/* Growth Action Card */}
-        <section className="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-violet-900/60 via-indigo-950/40 to-cyan-950/20 p-6 sm:p-8">
+        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-600 p-6 text-white shadow-2xl shadow-violet-200/50 sm:p-8">
   {dailyPlanLoading ? (
     <div className="flex min-h-56 items-center justify-center">
       <LoaderCircle
         size={24}
-        className="animate-spin text-violet-300"
+        className="animate-spin text-violet-200"
       />
     </div>
   ) : dailyPlan ? (
     <div>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-500/30 bg-violet-500/20">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
             <Sparkles
               size={24}
-              className="text-violet-300"
+              className="text-white"
             />
           </div>
 
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-200">
             Today&apos;s Business Plan
           </p>
 
@@ -519,21 +514,21 @@ export default function BusinessDashboardPage() {
             {dailyPlan.topic}
           </h2>
 
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300">
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-violet-100">
             {dailyPlan.businessGoal}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs text-white">
               {dailyPlan.contentType}
             </span>
 
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs text-white">
               {dailyPlan.platform}
             </span>
 
             {dailyPlan.postingTime && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs text-white">
                 <Clock3 size={13} />
                 {dailyPlan.postingTime}
               </span>
@@ -546,7 +541,7 @@ export default function BusinessDashboardPage() {
             type="button"
             onClick={handleRegeneratePlan}
             disabled={regeneratingPlan}
-            className="inline-flex items-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50 transition hover:bg-white/15"
           >
             {regeneratingPlan ? (
               <LoaderCircle
@@ -570,7 +565,7 @@ export default function BusinessDashboardPage() {
               (!dailyPlan.completed &&
                 !allStepsCompleted)
             }
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 transition hover:bg-violet-50"
           >
             {updatingPlan ? (
               <>
@@ -630,48 +625,48 @@ export default function BusinessDashboardPage() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+        <div className="rounded-2xl bg-white/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">
             CTA
           </p>
 
-          <p className="mt-2 text-sm leading-7 text-zinc-300">
+          <p className="mt-2 text-sm leading-7 text-violet-100">
             {dailyPlan.cta}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+        <div className="rounded-2xl bg-amber-400/15 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">
             AI Tip
           </p>
 
-          <p className="mt-2 text-sm leading-7 text-amber-100/80">
+          <p className="mt-2 text-sm leading-7 text-amber-50">
             {dailyPlan.aiTip}
           </p>
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
+      <div className="mt-5 rounded-2xl bg-white/10 p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">
               Today&apos;s Actions
             </p>
 
-            <p className="mt-1 text-sm text-zinc-400">
+            <p className="mt-1 text-sm text-violet-100">
               {dailyPlan.completedSteps || 0} of{" "}
               {dailyPlan.totalSteps || 0} completed
             </p>
           </div>
 
-          <p className="text-lg font-bold text-violet-300">
+          <p className="text-lg font-bold text-white">
             {dailyPlan.stepsProgress || 0}%
           </p>
         </div>
 
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 transition-all"
+            className="h-full rounded-full bg-white transition-all"
             style={{
               width: `${
                 dailyPlan.stepsProgress || 0
@@ -696,17 +691,17 @@ export default function BusinessDashboardPage() {
                   updatingStepId === step.id ||
                   !step.id
                 }
-                className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left ${
+                className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition ${
                   step.completed
-                    ? "border-emerald-500/20 bg-emerald-500/10"
-                    : "border-white/5 bg-[#120f2e]/35"
+                    ? "border-emerald-300/30 bg-emerald-400/15"
+                    : "border-white/15 bg-white/5"
                 }`}
               >
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
                     step.completed
-                      ? "border-emerald-500 bg-emerald-500 text-white"
-                      : "border-white/15 text-zinc-500"
+                      ? "border-emerald-300 bg-emerald-400 text-white"
+                      : "border-white/30 text-white/60"
                   }`}
                 >
                   {updatingStepId ===
@@ -725,8 +720,8 @@ export default function BusinessDashboardPage() {
                 <span
                   className={`text-sm leading-6 ${
                     step.completed
-                      ? "text-emerald-300 line-through"
-                      : "text-zinc-300"
+                      ? "text-emerald-200 line-through"
+                      : "text-white/90"
                   }`}
                 >
                   {step.text}
@@ -741,23 +736,23 @@ export default function BusinessDashboardPage() {
     <div className="flex min-h-52 flex-col items-center justify-center text-center">
       <Lightbulb
         size={30}
-        className="text-violet-400"
+        className="text-violet-200"
       />
 
-      <p className="mt-3 text-zinc-300">
+      <p className="mt-3 text-violet-100">
         Today&apos;s business plan could not be loaded.
       </p>
 
       <button
         type="button"
         onClick={loadDashboard}
-        className="mt-4 rounded-xl bg-white px-5 py-3 font-semibold text-violet-700"
+        className="mt-4 rounded-xl bg-white px-5 py-3 font-semibold text-violet-700 transition hover:bg-violet-50"
       >
         Try again
       </button>
     </div>
   )}
-</section>
+ </section>
 
         {/* Stats Grid */}
         <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -796,16 +791,16 @@ export default function BusinessDashboardPage() {
     value={stats.totalSaved}
     icon={Bookmark}
   />
-</section>
+ </section>
 
         {/* Quick Tools */}
         <section className="mb-8">
           <div className="mb-5">
-            <h2 className="text-2xl font-bold text-white font-sans">
+            <h2 className="text-2xl font-black tracking-tight text-zinc-950">
               Quick business tools
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-600">
               Use AI tools to grow your online visibility faster.
             </p>
           </div>
@@ -818,19 +813,19 @@ export default function BusinessDashboardPage() {
                 <Link
                   key={tool.title}
                   href={tool.href}
-                  className="group rounded-2xl border border-white/10 bg-[#120f2e]/45 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/30 hover:bg-white/5 hover:shadow-lg hover:shadow-violet-950/20"
+                  className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg"
                 >
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300 transition-all duration-300 group-hover:bg-gradient-to-tr group-hover:from-violet-600 group-hover:to-indigo-600 group-hover:text-white group-hover:shadow-[0_0_15px_rgba(139,92,246,0.4)]">
-                    <Icon size={22} />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 transition-all duration-300 group-hover:bg-violet-700 group-hover:text-white group-hover:shadow-lg group-hover:shadow-violet-200">
+                    <Icon size={23} />
                   </div>
 
-                  <h3 className="font-bold text-white group-hover:text-violet-300 transition-colors">{tool.title}</h3>
+                  <h3 className="font-bold text-zinc-900 group-hover:text-violet-700 transition-colors">{tool.title}</h3>
 
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-400 min-h-[3rem]">
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-600 min-h-[3rem]">
                     {tool.description}
                   </p>
 
-                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-violet-400 group-hover:text-violet-300 transition-colors">
+                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-violet-700 group-hover:text-violet-800 transition-colors">
                     Open tool
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -840,21 +835,21 @@ export default function BusinessDashboardPage() {
           </div>
         </section>
 
-        <section className="mb-8 rounded-3xl border border-white/10 bg-[#0a0520]/40 p-6">
+        <section className="mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
   <div className="flex items-center justify-between">
     <div>
-      <h2 className="text-xl font-bold text-white">
+      <h2 className="text-xl font-bold text-zinc-900">
         Recent saved business content
       </h2>
 
-      <p className="mt-1 text-sm text-zinc-400">
+      <p className="mt-1 text-sm text-zinc-500">
         Your latest saved posts, ads, SEO content and replies.
       </p>
     </div>
 
     <Link
       href="/business/saved"
-      className="text-sm font-semibold text-violet-400"
+      className="text-sm font-semibold text-violet-700 hover:text-violet-800"
     >
       View all
     </Link>
@@ -865,14 +860,14 @@ export default function BusinessDashboardPage() {
       recentSavedContents.map((item) => (
         <div
           key={item.id}
-          className="rounded-xl border border-white/5 bg-[#120f2e]/35 p-4"
+          className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 transition hover:bg-white hover:shadow-sm"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-zinc-900">
               {item.title}
             </p>
 
-            <span className="rounded-full bg-violet-500/10 px-3 py-1 text-xs capitalize text-violet-300">
+            <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium capitalize text-violet-700">
               {item.type.replaceAll(
                 "-",
                 " "
@@ -880,7 +875,7 @@ export default function BusinessDashboardPage() {
             </span>
           </div>
 
-          <p className="mt-2 text-sm leading-6 text-zinc-400">
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
             {item.content?.slice(0, 150)}
             {item.content?.length > 150
               ? "..."
@@ -889,28 +884,28 @@ export default function BusinessDashboardPage() {
         </div>
       ))
     ) : (
-      <p className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-zinc-500">
+      <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500">
         No saved business content yet.
       </p>
     )}
   </div>
-</section>
+ </section>
 
         {/* Local Keywords & Weekly Plan */}
         <section className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-sm">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-zinc-900">
                   Recommended local keywords
                 </h2>
 
-                <p className="mt-1 text-sm text-zinc-400">
+                <p className="mt-1 text-sm text-zinc-500">
                   Use these keywords in Google Business Profile and posts.
                 </p>
               </div>
 
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300 border border-violet-500/20">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                 <MapPin size={22} />
               </div>
             </div>
@@ -919,21 +914,21 @@ export default function BusinessDashboardPage() {
               {localKeywords.map((keyword, index) => (
                 <div
                   key={keyword}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-[#120f2e]/35 p-4 hover:bg-white/5 transition-all"
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 transition hover:bg-white hover:shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-500/10 border border-violet-500/20 text-sm font-bold text-violet-400">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">
                       {index + 1}
                     </span>
 
-                    <p className="text-sm font-medium text-zinc-300">
+                    <p className="text-sm font-medium text-zinc-700">
                       {keyword}
                     </p>
                   </div>
 
                   <button
                     type="button"
-                    className="text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors cursor-pointer"
+                    className="text-sm font-semibold text-violet-700 hover:text-violet-800 transition-colors cursor-pointer"
                   >
                     Copy
                   </button>
@@ -943,19 +938,19 @@ export default function BusinessDashboardPage() {
 
             <Link
               href="/business/local-seo"
-              className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 transition-colors"
             >
               View more keywords
               <ArrowRight size={16} />
             </Link>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-sm">
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
               <Lightbulb size={22} />
             </div>
 
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-zinc-900">
               This week&apos;s growth plan
             </h2>
 
@@ -963,7 +958,7 @@ export default function BusinessDashboardPage() {
               {weeklyPlan.map((item) => (
                 <div
                   key={item}
-                  className="rounded-xl border border-white/5 bg-[#120f2e]/35 px-4 py-3 text-sm text-zinc-300"
+                  className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700"
                 >
                   {item}
                 </div>
@@ -973,19 +968,19 @@ export default function BusinessDashboardPage() {
         </section>
 
         {/* Update Profile Setup Prompt */}
-        <section className="mt-8 rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-sm sm:p-8">
+        <section className="mt-8 rounded-3xl border border-zinc-200 bg-violet-50 p-6 shadow-sm sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-700 text-white shadow-lg shadow-violet-200">
                 <Building2 size={24} />
               </div>
 
               <div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-zinc-900">
                   Complete your business growth setup
                 </h2>
 
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
                   Add business photos, working hours, contact details and Google
                   Business information to get better recommendations.
                 </p>
@@ -994,7 +989,7 @@ export default function BusinessDashboardPage() {
 
             <Link
               href="/business/settings"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-5 py-3 font-semibold text-violet-300 hover:bg-violet-500/20 hover:text-white transition-all duration-300"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-5 py-3 font-semibold text-zinc-700 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
             >
               Update profile
               <ArrowRight size={18} />
@@ -1012,13 +1007,13 @@ export default function BusinessDashboardPage() {
   value,
 }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
+    <div className="rounded-2xl bg-white/15 p-4">
       <Icon
         size={19}
-        className="text-violet-400"
+        className="text-violet-200"
       />
 
-      <p className="mt-3 text-xs uppercase tracking-wider text-zinc-500">
+      <p className="mt-3 text-xs uppercase tracking-wider text-violet-200">
         {label}
       </p>
 
@@ -1035,16 +1030,16 @@ function StatCard({
   icon: Icon,
 }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-[#120f2e]/55 p-5">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-400">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
         <Icon size={20} />
       </div>
 
-      <p className="text-xs uppercase tracking-wider text-zinc-400">
+      <p className="text-xs uppercase tracking-wider text-zinc-500">
         {title}
       </p>
 
-      <p className="mt-1 text-2xl font-bold text-white">
+      <p className="mt-1 text-2xl font-bold text-zinc-900">
         {value}
       </p>
     </div>

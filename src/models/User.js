@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
 
     plan: {
       type: String,
-      enum: ["free", "creator-pro", "business-pro", "agency"],
+      enum: ["free", "creator-pro", "business-pro", "agent"],
       default: null,
     },
 

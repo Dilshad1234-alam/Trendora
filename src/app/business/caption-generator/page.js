@@ -195,47 +195,45 @@ export default function BusinessCaptionGeneratorPage() {
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
         <LoaderCircle
           size={25}
-          className="animate-spin text-violet-400"
+          className="animate-spin text-violet-600"
         />
       </main>
     );
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030014] p-4 text-white sm:p-6 md:p-8">
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[55%] w-[55%] rounded-full bg-violet-600/10 blur-[140px]" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans">
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[55%] w-[55%] rounded-full bg-cyan-600/10 blur-[140px]" />
-
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8">
           <Link
             href="/business/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-300 hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 transition-colors"
           >
             <ArrowLeft size={17} />
             Back to dashboard
           </Link>
 
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+          <p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
             Business AI Tool
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
             Caption Generator
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
             Generate customer-focused captions for
             your business social-media posts.
           </p>
         </header>
 
         {message && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {message}
           </div>
         )}
@@ -243,10 +241,10 @@ export default function BusinessCaptionGeneratorPage() {
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <form
             onSubmit={handleGenerate}
-            className="rounded-3xl border border-white/10 bg-[#0a0520]/60 p-6 backdrop-blur-xl"
+            className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
           >
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Business topic
               </label>
 
@@ -256,7 +254,7 @@ export default function BusinessCaptionGeneratorPage() {
                 onChange={handleChange}
                 rows={5}
                 placeholder="Example: Promote our website development service for local businesses"
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
             </div>
 
@@ -288,7 +286,7 @@ export default function BusinessCaptionGeneratorPage() {
               />
             </div>
 
-            <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
               <input
                 type="checkbox"
                 name="emoji"
@@ -298,7 +296,7 @@ export default function BusinessCaptionGeneratorPage() {
               />
 
               <div>
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-zinc-900">
                   Use emojis
                 </p>
 
@@ -312,7 +310,7 @@ export default function BusinessCaptionGeneratorPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 font-semibold text-white disabled:opacity-50"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3 font-semibold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800 disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -331,20 +329,20 @@ export default function BusinessCaptionGeneratorPage() {
             </button>
           </form>
 
-          <section className="flex min-h-[500px] flex-col rounded-3xl border border-white/10 bg-[#0a0520]/60 p-6 backdrop-blur-xl">
+          <section className="flex min-h-[500px] flex-col rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                   Generated Caption
                 </p>
 
-                <h2 className="mt-1 text-xl font-bold text-white">
+                <h2 className="mt-1 text-xl font-bold text-zinc-900">
                   Your result
                 </h2>
               </div>
 
               {caption && (
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400">
+                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-500">
                   {caption.length} characters
                 </span>
               )}
@@ -352,8 +350,8 @@ export default function BusinessCaptionGeneratorPage() {
 
             {caption ? (
               <>
-                <div className="mt-5 flex-1 rounded-2xl border border-white/5 bg-[#120f2e]/45 p-5">
-                  <p className="whitespace-pre-wrap text-sm leading-8 text-zinc-300">
+                <div className="mt-5 flex-1 rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+                  <p className="whitespace-pre-wrap text-sm leading-8 text-zinc-700">
                     {caption}
                   </p>
                 </div>
@@ -362,7 +360,7 @@ export default function BusinessCaptionGeneratorPage() {
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
                   >
                     {copied ? (
                       <>
@@ -381,7 +379,7 @@ export default function BusinessCaptionGeneratorPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 disabled:opacity-50 hover:bg-emerald-100 transition-colors"
                   >
                     {saving ? (
                       <LoaderCircle
@@ -401,7 +399,7 @@ export default function BusinessCaptionGeneratorPage() {
                     type="button"
                     onClick={handleGenerate}
                     disabled={loading}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50 hover:bg-violet-800 transition-colors"
                   >
                     <Sparkles size={17} />
                     Regenerate
@@ -410,11 +408,11 @@ export default function BusinessCaptionGeneratorPage() {
               </>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
                   <Sparkles size={28} />
                 </div>
 
-                <h2 className="mt-5 text-xl font-bold">
+                <h2 className="mt-5 text-xl font-bold text-zinc-900">
                   Your caption will appear here
                 </h2>
 
@@ -441,7 +439,7 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-zinc-300">
+      <label className="mb-2 block text-sm font-semibold text-zinc-700">
         {label}
       </label>
 
@@ -449,7 +447,7 @@ function SelectField({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full rounded-xl border border-white/10 bg-[#120f2e] px-4 py-3 text-sm text-white outline-none focus:border-violet-500/50"
+        className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
       >
         {options.map((option) => (
           <option
