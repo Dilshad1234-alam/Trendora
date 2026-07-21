@@ -125,8 +125,36 @@ export async function POST(request) {
       onlinePresence,
     });
 
+    // user.onboardingCompleted = true;
+
+    const trialStartDate = new Date();
+
+    const trialEndsAt = new Date(
+      trialStartDate.getTime() + 3 * 24 * 60 * 60 * 1000
+    );
+
     user.onboardingCompleted = true;
+    user.plan = "free";
+    user.planSelected = false;
+    user.trialStartDate = trialStartDate;
+    user.trialEndsAt = trialEndsAt;
+
     await user.save();
+
+    const savedUser = await User.findById(
+      user._id
+    ).lean();
+
+    console.log("Saved user from DB:", {
+      onboardingCompleted:
+        savedUser.onboardingCompleted,
+      plan: savedUser.plan,
+      planSelected: savedUser.planSelected,
+      trialStartDate:
+        savedUser.trialStartDate,
+      trialEndsAt:
+        savedUser.trialEndsAt,
+    });
 
     return NextResponse.json(
       {
@@ -143,6 +171,17 @@ export async function POST(request) {
           goal: businessProfile.goal,
           onlinePresence: businessProfile.onlinePresence,
         },
+
+        data: {
+          role: user.role,
+          onboardingCompleted: user.onboardingCompleted,
+          plan: user.plan,
+          planSelected: user.planSelected,
+          trialStartDate: user.trialStartDate,
+          trialEndsAt: user.trialEndsAt,
+          nextRoute: "/business/dashboard",
+        },
+
         nextRoute: "/business/dashboard",
       },
       { status: 201 }

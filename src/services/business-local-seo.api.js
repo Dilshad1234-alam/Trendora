@@ -8,15 +8,15 @@ async function parseResponse(response) {
       data = JSON.parse(text);
     } catch {
       throw new Error(
-        `Local SEO API returned invalid response. Status: ${response.status}`
+        `Local SEO API returned an invalid response. Status: ${response.status}`
       );
     }
   }
 
   if (!response.ok) {
     throw new Error(
-      data.message ||
-        data.error ||
+      data?.message ||
+        data?.error ||
         "Local SEO request failed."
     );
   }
@@ -25,17 +25,19 @@ async function parseResponse(response) {
 }
 
 export async function generateBusinessLocalSeo(
-  payload
+  payload = {}
 ) {
   const response = await fetch(
     "/api/ai/business/local-seo",
     {
       method: "POST",
       credentials: "include",
+
       headers: {
         "Content-Type":
           "application/json",
       },
+
       body: JSON.stringify(payload),
     }
   );

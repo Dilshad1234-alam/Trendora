@@ -11,18 +11,21 @@ import { useRouter } from "next/navigation";
 
 import {
   ArrowLeft,
+  Building2,
   Check,
   Clipboard,
   FileSearch,
   Globe2,
   KeyRound,
-  Lightbulb,
   ListChecks,
   LoaderCircle,
+  MapPin,
   RefreshCw,
   Save,
   Search,
+  ShieldCheck,
   Sparkles,
+  Tags,
 } from "lucide-react";
 
 import { getCurrentUser } from "@/services/auth.api";
@@ -33,26 +36,36 @@ import {
 } from "@/services/business-local-seo.api";
 
 const initialSeoContent = {
-  googleBusinessDescription: "",
-  metaTitle: "",
+  primaryKeyword: "",
+  relatedKeywords: [],
+
+  googleBusinessCategories: {
+    primary: "",
+    secondary: [],
+  },
+
+  seoTitle: "",
   metaDescription: "",
-  keywords: [],
   faqs: [],
-  localSeoTips: [],
+  napChecklist: [],
+  localSeoChecklist: [],
+};
+
+const initialFormData = {
+  businessName: "",
+  businessType: "",
+  city: "",
+  state: "",
+  country: "India",
+  services: "",
+  audience: "",
 };
 
 export default function BusinessLocalSeoGeneratorPage() {
   const router = useRouter();
 
   const [formData, setFormData] =
-    useState({
-      businessName: "",
-      businessType: "",
-      city: "",
-      services: "",
-      targetKeyword: "",
-      audience: "",
-    });
+    useState(initialFormData);
 
   const [seoContent, setSeoContent] =
     useState(initialSeoContent);
@@ -129,8 +142,8 @@ export default function BusinessLocalSeoGeneratorPage() {
 
   const hasSeoContent = useMemo(() => {
     return Boolean(
-      seoContent.googleBusinessDescription ||
-        seoContent.metaTitle ||
+      seoContent.primaryKeyword ||
+        seoContent.seoTitle ||
         seoContent.metaDescription
     );
   }, [seoContent]);
@@ -145,16 +158,19 @@ export default function BusinessLocalSeoGeneratorPage() {
     }));
 
     setSaved(false);
+    setError("");
     setSuccess("");
   }
 
   function validateForm() {
     if (
-      !formData.targetKeyword.trim()
+      formData.businessName.trim() &&
+      !formData.businessType.trim()
     ) {
       setError(
-        "Please enter a target keyword."
+        "Please enter your business type."
       );
+
       return false;
     }
 
@@ -164,7 +180,9 @@ export default function BusinessLocalSeoGeneratorPage() {
   async function handleGenerate(event) {
     event?.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       setGenerating(true);
@@ -175,33 +193,93 @@ export default function BusinessLocalSeoGeneratorPage() {
 
       const response =
         await generateBusinessLocalSeo({
-          ...formData,
           businessName:
             formData.businessName.trim(),
+
           businessType:
             formData.businessType.trim(),
+
           city:
             formData.city.trim(),
+
+          state:
+            formData.state.trim(),
+
+          country:
+            formData.country.trim(),
+
           services:
             formData.services.trim(),
-          targetKeyword:
-            formData.targetKeyword.trim(),
+
           audience:
             formData.audience.trim(),
         });
 
-      setSeoContent(
-        response?.data?.seoContent ||
-          initialSeoContent
-      );
+      const generatedSeo =
+        response?.data?.seoContent;
+
+      if (!generatedSeo) {
+        throw new Error(
+          "Local SEO package was not returned."
+        );
+      }
+
+      setSeoContent({
+        ...initialSeoContent,
+        ...generatedSeo,
+
+        googleBusinessCategories: {
+          ...initialSeoContent.googleBusinessCategories,
+
+          ...(generatedSeo.googleBusinessCategories ||
+            {}),
+        },
+      });
+
+      const input =
+        response?.data?.input;
+
+      if (input) {
+        setFormData((current) => ({
+          ...current,
+
+          businessName:
+            input.businessName ||
+            current.businessName,
+
+          businessType:
+            input.businessType ||
+            current.businessType,
+
+          city:
+            input.city ||
+            current.city,
+
+          state:
+            input.state ||
+            current.state,
+
+          country:
+            input.country ||
+            current.country,
+
+          services:
+            input.services ||
+            current.services,
+
+          audience:
+            input.audience ||
+            current.audience,
+        }));
+      }
 
       setSuccess(
-        "Local SEO content generated successfully."
+        "Local SEO package generated successfully."
       );
     } catch (generateError) {
       setError(
-        generateError.message ||
-          "Unable to generate local SEO content."
+        generateError?.message ||
+          "Unable to generate Local SEO package."
       );
     } finally {
       setGenerating(false);
@@ -209,8 +287,14 @@ export default function BusinessLocalSeoGeneratorPage() {
   }
 
   function getFormattedContent() {
-    const keywords =
-      seoContent.keywords
+    const relatedKeywords =
+      seoContent.relatedKeywords
+        .map((item) => `- ${item}`)
+        .join("\n");
+
+    const secondaryCategories =
+      seoContent.googleBusinessCategories
+        .secondary
         .map((item) => `- ${item}`)
         .join("\n");
 
@@ -222,38 +306,60 @@ export default function BusinessLocalSeoGeneratorPage() {
         )
         .join("\n\n");
 
-    const tips =
-      seoContent.localSeoTips
+    const napChecklist =
+      seoContent.napChecklist
         .map((item) => `- ${item}`)
         .join("\n");
 
-    return `Google Business Description
+    const seoChecklist =
+      seoContent.localSeoChecklist
+        .map(
+          (item) =>
+            `- [${item.priority}] ${item.task}`
+        )
+        .join("\n");
 
-${seoContent.googleBusinessDescription}
+    return `PRIMARY LOCAL KEYWORD
 
-Meta Title
+${seoContent.primaryKeyword}
 
-${seoContent.metaTitle}
+RELATED LOCAL KEYWORDS
 
-Meta Description
+${relatedKeywords}
+
+GOOGLE BUSINESS PROFILE CATEGORIES
+
+Primary category:
+${seoContent.googleBusinessCategories.primary}
+
+Secondary categories:
+${secondaryCategories}
+
+SEO TITLE
+
+${seoContent.seoTitle}
+
+META DESCRIPTION
 
 ${seoContent.metaDescription}
 
-SEO Keywords
-
-${keywords}
-
-FAQs
+LOCAL FAQs
 
 ${faqs}
 
-Local SEO Tips
+NAP CONSISTENCY CHECKLIST
 
-${tips}`;
+${napChecklist}
+
+LOCAL SEO ACTION CHECKLIST
+
+${seoChecklist}`;
   }
 
   async function handleCopy() {
-    if (!hasSeoContent) return;
+    if (!hasSeoContent) {
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(
@@ -262,8 +368,9 @@ ${tips}`;
 
       setCopied(true);
       setError("");
+
       setSuccess(
-        "Local SEO content copied."
+        "Local SEO package copied."
       );
 
       window.setTimeout(() => {
@@ -271,38 +378,47 @@ ${tips}`;
       }, 1800);
     } catch {
       setError(
-        "Unable to copy SEO content."
+        "Unable to copy Local SEO package."
       );
     }
   }
 
   async function handleSave() {
-    if (!hasSeoContent) return;
+    if (!hasSeoContent) {
+      return;
+    }
 
     try {
       setSaving(true);
       setError("");
       setSuccess("");
 
+      const title =
+        seoContent.primaryKeyword ||
+        `${formData.businessName} Local SEO`;
+
       await saveContent({
         type: "local-seo",
-        title: `${
-          formData.targetKeyword.trim()
-        } Local SEO`,
+
+        title:
+          `${title} Package`.trim(),
+
         content:
           getFormattedContent(),
+
         prompt:
           JSON.stringify(formData),
       });
 
       setSaved(true);
+
       setSuccess(
-        "Local SEO content saved successfully."
+        "Local SEO package saved successfully."
       );
     } catch (saveError) {
       setError(
-        saveError.message ||
-          "Unable to save SEO content."
+        saveError?.message ||
+          "Unable to save Local SEO package."
       );
     } finally {
       setSaving(false);
@@ -311,26 +427,24 @@ ${tips}`;
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
         <LoaderCircle
-          size={26}
-          className="animate-spin text-violet-400"
+          size={28}
+          className="animate-spin text-violet-700"
         />
       </main>
     );
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030014] px-4 py-6 text-white sm:px-6 md:px-8">
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[140px]" />
+    <main className="relative min-h-screen bg-white font-sans text-zinc-900">
+      <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-[800px] max-w-full -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl" />
 
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-600/10 blur-[140px]" />
-
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8">
           <Link
             href="/business/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-300 hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 transition-colors hover:text-violet-800"
           >
             <ArrowLeft size={17} />
             Back to dashboard
@@ -338,33 +452,33 @@ ${tips}`;
 
           <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                 Business AI Tool
               </p>
 
-              <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
                 Local SEO Generator
               </h1>
 
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">
-                Generate local SEO content,
-                Google Business descriptions,
-                meta tags, keywords and FAQs.
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
+                Generate local keywords, Google Business
+                categories, meta tags, FAQs and a practical
+                Local SEO checklist.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 shadow-sm">
               <Globe2
                 size={22}
-                className="text-violet-300"
+                className="text-violet-700"
               />
 
               <div>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs font-medium text-zinc-500">
                   Search visibility
                 </p>
 
-                <p className="text-sm font-semibold">
+                <p className="text-sm font-bold text-zinc-900">
                   Local SEO assistant
                 </p>
               </div>
@@ -373,13 +487,13 @@ ${tips}`;
         </header>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
             {success}
           </div>
         )}
@@ -387,21 +501,21 @@ ${tips}`;
         <div className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
           <form
             onSubmit={handleGenerate}
-            className="rounded-3xl border border-white/10 bg-[#0a0520]/65 p-5 backdrop-blur-xl sm:p-6"
+            className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
           >
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                 <Search size={21} />
               </div>
 
               <div>
-                <h2 className="font-bold">
-                  SEO details
+                <h2 className="font-bold text-zinc-900">
+                  Business details
                 </h2>
 
                 <p className="mt-1 text-xs text-zinc-500">
-                  Enter your business and
-                  keyword details.
+                  Leave fields empty to use your onboarding
+                  information.
                 </p>
               </div>
             </div>
@@ -428,7 +542,7 @@ ${tips}`;
               />
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <InputField
                 label="City"
                 name="city"
@@ -436,10 +550,28 @@ ${tips}`;
                 onChange={handleChange}
                 placeholder="Patna"
               />
+
+              <InputField
+                label="State"
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                placeholder="Bihar"
+              />
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <InputField
+                label="Country"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                placeholder="India"
+              />
+            </div>
+
+            <div className="mt-5">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Services
               </label>
 
@@ -449,20 +581,7 @@ ${tips}`;
                 onChange={handleChange}
                 rows={4}
                 placeholder="Website Development, SEO, Digital Marketing"
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-7 outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
-              />
-            </div>
-
-            <div className="mt-5">
-              <InputField
-                label="Target keyword"
-                name="targetKeyword"
-                value={
-                  formData.targetKeyword
-                }
-                onChange={handleChange}
-                placeholder="Website Development Company in Patna"
-                required
+                className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
               />
             </div>
 
@@ -476,10 +595,24 @@ ${tips}`;
               />
             </div>
 
+            <div className="mt-5 flex items-start gap-3 rounded-xl bg-zinc-50 p-4 text-xs leading-6 text-zinc-500">
+              <ShieldCheck
+                size={17}
+                className="mt-0.5 shrink-0 text-violet-600"
+              />
+
+              <p>
+                Trendora generates recommendations using the
+                information provided. It does not access live
+                Google rankings, search volume or competitor
+                data.
+              </p>
+            </div>
+
             <button
               type="submit"
               disabled={generating}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3.5 text-sm font-bold disabled:opacity-50"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {generating ? (
                 <>
@@ -487,33 +620,34 @@ ${tips}`;
                     size={18}
                     className="animate-spin"
                   />
-                  Generating SEO content...
+
+                  Generating Local SEO...
                 </>
               ) : (
                 <>
                   <Sparkles size={18} />
-                  Generate local SEO
+                  Generate Local SEO
                 </>
               )}
             </button>
           </form>
 
-          <section className="flex min-h-[700px] flex-col rounded-3xl border border-white/10 bg-[#0a0520]/65 p-5 backdrop-blur-xl sm:p-6">
+          <section className="flex min-h-[700px] flex-col rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                   Generated SEO Content
                 </p>
 
-                <h2 className="mt-2 text-xl font-bold">
-                  Your local SEO package
+                <h2 className="mt-2 text-xl font-bold text-zinc-900">
+                  Your Local SEO package
                 </h2>
               </div>
 
               {hasSeoContent && (
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-400">
+                <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-500">
                   {
-                    seoContent.keywords
+                    seoContent.relatedKeywords
                       .length
                   }{" "}
                   keywords
@@ -525,24 +659,38 @@ ${tips}`;
               <>
                 <div className="mt-6 flex-1 space-y-4">
                   <OutputCard
-                    label="Google Business Description"
+                    label="Primary Local Keyword"
                     value={
-                      seoContent.googleBusinessDescription
+                      seoContent.primaryKeyword
                     }
                     icon={
-                      <Globe2 size={18} />
+                      <MapPin size={18} />
+                    }
+                  />
+
+                  <ListCard
+                    label="Related Local Keywords"
+                    items={
+                      seoContent.relatedKeywords
+                    }
+                    icon={
+                      <KeyRound size={18} />
+                    }
+                  />
+
+                  <CategoriesCard
+                    categories={
+                      seoContent.googleBusinessCategories
                     }
                   />
 
                   <OutputCard
-                    label="Meta Title"
+                    label="SEO Title"
                     value={
-                      seoContent.metaTitle
+                      seoContent.seoTitle
                     }
                     icon={
-                      <FileSearch
-                        size={18}
-                      />
+                      <FileSearch size={18} />
                     }
                   />
 
@@ -552,21 +700,7 @@ ${tips}`;
                       seoContent.metaDescription
                     }
                     icon={
-                      <FileSearch
-                        size={18}
-                      />
-                    }
-                  />
-
-                  <ListCard
-                    label="SEO Keywords"
-                    items={
-                      seoContent.keywords
-                    }
-                    icon={
-                      <KeyRound
-                        size={18}
-                      />
+                      <FileSearch size={18} />
                     }
                   />
 
@@ -577,14 +711,18 @@ ${tips}`;
                   />
 
                   <ListCard
-                    label="Local SEO Tips"
+                    label="NAP Consistency Checklist"
                     items={
-                      seoContent.localSeoTips
+                      seoContent.napChecklist
                     }
                     icon={
-                      <Lightbulb
-                        size={18}
-                      />
+                      <Building2 size={18} />
+                    }
+                  />
+
+                  <ChecklistCard
+                    items={
+                      seoContent.localSeoChecklist
                     }
                   />
                 </div>
@@ -593,13 +731,11 @@ ${tips}`;
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700 transition-colors hover:bg-violet-100"
                   >
                     {copied ? (
                       <>
-                        <Check
-                          size={17}
-                        />
+                        <Check size={17} />
                         Copied
                       </>
                     ) : (
@@ -618,7 +754,7 @@ ${tips}`;
                     disabled={
                       saving || saved
                     }
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
                   >
                     {saving ? (
                       <LoaderCircle
@@ -626,13 +762,9 @@ ${tips}`;
                         className="animate-spin"
                       />
                     ) : saved ? (
-                      <Check
-                        size={17}
-                      />
+                      <Check size={17} />
                     ) : (
-                      <Save
-                        size={17}
-                      />
+                      <Save size={17} />
                     )}
 
                     {saved
@@ -642,11 +774,9 @@ ${tips}`;
 
                   <button
                     type="button"
-                    onClick={
-                      handleGenerate
-                    }
+                    onClick={handleGenerate}
                     disabled={generating}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-semibold disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-800 disabled:opacity-50"
                   >
                     {generating ? (
                       <LoaderCircle
@@ -654,9 +784,7 @@ ${tips}`;
                         className="animate-spin"
                       />
                     ) : (
-                      <RefreshCw
-                        size={17}
-                      />
+                      <RefreshCw size={17} />
                     )}
 
                     Regenerate
@@ -665,20 +793,18 @@ ${tips}`;
               </>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-100 text-violet-700">
                   <Search size={34} />
                 </div>
 
-                <h2 className="mt-6 text-xl font-bold">
-                  Your SEO content will
-                  appear here
+                <h2 className="mt-6 text-xl font-bold text-zinc-900">
+                  Your Local SEO package will appear here
                 </h2>
 
                 <p className="mt-3 max-w-md text-sm leading-7 text-zinc-500">
-                  Enter your business
-                  details and target keyword
-                  to generate a complete
-                  local SEO package.
+                  Generate local keywords, Google Business
+                  categories, meta tags, FAQs, NAP checks and
+                  practical SEO actions.
                 </p>
               </div>
             )}
@@ -695,17 +821,11 @@ function InputField({
   value,
   onChange,
   placeholder,
-  required = false,
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-zinc-300">
+      <label className="mb-2 block text-sm font-semibold text-zinc-700">
         {label}
-        {required && (
-          <span className="ml-1 text-red-400">
-            *
-          </span>
-        )}
       </label>
 
       <input
@@ -714,7 +834,7 @@ function InputField({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+        className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
       />
     </div>
   );
@@ -726,20 +846,20 @@ function OutputCard({
   icon,
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#120f2e]/55 p-5">
-      <div className="flex items-center gap-2 text-violet-300">
+    <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+      <div className="flex items-center gap-2 text-violet-700">
         {icon}
 
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em]">
           {label}
         </p>
       </div>
 
-      <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-zinc-300">
+      <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-zinc-700">
         {value}
       </p>
 
-      <p className="mt-4 text-right text-xs text-zinc-600">
+      <p className="mt-4 text-right text-xs text-zinc-400">
         {(value || "").length} characters
       </p>
     </article>
@@ -752,11 +872,11 @@ function ListCard({
   icon,
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#120f2e]/55 p-5">
-      <div className="flex items-center gap-2 text-violet-300">
+    <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+      <div className="flex items-center gap-2 text-violet-700">
         {icon}
 
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em]">
           {label}
         </p>
       </div>
@@ -766,11 +886,11 @@ function ListCard({
           (item, index) => (
             <li
               key={`${item}-${index}`}
-              className="flex gap-3 text-sm leading-7 text-zinc-300"
+              className="flex gap-3 text-sm leading-7 text-zinc-700"
             >
               <Check
                 size={16}
-                className="mt-1 shrink-0 text-emerald-400"
+                className="mt-1 shrink-0 text-emerald-600"
               />
 
               <span>{item}</span>
@@ -782,14 +902,67 @@ function ListCard({
   );
 }
 
+function CategoriesCard({
+  categories,
+}) {
+  const primary =
+    categories?.primary || "";
+
+  const secondary =
+    categories?.secondary || [];
+
+  return (
+    <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+      <div className="flex items-center gap-2 text-violet-700">
+        <Tags size={18} />
+
+        <p className="text-xs font-bold uppercase tracking-[0.16em]">
+          Google Business Categories
+        </p>
+      </div>
+
+      <div className="mt-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          Primary category
+        </p>
+
+        <div className="mt-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700">
+          {primary}
+        </div>
+      </div>
+
+      {secondary.length > 0 && (
+        <div className="mt-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            Secondary categories
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {secondary.map(
+              (item, index) => (
+                <span
+                  key={`${item}-${index}`}
+                  className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-700"
+                >
+                  {item}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
+
 function FaqCard({ items }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#120f2e]/55 p-5">
-      <div className="flex items-center gap-2 text-violet-300">
+    <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+      <div className="flex items-center gap-2 text-violet-700">
         <ListChecks size={18} />
 
-        <p className="text-xs font-semibold uppercase tracking-[0.16em]">
-          Frequently Asked Questions
+        <p className="text-xs font-bold uppercase tracking-[0.16em]">
+          Local FAQs
         </p>
       </div>
 
@@ -798,13 +971,13 @@ function FaqCard({ items }) {
           (item, index) => (
             <div
               key={`${item.question}-${index}`}
-              className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
+              className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm"
             >
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-bold text-zinc-900">
                 {item.question}
               </p>
 
-              <p className="mt-2 text-sm leading-7 text-zinc-400">
+              <p className="mt-2 text-sm leading-7 text-zinc-600">
                 {item.answer}
               </p>
             </div>
@@ -812,5 +985,71 @@ function FaqCard({ items }) {
         )}
       </div>
     </article>
+  );
+}
+
+function ChecklistCard({ items }) {
+  return (
+    <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+      <div className="flex items-center gap-2 text-violet-700">
+        <ListChecks size={18} />
+
+        <p className="text-xs font-bold uppercase tracking-[0.16em]">
+          Local SEO Action Checklist
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {(items || []).map(
+          (item, index) => (
+            <div
+              key={`${item.task}-${index}`}
+              className="flex items-start justify-between gap-4 rounded-xl border border-zinc-200 bg-white p-4"
+            >
+              <div className="flex gap-3">
+                <Check
+                  size={16}
+                  className="mt-1 shrink-0 text-emerald-600"
+                />
+
+                <p className="text-sm leading-7 text-zinc-700">
+                  {item.task}
+                </p>
+              </div>
+
+              <PriorityBadge
+                priority={
+                  item.priority
+                }
+              />
+            </div>
+          )
+        )}
+      </div>
+    </article>
+  );
+}
+
+function PriorityBadge({ priority }) {
+  const classes = {
+    High:
+      "border-red-200 bg-red-50 text-red-700",
+
+    Medium:
+      "border-amber-200 bg-amber-50 text-amber-700",
+
+    Low:
+      "border-emerald-200 bg-emerald-50 text-emerald-700",
+  };
+
+  return (
+    <span
+      className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+        classes[priority] ||
+        classes.Medium
+      }`}
+    >
+      {priority || "Medium"}
+    </span>
   );
 }

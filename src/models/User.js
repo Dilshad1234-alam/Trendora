@@ -28,11 +28,6 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    // image: {
-    //   type: String,
-    //   default: "",
-    // },
-
     role: {
       type: String,
       enum: ["creator", "business", "admin"],
@@ -46,8 +41,8 @@ const userSchema = new mongoose.Schema(
 
     plan: {
       type: String,
-      enum: ["free", "creator-pro", "business-pro", "agent"],
-      default: null,
+      enum: ["free", "creator-pro", "business-pro", "agency"],
+      default: "free",
     },
 
     planSelected: {
@@ -55,9 +50,14 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    onboardingCompleted: {
-      type: Boolean,
-      default: false,
+    trialStartDate: {
+      type: Date,
+      default: null,
+    },
+
+    trialEndsAt: {
+      type: Date,
+      default: null,
     },
     
   },
@@ -65,6 +65,13 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+if (
+  process.env.NODE_ENV === "development" &&
+  mongoose.models.User
+) {
+  delete mongoose.models.User;
+}
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

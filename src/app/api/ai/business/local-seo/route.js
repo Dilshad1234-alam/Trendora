@@ -53,6 +53,24 @@ async function getAuthenticatedBusiness() {
     };
   }
 
+  const now = new Date();
+
+  const trialEndsAt = user.trialEndsAt
+    ? new Date(user.trialEndsAt)
+    : null;
+
+  const trialExpired =
+    !user.planSelected &&
+    trialEndsAt &&
+    now >= trialEndsAt;
+
+  if (trialExpired) {
+    return {
+      error: "Please select a plan first.",
+      status: 403,
+    };
+  }
+
   return { user };
 }
 
@@ -63,48 +81,101 @@ function cleanJsonOutput(output = "") {
     .trim();
 }
 
+function normalizeStringArray(value, limit) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => String(item || "").trim())
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
 function normalizeSeoOutput(output = "") {
   const cleaned = cleanJsonOutput(output);
 
   try {
     const parsed = JSON.parse(cleaned);
 
+    const categories =
+      parsed.googleBusinessCategories &&
+      typeof parsed.googleBusinessCategories === "object"
+        ? parsed.googleBusinessCategories
+        : {};
+
     return {
-      googleBusinessDescription: String(
-        parsed.googleBusinessDescription || ""
+      primaryKeyword: String(
+        parsed.primaryKeyword || ""
       ).trim(),
 
-      metaTitle: String(
-        parsed.metaTitle || ""
+      relatedKeywords: normalizeStringArray(
+        parsed.relatedKeywords,
+        10
+      ),
+
+      googleBusinessCategories: {
+        primary: String(
+          categories.primary || ""
+        ).trim(),
+
+        secondary: normalizeStringArray(
+          categories.secondary,
+          3
+        ),
+      },
+
+      seoTitle: String(
+        parsed.seoTitle || ""
       ).trim(),
 
       metaDescription: String(
         parsed.metaDescription || ""
       ).trim(),
 
-      keywords: Array.isArray(parsed.keywords)
-        ? parsed.keywords.map((item) =>
-            String(item).trim()
-          )
-        : [],
-
       faqs: Array.isArray(parsed.faqs)
-        ? parsed.faqs.map((item) => ({
-            question: String(
-              item.question || ""
-            ).trim(),
-            answer: String(
-              item.answer || ""
-            ).trim(),
-          }))
+        ? parsed.faqs
+            .map((item) => ({
+              question: String(
+                item?.question || ""
+              ).trim(),
+
+              answer: String(
+                item?.answer || ""
+              ).trim(),
+            }))
+            .filter(
+              (item) =>
+                item.question &&
+                item.answer
+            )
+            .slice(0, 5)
         : [],
 
-      localSeoTips: Array.isArray(
-        parsed.localSeoTips
+      napChecklist: normalizeStringArray(
+        parsed.napChecklist,
+        5
+      ),
+
+      localSeoChecklist: Array.isArray(
+        parsed.localSeoChecklist
       )
-        ? parsed.localSeoTips.map((item) =>
-            String(item).trim()
-          )
+        ? parsed.localSeoChecklist
+            .map((item) => ({
+              task: String(
+                item?.task || ""
+              ).trim(),
+
+              priority: [
+                "High",
+                "Medium",
+                "Low",
+              ].includes(item?.priority)
+                ? item.priority
+                : "Medium",
+            }))
+            .filter((item) => item.task)
+            .slice(0, 8)
         : [],
     };
   } catch {
@@ -131,7 +202,7 @@ export async function POST(request) {
       );
     }
 
-    let body;
+    let body = {};
 
     try {
       body = await request.json();
@@ -151,22 +222,11 @@ export async function POST(request) {
       businessName = "",
       businessType = "",
       city = "",
+      state = "",
+      country = "",
       services = "",
-      targetKeyword = "",
       audience = "",
     } = body;
-
-    if (!targetKeyword.trim()) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Target keyword is required.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
 
     const profile =
       await BusinessProfile.findOne({
@@ -193,12 +253,22 @@ export async function POST(request) {
     const finalBusinessType =
       businessType.trim() ||
       profile.businessType ||
-      "Business";
+      "Local Business";
 
     const finalCity =
       city.trim() ||
       profile.city ||
-      "Local Area";
+      "";
+
+    const finalState =
+      state.trim() ||
+      profile.state ||
+      "";
+
+    const finalCountry =
+      country.trim() ||
+      profile.country ||
+      "India";
 
     const profileServices =
       Array.isArray(profile.services)
@@ -208,68 +278,133 @@ export async function POST(request) {
     const finalServices =
       services.trim() ||
       profileServices ||
-      "General services";
+      "";
 
     const finalAudience =
       audience.trim() ||
       profile.targetCustomers ||
       "Local customers";
 
-    const prompt = `
-You are Trendora, an expert local SEO strategist.
+    if (!finalCity) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Business city is required to generate Local SEO.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
-Create local SEO content for a real business.
+    if (!finalServices) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "At least one business service is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const location = [
+      finalCity,
+      finalState,
+      finalCountry,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const prompt = `
+You are Trendora's Local SEO Assistant.
+
+Create a practical basic Local SEO package for a real local business.
 
 Business details:
+
 Business name: ${finalBusinessName}
 Business type: ${finalBusinessType}
-City: ${finalCity}
+Location: ${location}
 Services: ${finalServices}
 Target audience: ${finalAudience}
-Primary target keyword: ${targetKeyword.trim()}
 
-Create:
+Generate:
 
-1. Google Business Profile description
-2. SEO meta title
-3. SEO meta description
-4. 10 relevant SEO keywords
-5. 5 customer-focused FAQs with short answers
-6. 6 practical local SEO tips
+1. One primary local keyword
+2. Exactly 10 related local keywords
+3. One suggested primary Google Business Profile category
+4. Up to 3 suggested secondary Google Business Profile categories
+5. One SEO title
+6. One meta description
+7. Exactly 5 customer-focused local FAQs
+8. Exactly 5 NAP consistency checklist items
+9. Exactly 8 practical Local SEO checklist items
 
-Rules:
-- Use the target keyword naturally.
-- Mention the city naturally.
+Important rules:
+
+- Use the city naturally in local keywords.
+- Generate keywords based on the actual services.
 - Do not keyword-stuff.
-- Do not invent prices, awards, ratings, years of experience or guarantees.
-- Google Business description should be clear and professional.
-- Meta title should ideally stay under 60 characters.
-- Meta description should ideally stay under 160 characters.
-- Keywords must be relevant to the business and city.
-- FAQs must be useful to real customers.
+- Do not invent search volume.
+- Do not invent rankings.
+- Do not claim access to Google Search, Google Maps, analytics or live competitor data.
+- Do not invent prices, ratings, awards, reviews, years of experience or guarantees.
+- Do not call the business "best", "number one", "top-rated" or similar unless proven.
+- Google Business categories must logically match the business type.
+- The SEO title should ideally stay under 60 characters.
+- The meta description should ideally stay under 160 characters.
+- FAQs must answer realistic customer questions.
+- NAP means Business Name, Address and Phone Number consistency.
+- Checklist items must be practical actions the business can complete.
+- Priority must be exactly High, Medium or Low.
 - Return valid JSON only.
 - Do not add markdown.
-- Do not add text before or after JSON.
+- Do not add text before or after the JSON.
 
 Return exactly this structure:
 
 {
-  "googleBusinessDescription": "Business description",
-  "metaTitle": "SEO title",
-  "metaDescription": "SEO description",
-  "keywords": [
-    "keyword 1",
-    "keyword 2"
+  "primaryKeyword": "Primary local keyword",
+  "relatedKeywords": [
+    "Keyword 1",
+    "Keyword 2",
+    "Keyword 3",
+    "Keyword 4",
+    "Keyword 5",
+    "Keyword 6",
+    "Keyword 7",
+    "Keyword 8",
+    "Keyword 9",
+    "Keyword 10"
   ],
+  "googleBusinessCategories": {
+    "primary": "Primary category",
+    "secondary": [
+      "Secondary category 1",
+      "Secondary category 2",
+      "Secondary category 3"
+    ]
+  },
+  "seoTitle": "SEO title",
+  "metaDescription": "Meta description",
   "faqs": [
     {
       "question": "Question",
       "answer": "Answer"
     }
   ],
-  "localSeoTips": [
-    "Tip 1",
-    "Tip 2"
+  "napChecklist": [
+    "NAP checklist item"
+  ],
+  "localSeoChecklist": [
+    {
+      "task": "Local SEO task",
+      "priority": "High"
+    }
   ]
 }
 `;
@@ -288,7 +423,7 @@ Return exactly this structure:
         {
           success: false,
           message:
-            "AI did not generate local SEO content.",
+            "AI did not generate Local SEO content.",
         },
         {
           status: 503,
@@ -301,9 +436,12 @@ Return exactly this structure:
 
     if (
       !seoContent ||
-      !seoContent.googleBusinessDescription ||
-      !seoContent.metaTitle ||
-      !seoContent.metaDescription
+      !seoContent.primaryKeyword ||
+      !seoContent.seoTitle ||
+      !seoContent.metaDescription ||
+      !seoContent.googleBusinessCategories
+        .primary ||
+      seoContent.relatedKeywords.length === 0
     ) {
       console.error(
         "Invalid Local SEO AI output:",
@@ -314,7 +452,7 @@ Return exactly this structure:
         {
           success: false,
           message:
-            "AI returned incomplete SEO content. Please try again.",
+            "AI returned incomplete Local SEO data. Please try again.",
         },
         {
           status: 503,
@@ -326,19 +464,29 @@ Return exactly this structure:
       {
         success: true,
         message:
-          "Local SEO content generated successfully.",
+          "Local SEO package generated successfully.",
+
         data: {
           seoContent,
+
           input: {
             businessName:
               finalBusinessName,
+
             businessType:
               finalBusinessType,
+
             city: finalCity,
-            services: finalServices,
-            targetKeyword:
-              targetKeyword.trim(),
-            audience: finalAudience,
+
+            state: finalState,
+
+            country: finalCountry,
+
+            services:
+              finalServices,
+
+            audience:
+              finalAudience,
           },
         },
       },
@@ -348,7 +496,7 @@ Return exactly this structure:
     );
   } catch (error) {
     console.error(
-      "Business local SEO error:",
+      "Business Local SEO error:",
       error
     );
 
@@ -372,7 +520,8 @@ Return exactly this structure:
       {
         success: false,
         message:
-          "Unable to generate local SEO content.",
+          "Unable to generate Local SEO package.",
+
         error:
           process.env.NODE_ENV ===
           "development"

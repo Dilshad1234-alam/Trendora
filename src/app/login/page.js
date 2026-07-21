@@ -74,79 +74,9 @@ export default function LoginPage() {
         text: data.message || "Login successful.",
       });
 
-      const user = data.user;
+      router.replace(data.nextRoute || "/");
+      router.refresh();
 
-      // Role abhi select nahi hua
-      if (!user.role) {
-        router.replace("/onboarding/select-role");
-        return;
-      }
-
-      // Creator role selected hai, lekin onboarding pending hai
-      if (
-        user.role === "creator" &&
-        !user.onboardingCompleted
-      ) {
-        router.replace("/onboarding/creator");
-        return;
-      }
-
-      // Business role selected hai, lekin onboarding pending hai
-      if (
-        user.role === "business" &&
-        !user.onboardingCompleted
-      ) {
-        router.replace("/onboarding/business");
-        return;
-      }
-
-      // Creator onboarding complete but plan not selected
-      if (
-        user.role === "creator" &&
-        user.onboardingCompleted &&
-        !user.planSelected
-      ) {
-        router.replace("/onboarding/select-plan");
-        return;
-      }
-
-      // Business onboarding complete but plan not selected
-      if (
-        user.role === "business" &&
-        user.onboardingCompleted &&
-        !user.planSelected
-      ) {
-        router.replace("/onboarding/select-plan");
-        return;
-      }
-
-      // Creator onboarding complete
-      if (
-        user.role === "creator" &&
-        user.onboardingCompleted &&
-        user.planSelected
-      ) {
-        router.replace("/creator/dashboard");
-        return;
-      }
-
-      // Business onboarding complete
-      if (
-        user.role === "business" &&
-        user.onboardingCompleted &&
-        user.planSelected
-      ) {
-        router.replace("/business/dashboard");
-        return;
-      }
-
-      // Admin
-      if (user.role === "admin") {
-        router.replace("/admin/dashboard");
-        return;
-      }
-
-      router.replace("/");
     } catch (error) {
       setMessage({
         type: "error",

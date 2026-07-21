@@ -94,12 +94,21 @@ export async function PATCH(request) {
     user.subscriptionStatus = "active";
     user.planExpiresAt = null;
 
+    // Trial khatam
+    user.trialStartDate = null;
+    user.trialEndsAt = null;
+
     await user.save();
 
-    const nextRoute =
-      user.role === "creator"
-        ? "/creator/dashboard"
-        : "/business/dashboard";
+    let nextRoute = "/";
+
+    if (user.role === "creator") {
+      nextRoute = "/creator/dashboard";
+    }
+
+    if (user.role === "business") {
+      nextRoute = "/business/dashboard";
+    }
 
     return NextResponse.json(
       {
@@ -109,6 +118,9 @@ export async function PATCH(request) {
           role: user.role,
           plan: user.plan,
           planSelected: user.planSelected,
+          subscriptionStatus: user.subscriptionStatus,
+          trialStartDate: user.trialStartDate,
+          trialEndsAt: user.trialEndsAt,
           nextRoute,
         },
       },

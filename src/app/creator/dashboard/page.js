@@ -142,13 +142,14 @@ export default function CreatorDashboardPage() {
     contentGoal: "",
   });
 
-  const loadDashboard = useCallback(async () => {
+ const loadDashboard = useCallback(async () => {
     try {
       setLoading(true);
       setMessage("");
 
       const userResponse = await getCurrentUser();
-      const currentUser = userResponse.user || userResponse.data?.user;
+      const currentUser =
+        userResponse.user || userResponse.data?.user;
 
       if (!currentUser) {
         router.replace("/login");
@@ -165,10 +166,12 @@ export default function CreatorDashboardPage() {
           router.replace("/business/dashboard");
           return;
         }
+
         if (currentUser.role === "admin") {
           router.replace("/admin/dashboard");
           return;
         }
+
         router.replace("/");
         return;
       }
@@ -178,27 +181,63 @@ export default function CreatorDashboardPage() {
         return;
       }
 
-      if (!currentUser.planSelected || !currentUser.plan) {
+    // 3-day trial complete hone ke baad hi plan page khulega
+      if (
+        currentUser.trialExpired &&
+        !currentUser.planSelected
+      ) {
         router.replace("/onboarding/select-plan");
         return;
       }
 
+    // Pro ya Agent plan ke user ko sahi dashboard par bhejo
+      if (
+        currentUser.planSelected &&
+        currentUser.plan === "creator-pro"
+      ) {
+        router.replace("/creator-pro/dashboard");
+        return;
+      }
+
+      if (
+        currentUser.planSelected &&
+        currentUser.plan === "agent"
+      ) {
+        router.replace("/agent/dashboard");
+        return;
+      }
+
+    // Trial active ya free plan ho to creator dashboard open hoga
       setUser(currentUser);
 
       try {
-        const savedResponse = await getSavedContents({ type: "all", search: "" });
+        const savedResponse = await getSavedContents({
+          type: "all",
+          search: "",
+        });
+
         setSavedContents(savedResponse.data || []);
       } catch (savedError) {
-        console.error("Saved content fetch error:", savedError);
+        console.error(
+          "Saved content fetch error:",
+          savedError
+        );
+
         setSavedContents([]);
       }
 
       try {
         setDailyPlanLoading(true);
+
         const dailyPlanResponse = await getDailyPlan();
+
         setDailyPlan(dailyPlanResponse.data || null);
       } catch (dailyPlanError) {
-        console.error("Daily plan fetch error:", dailyPlanError);
+        console.error(
+          "Daily plan fetch error:",
+          dailyPlanError
+        );
+
         setDailyPlan(null);
       } finally {
         setDailyPlanLoading(false);
@@ -556,7 +595,7 @@ export default function CreatorDashboardPage() {
                   </p>
                 </div>
 
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:col-span-2">
                   <InfoCard icon={Target} label="Content goal" value={dailyPlan.contentGoal} />
                   <InfoCard icon={Timer} label="Estimated time" value={dailyPlan.estimatedTime} />
                   <InfoCard icon={Gauge} label="Difficulty" value={dailyPlan.difficulty} />
@@ -568,7 +607,7 @@ export default function CreatorDashboardPage() {
                 </div>
 
                 {dailyPlan.aiTip && (
-                  <div className="mt-4 rounded-2xl border border-amber-300/30 bg-amber-500/20 p-5">
+                  <div className="mt-4 rounded-2xl border border-amber-300/30 bg-amber-500/20 p-5 lg:col-span-2">
                     <div className="flex items-start gap-3">
                       <Lightbulb size={20} className="mt-0.5 shrink-0 text-amber-300" />
                       <div>
@@ -946,7 +985,7 @@ export default function CreatorDashboardPage() {
               ].map(([name, label]) => (
                 <div
                   key={name}
-                  className={["topic", "hookIdea", "cta"].includes(name) ? "sm:col-span-2" : ""}
+                  className={["topic", "hookIdea", "cta", "aiTip"].includes(name) ? "sm:col-span-2" : ""}
                 >
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
                     {label}

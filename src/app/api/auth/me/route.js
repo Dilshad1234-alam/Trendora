@@ -9,10 +9,7 @@ export async function GET() {
   try {
     await connectDB();
 
-    // Next.js me cookies() async hai
     const cookieStore = await cookies();
-
-    // Login API me cookie ka naam "token" rakha tha
     const token = cookieStore.get("token")?.value;
 
     if (!token) {
@@ -29,7 +26,7 @@ export async function GET() {
 
     try {
       decoded = verifyToken(token);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           success: false,
@@ -51,22 +48,103 @@ export async function GET() {
       );
     }
 
+    const now = new Date();
+
+    const trialEndsAt = user.trialEndsAt
+      ? new Date(user.trialEndsAt)
+      : null;
+      
+    const isTrialUser =
+      user.role === "creator" ||
+      user.role === "business";
+
+
+    const trialExpired = Boolean( isTrialUser &&
+      user.onboardingCompleted &&
+        !user.planSelected &&
+        trialEndsAt &&
+        now >= trialEndsAt
+    );
+
+    const trialActive = Boolean( isTrialUser &&
+      user.onboardingCompleted &&
+        !user.planSelected &&
+        trialEndsAt &&
+        now < trialEndsAt
+    );
+
+    const trialTimeRemaining =
+      trialActive && trialEndsAt
+        ? trialEndsAt.getTime() - now.getTime()
+        : 0;
+
+    const trialDaysRemaining =
+      trialTimeRemaining > 0
+        ? Math.ceil(
+            trialTimeRemaining /
+              (24 * 60 * 60 * 1000)
+          )
+        : 0;
+
+    let nextRoute = "/";
+
+    if (user.role === "admin") {
+      nextRoute = "/admin/dashboard";
+    } else if (!user.role) {
+      nextRoute = "/onboarding/select-role";
+    } else if (
+      user.role === "creator" &&
+      !user.onboardingCompleted
+    ) {
+      nextRoute = "/onboarding/creator";
+    } else if (
+      user.role === "business" &&
+      !user.onboardingCompleted
+    ) {
+      nextRoute = "/onboarding/business";
+    } else if (trialExpired) {
+      nextRoute = "/onboarding/select-plan";
+    } else if (user.plan === "agent") {
+      nextRoute = "/agent/dashboard";
+    } else if (
+      user.role === "creator" &&
+      user.plan === "creator-pro"
+    ) {
+      nextRoute = "/creator-pro/dashboard";
+    } else if (
+      user.role === "business" &&
+      user.plan === "business-pro"
+    ) {
+      nextRoute = "/business-pro/dashboard";
+    } else if (user.role === "creator") {
+      nextRoute = "/creator/dashboard";
+    } else if (user.role === "business") {
+      nextRoute = "/business/dashboard";
+    }
     return NextResponse.json(
       {
         success: true,
         message: "Current user fetched successfully.",
+        nextRoute,
+
         user: {
           id: user._id.toString(),
           fullname: user.fullname,
           email: user.email,
           image: user.image || "",
           role: user.role,
-          plan: user.plan,
-          planSelected: user.planSelected,
-          onboardingCompleted: user.onboardingCompleted,
-          // subscriptionStatus: user.subscriptionStatus
-          // plan: user.plan,
-          // createdAt: user.createdAt,
+
+          plan: user.plan || "free",
+          planSelected: Boolean(user.planSelected),
+          onboardingCompleted: Boolean(
+            user.onboardingCompleted
+          ),
+
+          trialStartDate: user.trialStartDate,
+          trialEndsAt: user.trialEndsAt,
+          trialActive,
+          trialExpired,
+          trialDaysRemaining,
         },
       },
       { status: 200 }

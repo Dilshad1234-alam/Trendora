@@ -52,7 +52,19 @@ const getAuthenticatedBusiness = async () => {
     };
   }
 
-  if (!user.planSelected || !user.plan) {
+  const now = new Date();
+
+  const trialEndsAt = user.trialEndsAt
+    ? new Date(user.trialEndsAt)
+    : null;
+
+  const trialExpired =
+    !user.planSelected &&
+    trialEndsAt &&
+    now >= trialEndsAt;
+
+  // Sirf trial expire hone ke baad block karo
+  if (trialExpired) {
     return {
       error: "Please select a plan first.",
       status: 403,

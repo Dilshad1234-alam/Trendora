@@ -123,7 +123,19 @@ const getAuthenticatedCreator = async () => {
     };
   }
 
-  if (!user.planSelected || !user.plan) {
+  const now = new Date();
+
+  const trialEndsAt = user.trialEndsAt
+    ? new Date(user.trialEndsAt)
+    : null;
+
+  const trialExpired =
+    !user.planSelected &&
+    trialEndsAt &&
+    now >= trialEndsAt;
+
+  // Trial expire ho gaya aur plan select nahi kiya
+  if (trialExpired) {
     return {
       error: "Please select a plan first.",
       status: 403,

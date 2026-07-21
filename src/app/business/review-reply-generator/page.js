@@ -272,12 +272,8 @@ ${generatedReply.privateFollowUp}`;
 
       await saveContent({
         type: "review-reply",
-
         title: `Review Reply - ${formData.platform} - ${titleCustomer}`,
-
         prompt: JSON.stringify(formData),
-
-        // Tumhara saved API "content" expect karta hai
         content: getFormattedContent(),
       });
 
@@ -297,26 +293,24 @@ ${generatedReply.privateFollowUp}`;
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
         <LoaderCircle
           size={30}
-          className="animate-spin text-violet-400"
+          className="animate-spin text-violet-700"
         />
       </main>
     );
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030014] px-4 py-6 text-white sm:px-6 md:px-8">
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[140px]" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans relative">
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-600/10 blur-[140px]" />
-
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8">
           <Link
             href="/business/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-300 transition hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
           >
             <ArrowLeft size={17} />
             Back to dashboard
@@ -324,32 +318,31 @@ ${generatedReply.privateFollowUp}`;
 
           <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                 Business AI Tool
               </p>
 
-              <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
                 Review Reply Generator
               </h1>
 
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">
-                Generate professional replies for positive,
-                neutral and negative customer reviews.
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600">
+                Generate professional replies for positive, neutral and negative customer reviews.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 shadow-sm">
               <MessageSquareReply
                 size={23}
-                className="text-violet-300"
+                className="text-violet-700"
               />
 
               <div>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-500 font-medium">
                   Reputation management
                 </p>
 
-                <p className="text-sm font-semibold">
+                <p className="text-sm font-bold text-zinc-900">
                   Smart review responses
                 </p>
               </div>
@@ -358,13 +351,13 @@ ${generatedReply.privateFollowUp}`;
         </header>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
             {success}
           </div>
         )}
@@ -372,21 +365,20 @@ ${generatedReply.privateFollowUp}`;
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <form
             onSubmit={handleGenerate}
-            className="rounded-3xl border border-white/10 bg-[#0a0520]/65 p-5 backdrop-blur-xl sm:p-6"
+            className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
           >
             <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                 <Star size={20} />
               </div>
 
               <div>
-                <h2 className="font-bold">
+                <h2 className="font-bold text-zinc-900">
                   Customer review details
                 </h2>
 
                 <p className="mt-1 text-xs text-zinc-500">
-                  Add the review and choose the response
-                  style.
+                  Add the review and choose the response style.
                 </p>
               </div>
             </div>
@@ -411,7 +403,7 @@ ${generatedReply.privateFollowUp}`;
             />
 
             <div className="mt-5">
-              <label className="mb-3 block text-sm font-semibold text-zinc-300">
+              <label className="mb-3 block text-sm font-semibold text-zinc-700">
                 Customer Rating
               </label>
 
@@ -430,8 +422,8 @@ ${generatedReply.privateFollowUp}`;
                       }
                       className={`flex h-11 w-11 items-center justify-center rounded-xl border transition ${
                         active
-                          ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
-                          : "border-white/10 bg-white/[0.03] text-zinc-600 hover:text-amber-300"
+                          ? "border-amber-300 bg-amber-50 text-amber-500"
+                          : "border-zinc-200 bg-zinc-50 text-zinc-400 hover:text-amber-500"
                       }`}
                     >
                       <Star
@@ -447,7 +439,7 @@ ${generatedReply.privateFollowUp}`;
                 })}
               </div>
 
-              <p className="mt-2 text-xs text-zinc-500">
+              <p className="mt-2 text-xs text-zinc-500 font-medium">
                 Selected: {formData.rating} out of 5
               </p>
             </div>
@@ -463,9 +455,9 @@ ${generatedReply.privateFollowUp}`;
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Customer Review
-                <span className="ml-1 text-red-400">
+                <span className="ml-1 text-red-500">
                   *
                 </span>
               </label>
@@ -476,7 +468,7 @@ ${generatedReply.privateFollowUp}`;
                 onChange={handleChange}
                 rows={6}
                 placeholder="Delivery was late and customer support did not respond."
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-7 outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
             </div>
 
@@ -521,16 +513,15 @@ ${generatedReply.privateFollowUp}`;
               />
             </div>
 
-            <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
               <label className="flex cursor-pointer items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold">
+                  <p className="text-sm font-semibold text-zinc-900">
                     Include Business Name
                   </p>
 
                   <p className="mt-1 text-xs text-zinc-500">
-                    Allow AI to mention your business
-                    name in the reply.
+                    Allow AI to mention your business name in the reply.
                   </p>
                 </div>
 
@@ -541,13 +532,13 @@ ${generatedReply.privateFollowUp}`;
                     formData.includeBusinessName
                   }
                   onChange={handleChange}
-                  className="h-5 w-5 accent-violet-500"
+                  className="h-5 w-5 accent-violet-600"
                 />
               </label>
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">
+              <label className="mb-2 block text-sm font-semibold text-zinc-700">
                 Additional Context
               </label>
 
@@ -557,14 +548,14 @@ ${generatedReply.privateFollowUp}`;
                 onChange={handleChange}
                 rows={4}
                 placeholder="Ask the customer to contact support privately with their order number."
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-7 outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={generating}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-3.5 text-sm font-bold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-200 hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {generating ? (
                 <>
@@ -583,13 +574,13 @@ ${generatedReply.privateFollowUp}`;
             </button>
           </form>
 
-          <section className="flex min-h-[720px] flex-col rounded-3xl border border-white/10 bg-[#0a0520]/65 p-5 backdrop-blur-xl sm:p-6">
+          <section className="flex min-h-[720px] flex-col rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
                 Generated Responses
               </p>
 
-              <h2 className="mt-2 text-xl font-bold">
+              <h2 className="mt-2 text-xl font-bold text-zinc-900">
                 Professional review replies
               </h2>
             </div>
@@ -653,7 +644,7 @@ ${generatedReply.privateFollowUp}`;
                   <button
                     type="button"
                     onClick={handleCopyAll}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-sm font-semibold text-cyan-300"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
                   >
                     {copiedField === "all" ? (
                       <>
@@ -672,7 +663,7 @@ ${generatedReply.privateFollowUp}`;
                     type="button"
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50"
                   >
                     {saving ? (
                       <LoaderCircle
@@ -692,7 +683,7 @@ ${generatedReply.privateFollowUp}`;
                     type="button"
                     onClick={handleGenerate}
                     disabled={generating}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-3 text-sm font-semibold disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white hover:bg-violet-800 transition-colors disabled:opacity-50"
                   >
                     {generating ? (
                       <LoaderCircle
@@ -709,18 +700,16 @@ ${generatedReply.privateFollowUp}`;
               </>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-100 text-violet-700">
                   <MessageSquareReply size={35} />
                 </div>
 
-                <h2 className="mt-6 text-xl font-bold">
+                <h2 className="mt-6 text-xl font-bold text-zinc-900">
                   Your replies will appear here
                 </h2>
 
                 <p className="mt-3 max-w-md text-sm leading-7 text-zinc-500">
-                  Enter the customer review, select the
-                  rating and response style, then generate
-                  a professional reply.
+                  Enter the customer review, select the rating and response style, then generate a professional reply.
                 </p>
               </div>
             )}
@@ -740,7 +729,7 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-zinc-300">
+      <label className="mb-2 block text-sm font-semibold text-zinc-700">
         {label}
       </label>
 
@@ -750,7 +739,7 @@ function InputField({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+        className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
       />
     </div>
   );
@@ -765,7 +754,7 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-zinc-300">
+      <label className="mb-2 block text-sm font-semibold text-zinc-700">
         {label}
       </label>
 
@@ -773,7 +762,7 @@ function SelectField({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full rounded-xl border border-white/10 bg-[#100b28] px-4 py-3 text-sm outline-none focus:border-violet-500/50"
+        className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
       >
         {options.map((option) => (
           <option
@@ -795,16 +784,16 @@ function ReplyCard({
   onCopy,
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#120f2e]/55 p-5">
+    <article className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-400">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
           {label}
         </p>
 
         <button
           type="button"
           onClick={onCopy}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:bg-white/10"
+          className="inline-flex items-center gap-2 rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-50 transition-colors shadow-sm"
         >
           {copied ? (
             <>
@@ -820,11 +809,11 @@ function ReplyCard({
         </button>
       </div>
 
-      <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-zinc-300">
+      <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-zinc-700">
         {value}
       </p>
 
-      <p className="mt-4 text-right text-xs text-zinc-600">
+      <p className="mt-4 text-right text-xs text-zinc-400">
         {(value || "").length} characters
       </p>
     </article>

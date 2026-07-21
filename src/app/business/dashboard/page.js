@@ -165,15 +165,27 @@ export default function BusinessDashboardPage() {
       }
 
       if (
-        !currentUser.planSelected ||
-        !currentUser.plan
+        currentUser.trialExpired &&
+        !currentUser.planSelected
       ) {
-        router.replace(
-          "/onboarding/select-plan"
-        );
+        router.replace("/onboarding/select-plan");
         return;
       }
 
+      if (
+        currentUser.planSelected &&
+        currentUser.plan === "business-pro"
+      ) {
+        router.replace("/business-pro/dashboard");
+        return;
+      }
+      if (
+        currentUser.planSelected &&
+        currentUser.plan === "agent"
+      ) {
+        router.replace("/agent/dashboard");
+        return;
+      }
       setUser(currentUser);
 
       const [

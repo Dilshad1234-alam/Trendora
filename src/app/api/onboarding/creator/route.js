@@ -122,8 +122,18 @@ export async function POST(request) {
     });
 
     user.onboardingCompleted = true;
-    user.plan = null;
+
+    const trialStartDate = new Date();
+
+    const trialEndsAt = new Date(
+      trialStartDate.getTime() + 3 * 24 * 60 * 60 * 1000
+    );
+
+    user.onboardingCompleted = true;
+    user.plan = "free";
     user.planSelected = false;
+    user.trialStartDate = trialStartDate;
+    user.trialEndsAt = trialEndsAt;
 
     await user.save();
 
@@ -136,26 +146,11 @@ export async function POST(request) {
           role: user.role,
           onboardingCompleted: user.onboardingCompleted,
           planSelected: user.planSelected,
-          nextRoute: "/onboarding/select-plan",
+          nextRoute: "/creator/dashboard",
         },
       },
       { status: 200 }
-      // {
-      //   success: true,
-      //   message: "Creator onboarding completed successfully.",
-      //   creatorProfile: {
-      //     id: creatorProfile._id.toString(),
-      //     user: creatorProfile.user.toString(),
-      //     niche: creatorProfile.niche,
-      //     language: creatorProfile.language,
-      //     platform: creatorProfile.platform,
-      //     tone: creatorProfile.tone,
-      //     audienceSize: creatorProfile.audienceSize,
-      //     goal: creatorProfile.goal,
-      //   },
-      //   nextRoute: "/creator/dashboard",
-      // },
-      // { status: 201 }
+    
     );
   } catch (error) {
     console.error("Creator onboarding API error:", error);

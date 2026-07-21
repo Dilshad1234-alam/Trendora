@@ -289,14 +289,14 @@ export default function BusinessSavedPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#030014] text-white">
-        <div className="flex items-center gap-3 text-violet-300">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <div className="flex items-center gap-3 text-violet-700">
           <LoaderCircle
             size={24}
             className="animate-spin"
           />
 
-          <span>
+          <span className="font-semibold">
             Loading saved content...
           </span>
         </div>
@@ -305,16 +305,14 @@ export default function BusinessSavedPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030014] p-4 text-white sm:p-6 md:p-8">
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[55%] w-[55%] rounded-full bg-violet-600/10 blur-[140px]" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans relative">
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[55%] w-[55%] rounded-full bg-cyan-600/10 blur-[140px]" />
-
-      <div className="relative z-10 mx-auto max-w-7xl">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8">
           <Link
             href="/business/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-300 transition hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 transition hover:text-violet-800"
           >
             <ArrowLeft size={17} />
             Back to dashboard
@@ -322,28 +320,25 @@ export default function BusinessSavedPage() {
 
           <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700 font-sans">
                 Business Library
               </p>
 
-              <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
                 Saved content
               </h1>
 
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-400">
-                Search, copy and manage
-                your saved posts, ads,
-                SEO content and customer
-                replies.
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-600">
+                Search, copy and manage your saved posts, ads, SEO content and customer replies.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/10 px-5 py-3">
-              <p className="text-xs uppercase tracking-wider text-violet-300">
+            <div className="rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-violet-700">
                 Total saved
               </p>
 
-              <p className="mt-1 text-2xl font-bold text-white">
+              <p className="mt-1 text-2xl font-extrabold text-zinc-900">
                 {savedContents.length}
               </p>
             </div>
@@ -351,17 +346,17 @@ export default function BusinessSavedPage() {
         </header>
 
         {message && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             {message}
           </div>
         )}
 
-        <section className="mb-6 rounded-3xl border border-white/10 bg-[#0a0520]/60 p-5 backdrop-blur-xl">
+        <section className="mb-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="grid gap-4 md:grid-cols-[1fr_260px]">
             <div className="relative">
               <Search
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
               />
 
               <input
@@ -373,7 +368,7 @@ export default function BusinessSavedPage() {
                   )
                 }
                 placeholder="Search saved content..."
-                className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
             </div>
 
@@ -384,7 +379,7 @@ export default function BusinessSavedPage() {
                   event.target.value
                 )
               }
-              className="rounded-xl border border-white/10 bg-[#120f2e] px-4 py-3 text-sm text-white outline-none focus:border-violet-500/50"
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
             >
               {contentTypes.map(
                 (type) => (
@@ -417,36 +412,36 @@ export default function BusinessSavedPage() {
                 return (
                   <article
                     key={itemId}
-                    className="flex min-h-[310px] flex-col rounded-3xl border border-white/10 bg-[#0a0520]/60 p-5 backdrop-blur-xl transition hover:-translate-y-1 hover:border-violet-500/30"
+                    className="flex min-h-[310px] flex-col rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-violet-300 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
                         <FileText
                           size={21}
                         />
                       </div>
 
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-violet-300">
+                      <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold capitalize text-violet-700 border border-violet-100">
                         {formatContentType(
                           item.type
                         )}
                       </span>
                     </div>
 
-                    <h2 className="mt-5 line-clamp-2 text-lg font-bold text-white">
+                    <h2 className="mt-5 line-clamp-2 text-lg font-bold text-zinc-900">
                       {item.title ||
                         formatContentType(
                           item.type
                         )}
                     </h2>
 
-                    <p className="mt-3 line-clamp-6 whitespace-pre-wrap text-sm leading-7 text-zinc-400">
+                    <p className="mt-3 line-clamp-6 whitespace-pre-wrap text-sm leading-7 text-zinc-600">
                       {item.content ||
                         "No content available."}
                     </p>
 
                     <div className="mt-auto pt-5">
-                      <p className="mb-4 text-xs text-zinc-600">
+                      <p className="mb-4 text-xs text-zinc-400 font-medium">
                         {formatDate(
                           item.createdAt
                         )}
@@ -460,7 +455,7 @@ export default function BusinessSavedPage() {
                               item
                             )
                           }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm font-semibold text-violet-300 transition hover:bg-violet-500/20"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
                         >
                           {isCopied ? (
                             <>
@@ -493,7 +488,7 @@ export default function BusinessSavedPage() {
                               itemId
                             )
                           }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
                           {isDeleting ? (
                             <LoaderCircle
@@ -520,24 +515,22 @@ export default function BusinessSavedPage() {
             )}
           </section>
         ) : (
-          <section className="rounded-3xl border border-dashed border-white/10 bg-[#0a0520]/50 px-6 py-20 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-300">
+          <section className="rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-20 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
               <Bookmark size={29} />
             </div>
 
-            <h2 className="mt-5 text-xl font-bold text-white">
+            <h2 className="mt-5 text-xl font-bold text-zinc-900">
               No saved content found
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-zinc-500">
-              Generate business content
-              and save it. Your saved
-              content will appear here.
+              Generate business content and save it. Your saved content will appear here.
             </p>
 
             <Link
               href="/business/post-generator"
-              className="mt-6 inline-flex rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-3 font-semibold text-white"
+              className="mt-6 inline-flex rounded-xl bg-violet-700 px-5 py-3 font-semibold text-white shadow-lg shadow-violet-200 hover:bg-violet-800"
             >
               Create business content
             </Link>
