@@ -14,17 +14,31 @@ async function parseResponse(response) {
   }
 
   if (!response.ok) {
-    throw new Error(
+    const error = new Error(
       data.message ||
         data.error ||
         "Hashtag request failed."
     );
+
+    error.status = response.status;
+    error.upgradeRequired = Boolean(
+      data.upgradeRequired
+    );
+    error.dailyLimit = data.dailyLimit;
+    error.usedToday = data.usedToday;
+    error.remainingFreeHashtags =
+      data.remainingFreeHashtags;
+    error.data = data;
+
+    throw error;
   }
 
   return data;
 }
 
-export async function generateBusinessHashtags(payload) {
+export async function generateBusinessHashtags(
+  payload
+) {
   const response = await fetch(
     "/api/ai/business/hashtag",
     {

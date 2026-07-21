@@ -7,14 +7,76 @@ import { verifyToken } from "@/lib/jwt";
 
 import User from "@/models/User";
 import BusinessProfile from "@/models/BusinessProfile";
+import GeneratedContent from "@/models/GeneratedContent";
 
-const getAuthenticatedBusiness = async () => {
+const FREE_DAILY_CAPTION_LIMIT = 3;
+
+const allowedPlatforms = [
+  "Instagram",
+  "Facebook",
+  "LinkedIn",
+  "Google Business",
+];
+
+const allowedTones = [
+  "Professional",
+  "Friendly",
+  "Promotional",
+  "Luxury",
+  "Casual",
+  "Emotional",
+];
+
+const allowedCTAOptions = [
+  "DM Us",
+  "Call Now",
+  "Book Today",
+  "Visit Store",
+  "Contact Us",
+  "Learn More",
+];
+
+function getIndiaDayRange() {
+  const IST_OFFSET_MS =
+    5.5 * 60 * 60 * 1000;
+
+  const now = new Date();
+
+  const indiaNow = new Date(
+    now.getTime() + IST_OFFSET_MS
+  );
+
+  const startOfDayUTC = Date.UTC(
+    indiaNow.getUTCFullYear(),
+    indiaNow.getUTCMonth(),
+    indiaNow.getUTCDate()
+  );
+
+  const startOfDay = new Date(
+    startOfDayUTC - IST_OFFSET_MS
+  );
+
+  const endOfDay = new Date(
+    startOfDay.getTime() +
+      24 * 60 * 60 * 1000
+  );
+
+  return {
+    startOfDay,
+    endOfDay,
+  };
+}
+
+async function getAuthenticatedBusiness() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+
+  const token =
+    cookieStore.get("token")?.value;
 
   if (!token) {
     return {
-      error: "Unauthorized. Please login first.",
+      error:
+        "Unauthorized. Please login first.",
       status: 401,
     };
   }
@@ -25,12 +87,15 @@ const getAuthenticatedBusiness = async () => {
     decoded = verifyToken(token);
   } catch {
     return {
-      error: "Invalid or expired token.",
+      error:
+        "Invalid or expired token.",
       status: 401,
     };
   }
 
-  const user = await User.findById(decoded.userId);
+  const user = await User.findById(
+    decoded.userId
+  );
 
   if (!user) {
     return {
@@ -41,45 +106,68 @@ const getAuthenticatedBusiness = async () => {
 
   if (user.role !== "business") {
     return {
-      error: "Only business users can use this tool.",
+      error:
+        "Only business users can use this tool.",
       status: 403,
     };
   }
 
   if (!user.onboardingCompleted) {
     return {
-      error: "Complete business onboarding first.",
+      error:
+        "Complete business onboarding first.",
       status: 403,
     };
   }
 
-  if (!user.planSelected || !user.plan) {
+  const now = new Date();
+
+  const trialEndsAt = user.trialEndsAt
+    ? new Date(user.trialEndsAt)
+    : null;
+
+  const trialExpired =
+    !user.planSelected &&
+    trialEndsAt &&
+    now >= trialEndsAt;
+
+  if (trialExpired) {
     return {
-      error: "Please select a plan first.",
+      error:
+        "Your free trial has expired. Please select a plan first.",
       status: 403,
+      upgradeRequired: true,
     };
   }
 
-  return { user };
-};
+  return {
+    user,
+  };
+}
 
 export async function POST(request) {
   try {
     await connectDB();
 
-    const auth = await getAuthenticatedBusiness();
+    const auth =
+      await getAuthenticatedBusiness();
 
     if (auth.error) {
       return NextResponse.json(
         {
           success: false,
           message: auth.error,
+          upgradeRequired: Boolean(
+            auth.upgradeRequired
+          ),
         },
         {
           status: auth.status,
         }
       );
     }
+
+    const user = auth.user;
 
     let body;
 
@@ -89,7 +177,8 @@ export async function POST(request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Please send valid JSON data.",
+          message:
+            "Please send valid JSON data.",
         },
         {
           status: 400,
@@ -97,19 +186,32 @@ export async function POST(request) {
       );
     }
 
-    const {
-      topic,
-      platform = "Instagram",
-      tone = "Professional",
-      cta = "DM Us",
-      emoji = true,
-    } = body;
+    const topic = String(
+      body.topic || ""
+    )
+      .trim()
+      .slice(0, 300);
 
-    if (!topic?.trim()) {
+    const platform = String(
+      body.platform || "Instagram"
+    ).trim();
+
+    const tone = String(
+      body.tone || "Professional"
+    ).trim();
+
+    const cta = String(
+      body.cta || "DM Us"
+    ).trim();
+
+    const emoji = Boolean(body.emoji);
+
+    if (!topic) {
       return NextResponse.json(
         {
           success: false,
-          message: "Business topic is required.",
+          message:
+            "Business topic is required.",
         },
         {
           status: 400,
@@ -117,15 +219,107 @@ export async function POST(request) {
       );
     }
 
-    const profile = await BusinessProfile.findOne({
-      user: auth.user._id,
-    }).lean();
+    if (
+      !allowedPlatforms.includes(
+        platform
+      )
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid social-media platform.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!allowedTones.includes(tone)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid caption tone.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      !allowedCTAOptions.includes(cta)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid call-to-action option.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const isFreeAccess =
+      !user.planSelected ||
+      user.plan === "free";
+
+    let generatedToday = 0;
+
+    if (isFreeAccess) {
+      const {
+        startOfDay,
+        endOfDay,
+      } = getIndiaDayRange();
+
+      generatedToday =
+        await GeneratedContent.countDocuments(
+          {
+            user: user._id,
+            type: "business-caption",
+            createdAt: {
+              $gte: startOfDay,
+              $lt: endOfDay,
+            },
+          }
+        );
+
+      if (
+        generatedToday >=
+        FREE_DAILY_CAPTION_LIMIT
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "You have used all 3 Free Plan caption generations for today. Upgrade to Business Pro for unlimited generations.",
+            upgradeRequired: true,
+            dailyLimit:
+              FREE_DAILY_CAPTION_LIMIT,
+            usedToday: generatedToday,
+            remainingFreeCaptions: 0,
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+    }
+
+    const profile =
+      await BusinessProfile.findOne({
+        user: user._id,
+      }).lean();
 
     if (!profile) {
       return NextResponse.json(
         {
           success: false,
-          message: "Business profile not found.",
+          message:
+            "Business profile not found.",
         },
         {
           status: 404,
@@ -133,57 +327,149 @@ export async function POST(request) {
       );
     }
 
+    const services = Array.isArray(
+      profile.services
+    )
+      ? profile.services
+          .filter(Boolean)
+          .join(", ")
+      : profile.services ||
+        "Not provided";
+
+    const businessGoal =
+      profile.goal ||
+      profile.primaryGoal ||
+      "Grow the business";
+
+    const targetCustomers =
+      profile.targetCustomers ||
+      "Local customers";
+
     const prompt = `
 You are Trendora, an expert social-media copywriter for local businesses.
 
-Create one high-quality business caption.
+Create ONE high-quality and ready-to-publish business caption.
 
-Business details:
-Business name: ${profile.businessName}
-Business type: ${profile.businessType}
-City: ${profile.city}
-Services: ${(profile.services || []).join(", ")}
-Target customers: ${
-      profile.targetCustomers || "Local customers"
-    }
-Business goal: ${profile.goal || "Grow business"}
+BUSINESS DETAILS
 
-Caption request:
-Topic: ${topic.trim()}
-Platform: ${platform}
-Tone: ${tone}
-CTA style: ${cta}
-Use emojis: ${emoji ? "Yes" : "No"}
+Business name:
+${profile.businessName || "Local business"}
 
-Rules:
+Business type:
+${profile.businessType || "Business"}
+
+City:
+${profile.city || "Not provided"}
+
+Services:
+${services}
+
+Target customers:
+${targetCustomers}
+
+Business goal:
+${businessGoal}
+
+CAPTION REQUIREMENTS
+
+Topic:
+${topic}
+
+Platform:
+${platform}
+
+Tone:
+${tone}
+
+Call-to-action style:
+${cta}
+
+Use emojis:
+${emoji ? "Yes" : "No"}
+
+RULES
+
+- Return only the final caption.
+- Do not add headings such as Caption or Result.
 - Make the caption suitable for ${platform}.
-- Focus on customer benefits.
-- Mention the city naturally when useful.
-- Use a strong opening line.
-- Add one clear call to action.
-- Do not invent prices, discounts, addresses, statistics or guarantees.
+- Use a strong and relevant opening line.
+- Focus on customer needs and benefits.
+- Mention ${
+      profile.city || "the city"
+    } naturally only when relevant.
+- Include one clear ${cta} call to action.
 - ${
       emoji
-        ? "Use relevant emojis naturally."
-        : "Do not use emojis."
+        ? "Use relevant emojis naturally, but do not overuse them."
+        : "Do not use any emojis."
     }
-- Do not add hashtags.
+- Do not include hashtags.
+- Do not invent prices or discounts.
+- Do not invent addresses or contact information.
+- Do not invent reviews, statistics or customer numbers.
+- Do not promise guaranteed results.
 - Do not use markdown formatting.
-- Return only the final caption.
+- Keep the caption concise and easy to understand.
+- Keep the caption below 180 words.
 `;
 
-    const interaction = await gemini.interactions.create({
-      model: "gemini-3.5-flash",
-      input: prompt,
-    });
+    let caption;
 
-    const caption = interaction.output_text?.trim();
+    try {
+      const interaction =
+        await gemini.interactions.create({
+          model: "gemini-3.5-flash",
+          input: prompt,
+        });
 
-    if (!caption) {
+      caption =
+        interaction.output_text?.trim();
+
+      if (!caption) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "AI did not generate a caption.",
+          },
+          {
+            status: 502,
+          }
+        );
+      }
+    } catch (aiError) {
+      console.error(
+        "Business caption AI error:",
+        aiError
+      );
+
+      if (
+        aiError?.status === 429 ||
+        aiError?.statusCode === 429 ||
+        aiError?.code === 429
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "AI request limit reached. Please wait a few minutes and try again.",
+          },
+          {
+            status: 429,
+          }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,
-          message: "AI did not generate a caption.",
+          message:
+            "AI could not generate the business caption. Please try again.",
+          error:
+            process.env.NODE_ENV ===
+            "development"
+              ? aiError?.message
+              : undefined,
         },
         {
           status: 503,
@@ -191,48 +477,69 @@ Rules:
       );
     }
 
+    const generatedContent =
+      await GeneratedContent.create({
+        user: user._id,
+        type: "business-caption",
+        prompt,
+        output: caption,
+      });
+
+    const remainingFreeCaptions =
+      isFreeAccess
+        ? Math.max(
+            0,
+            FREE_DAILY_CAPTION_LIMIT -
+              generatedToday -
+              1
+          )
+        : null;
+
     return NextResponse.json(
       {
         success: true,
-        message: "Business caption generated successfully.",
+        message:
+          "Business caption generated successfully.",
         data: {
+          id:
+            generatedContent._id.toString(),
+          type: generatedContent.type,
           caption,
-          topic: topic.trim(),
+          topic,
           platform,
           tone,
           cta,
-          emoji: Boolean(emoji),
+          emoji,
+          plan: user.plan || "free",
+          dailyLimit: isFreeAccess
+            ? FREE_DAILY_CAPTION_LIMIT
+            : null,
+          usedToday: isFreeAccess
+            ? generatedToday + 1
+            : null,
+          remainingFreeCaptions,
+          createdAt:
+            generatedContent.createdAt,
         },
       },
       {
-        status: 200,
+        status: 201,
       }
     );
   } catch (error) {
-    console.error("Business caption error:", error);
-
-    if (
-      error?.status === 429 ||
-      error?.statusCode === 429
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "AI request limit reached. Please wait and try again.",
-        },
-        {
-          status: 429,
-        }
-      );
-    }
+    console.error(
+      "Business caption generator error:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to generate business caption.",
+        message:
+          "Unable to generate business caption.",
         error:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV ===
+          "development"
             ? error.message
             : undefined,
       },

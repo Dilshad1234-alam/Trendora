@@ -7,6 +7,73 @@ import { verifyToken } from "@/lib/jwt";
 
 import User from "@/models/User";
 import BusinessProfile from "@/models/BusinessProfile";
+import GeneratedContent from "@/models/GeneratedContent";
+
+const FREE_DAILY_AD_COPY_LIMIT = 3;
+
+const ALLOWED_PLATFORMS = [
+  "Facebook Ads",
+  "Instagram Ads",
+  "Google Ads",
+  "LinkedIn Ads",
+];
+
+const ALLOWED_OBJECTIVES = [
+  "Generate Leads",
+  "Increase Sales",
+  "Website Traffic",
+  "Brand Awareness",
+  "Get Messages",
+  "Promote Offer",
+];
+
+const ALLOWED_TONES = [
+  "Professional",
+  "Friendly",
+  "Persuasive",
+  "Urgent",
+  "Luxury",
+  "Emotional",
+];
+
+const ALLOWED_CTAS = [
+  "Learn More",
+  "Contact Us",
+  "Book Now",
+  "Shop Now",
+  "Call Now",
+  "Send Message",
+  "Get Offer",
+];
+
+function getIndiaDayRange() {
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+  const now = new Date();
+  const indiaNow = new Date(
+    now.getTime() + IST_OFFSET_MS
+  );
+
+  const startOfDayUTC = Date.UTC(
+    indiaNow.getUTCFullYear(),
+    indiaNow.getUTCMonth(),
+    indiaNow.getUTCDate()
+  );
+
+  const startOfDay = new Date(
+    startOfDayUTC - IST_OFFSET_MS
+  );
+
+  const endOfDay = new Date(
+    startOfDay.getTime() +
+      24 * 60 * 60 * 1000
+  );
+
+  return {
+    startOfDay,
+    endOfDay,
+  };
+}
 
 async function getAuthenticatedBusiness() {
   const cookieStore = await cookies();
@@ -14,7 +81,7 @@ async function getAuthenticatedBusiness() {
 
   if (!token) {
     return {
-      error: "Unauthorized. Please login first.",
+      error: "Please login first.",
       status: 401,
     };
   }
@@ -53,7 +120,29 @@ async function getAuthenticatedBusiness() {
     };
   }
 
-  return { user };
+  const now = new Date();
+
+  const trialEndsAt = user.trialEndsAt
+    ? new Date(user.trialEndsAt)
+    : null;
+
+  const trialExpired =
+    !user.planSelected &&
+    trialEndsAt &&
+    now >= trialEndsAt;
+
+  if (trialExpired) {
+    return {
+      error:
+        "Your free trial has expired. Please select a plan first.",
+      status: 403,
+      upgradeRequired: true,
+    };
+  }
+
+  return {
+    user,
+  };
 }
 
 function normalizeAdCopy(output = "") {
@@ -66,85 +155,74 @@ function normalizeAdCopy(output = "") {
     const parsed = JSON.parse(cleanedOutput);
 
     return {
-      headline: String(parsed.headline || "").trim(),
-      primaryText: String(
-        parsed.primaryText || parsed.primary_text || ""
+      headline: String(
+        parsed.headline || ""
       ).trim(),
-      description: String(parsed.description || "").trim(),
+
+      primaryText: String(
+        parsed.primaryText ||
+          parsed.primary_text ||
+          ""
+      ).trim(),
+
+      description: String(
+        parsed.description || ""
+      ).trim(),
+
       cta: String(parsed.cta || "").trim(),
     };
   } catch {
-    const sections = {
+    return {
       headline: "",
-      primaryText: "",
+      primaryText: cleanedOutput,
       description: "",
       cta: "",
     };
-
-    const lines = cleanedOutput
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    let currentSection = "";
-
-    for (const line of lines) {
-      const normalizedLine = line
-        .replace(/\*\*/g, "")
-        .replace(/:$/, "")
-        .toLowerCase();
-
-      if (normalizedLine === "headline") {
-        currentSection = "headline";
-        continue;
-      }
-
-      if (
-        normalizedLine === "primary text" ||
-        normalizedLine === "primarytext"
-      ) {
-        currentSection = "primaryText";
-        continue;
-      }
-
-      if (normalizedLine === "description") {
-        currentSection = "description";
-        continue;
-      }
-
-      if (normalizedLine === "cta") {
-        currentSection = "cta";
-        continue;
-      }
-
-      if (currentSection) {
-        sections[currentSection] = sections[currentSection]
-          ? `${sections[currentSection]}\n${line}`
-          : line;
-      }
-    }
-
-    return sections;
   }
+}
+
+function formatAdCopy(adCopy) {
+  return [
+    `Headline:\n${adCopy.headline}`,
+    `Primary Text:\n${adCopy.primaryText}`,
+    `Description:\n${adCopy.description}`,
+    `CTA:\n${adCopy.cta}`,
+  ]
+    .filter((section) => {
+      const value = section
+        .split("\n")
+        .slice(1)
+        .join("\n")
+        .trim();
+
+      return Boolean(value);
+    })
+    .join("\n\n");
 }
 
 export async function POST(request) {
   try {
     await connectDB();
 
-    const auth = await getAuthenticatedBusiness();
+    const auth =
+      await getAuthenticatedBusiness();
 
     if (auth.error) {
       return NextResponse.json(
         {
           success: false,
           message: auth.error,
+          upgradeRequired: Boolean(
+            auth.upgradeRequired
+          ),
         },
         {
           status: auth.status,
         }
       );
     }
+
+    const user = auth.user;
 
     let body;
 
@@ -162,21 +240,36 @@ export async function POST(request) {
       );
     }
 
-    const {
-      goal = "Lead Generation",
-      product,
-      audience,
-      platform = "Facebook",
-      tone = "Professional",
-      cta = "Contact Us",
-      offer = "",
-    } = body;
+    const topic = String(body.topic || "")
+      .trim()
+      .slice(0, 300);
 
-    if (!product?.trim()) {
+    const platform = String(
+      body.platform || "Facebook Ads"
+    ).trim();
+
+    const objective = String(
+      body.objective || "Generate Leads"
+    ).trim();
+
+    const tone = String(
+      body.tone || "Professional"
+    ).trim();
+
+    const cta = String(
+      body.cta || "Learn More"
+    ).trim();
+
+    const offer = String(body.offer || "")
+      .trim()
+      .slice(0, 200);
+
+    if (!topic) {
       return NextResponse.json(
         {
           success: false,
-          message: "Product or service is required.",
+          message:
+            "Advertisement topic is required.",
         },
         {
           status: 400,
@@ -184,11 +277,12 @@ export async function POST(request) {
       );
     }
 
-    if (!audience?.trim()) {
+    if (!ALLOWED_PLATFORMS.includes(platform)) {
       return NextResponse.json(
         {
           success: false,
-          message: "Target audience is required.",
+          message:
+            "Invalid advertising platform.",
         },
         {
           status: 400,
@@ -196,15 +290,101 @@ export async function POST(request) {
       );
     }
 
-    const profile = await BusinessProfile.findOne({
-      user: auth.user._id,
-    }).lean();
+    if (!ALLOWED_OBJECTIVES.includes(objective)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid campaign objective.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!ALLOWED_TONES.includes(tone)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid ad-copy tone.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!ALLOWED_CTAS.includes(cta)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Invalid call-to-action value.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const isFreeAccess =
+      !user.planSelected ||
+      user.plan === "free";
+
+    let generatedToday = 0;
+
+    if (isFreeAccess) {
+      const { startOfDay, endOfDay } =
+        getIndiaDayRange();
+
+      generatedToday =
+        await GeneratedContent.countDocuments({
+          user: user._id,
+
+          // Must match GeneratedContent enum
+          type: "ad-copy",
+
+          createdAt: {
+            $gte: startOfDay,
+            $lt: endOfDay,
+          },
+        });
+
+      if (
+        generatedToday >=
+        FREE_DAILY_AD_COPY_LIMIT
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "You have used all 3 free ad-copy generations for today.",
+
+            upgradeRequired: true,
+            dailyLimit:
+              FREE_DAILY_AD_COPY_LIMIT,
+            usedToday: generatedToday,
+            remainingFreeAdCopies: 0,
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+    }
+
+    const profile =
+      await BusinessProfile.findOne({
+        user: user._id,
+      }).lean();
 
     if (!profile) {
       return NextResponse.json(
         {
           success: false,
-          message: "Business profile not found.",
+          message:
+            "Business profile not found.",
         },
         {
           status: 404,
@@ -212,75 +392,122 @@ export async function POST(request) {
       );
     }
 
-    const businessName =
-      profile.businessName || "Local Business";
+    const services = Array.isArray(
+      profile.services
+    )
+      ? profile.services
+          .filter(Boolean)
+          .join(", ")
+      : profile.services || "Not provided";
 
-    const businessType =
-      profile.businessType || "Business";
-
-    const city = profile.city || "Local Area";
-
-    const services = Array.isArray(profile.services)
-      ? profile.services.join(", ")
-      : profile.services || "";
+    const audience =
+      profile.targetAudience ||
+      profile.targetCustomers ||
+      profile.audience ||
+      "Potential customers";
 
     const prompt = `
 You are Trendora, an expert performance marketing copywriter.
 
 Create one high-converting advertisement for a real business.
 
-Business details:
-Business name: ${businessName}
-Business type: ${businessType}
-City: ${city}
-Services: ${services || "Not provided"}
-Business goal: ${profile.goal || "Grow the business"}
+Business name:
+${profile.businessName || "Local Business"}
 
-Advertisement request:
-Campaign goal: ${goal}
-Product or service: ${product.trim()}
-Target audience: ${audience.trim()}
-Advertising platform: ${platform}
-Tone: ${tone}
-Call to action: ${cta}
-Offer: ${offer.trim() || "No special offer provided"}
+Business type:
+${profile.businessType || "Business"}
+
+City:
+${profile.city || "Not provided"}
+
+Services:
+${services}
+
+Target audience:
+${audience}
+
+Business goal:
+${profile.goal || "Grow the business"}
+
+Advertisement topic:
+${topic}
+
+Advertising platform:
+${platform}
+
+Campaign objective:
+${objective}
+
+Tone:
+${tone}
+
+Call to action:
+${cta}
+
+Offer:
+${offer || "No special offer provided"}
 
 Rules:
-- Make the ad suitable for ${platform}.
-- Use a strong benefit-focused headline.
-- Primary text should clearly explain the customer problem and the business solution.
-- Keep the writing persuasive but truthful.
-- Use the business city naturally when useful.
-- Do not invent prices, discounts, guarantees, awards, customer numbers or statistics.
-- Mention the offer only when an offer was provided.
-- Avoid excessive emojis.
+- Make the advertisement suitable for ${platform}.
+- Write a strong benefit-focused headline.
+- Explain the customer problem and business solution.
+- Match the "${tone}" tone.
+- Support the "${objective}" objective.
+- Do not invent prices, statistics, discounts or guarantees.
 - Do not use hashtags.
 - Do not use markdown.
 - Return valid JSON only.
-- Do not add any text before or after the JSON.
 
-Return exactly this JSON structure:
+Return exactly:
 
 {
-  "headline": "A short, strong ad headline",
-  "primaryText": "The main advertisement text",
-  "description": "A short supporting description",
+  "headline": "Strong ad headline",
+  "primaryText": "Main advertisement copy",
+  "description": "Short supporting description",
   "cta": "${cta}"
 }
 `;
 
-    const interaction = await gemini.interactions.create({
-      model: "gemini-3.5-flash",
-      input: prompt,
-    });
+    let output;
 
-    const output = interaction.output_text?.trim();
+    try {
+      const interaction =
+        await gemini.interactions.create({
+          model: "gemini-3.5-flash",
+          input: prompt,
+        });
+
+      output =
+        interaction.output_text?.trim();
+    } catch (aiError) {
+      console.error(
+        "Business ad-copy AI error:",
+        aiError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            aiError?.status === 429
+              ? "AI request limit reached. Please try again later."
+              : "AI could not generate the advertisement.",
+        },
+        {
+          status:
+            aiError?.status === 429
+              ? 429
+              : 503,
+        }
+      );
+    }
 
     if (!output) {
       return NextResponse.json(
         {
           success: false,
-          message: "AI did not generate ad copy.",
+          message:
+            "AI did not generate ad copy.",
         },
         {
           status: 503,
@@ -294,16 +521,11 @@ Return exactly this JSON structure:
       !adCopy.headline ||
       !adCopy.primaryText
     ) {
-      console.error(
-        "Invalid ad-copy AI output:",
-        output
-      );
-
       return NextResponse.json(
         {
           success: false,
           message:
-            "AI returned an incomplete ad copy. Please try again.",
+            "AI returned incomplete ad copy.",
         },
         {
           status: 503,
@@ -311,56 +533,85 @@ Return exactly this JSON structure:
       );
     }
 
+    if (!adCopy.cta) {
+      adCopy.cta = cta;
+    }
+
+    const formattedAdCopy =
+      formatAdCopy(adCopy);
+
+    const generatedContent =
+      await GeneratedContent.create({
+        user: user._id,
+
+        // Must match GeneratedContent enum
+        type: "ad-copy",
+
+        prompt,
+        output: formattedAdCopy,
+      });
+
+    const remainingFreeAdCopies =
+      isFreeAccess
+        ? Math.max(
+            0,
+            FREE_DAILY_AD_COPY_LIMIT -
+              generatedToday -
+              1
+          )
+        : null;
+
     return NextResponse.json(
       {
         success: true,
-        message: "Ad copy generated successfully.",
+        message:
+          "Business ad copy generated successfully.",
+
         data: {
-          adCopy,
-          input: {
-            goal,
-            product: product.trim(),
-            audience: audience.trim(),
-            platform,
-            tone,
-            cta,
-            offer: offer.trim(),
-          },
+          id: generatedContent._id.toString(),
+          adCopy: formattedAdCopy,
+          adCopyParts: adCopy,
+          topic,
+          platform,
+          objective,
+          tone,
+          cta,
+          offer,
+          plan: user.plan || "free",
+
+          dailyLimit: isFreeAccess
+            ? FREE_DAILY_AD_COPY_LIMIT
+            : null,
+
+          usedToday: isFreeAccess
+            ? generatedToday + 1
+            : null,
+
+          remainingFreeAdCopies,
+
+          createdAt:
+            generatedContent.createdAt,
         },
       },
       {
-        status: 200,
+        status: 201,
       }
     );
   } catch (error) {
     console.error(
-      "Business ad-copy error:",
+      "Business ad-copy generator error:",
       error
     );
-
-    if (
-      error?.status === 429 ||
-      error?.statusCode === 429
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "AI request limit reached. Please wait and try again.",
-        },
-        {
-          status: 429,
-        }
-      );
-    }
 
     return NextResponse.json(
       {
         success: false,
         message:
           "Unable to generate business ad copy.",
+
         error:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV ===
+          "development"
             ? error.message
             : undefined,
       },
