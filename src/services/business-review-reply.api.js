@@ -14,11 +14,20 @@ async function parseResponse(response) {
   }
 
   if (!response.ok) {
-    throw new Error(
+    const error = new Error(
       data.message ||
       data.error ||
       "Unable to generate review reply."
     );
+
+    error.status = response.status;
+    error.upgradeRequired = Boolean(data.upgradeRequired);
+    error.dailyLimit = data.dailyLimit;
+    error.usedToday = data.usedToday;
+    error.remainingFreeReviewReplies = data.remainingFreeReviewReplies;
+    error.data = data;
+
+    throw error;
   }
 
   return data;

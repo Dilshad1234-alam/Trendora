@@ -1,0 +1,110 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, LoaderCircle, FileText, Clipboard, Check } from "lucide-react";
+import { generateBusinessProPost } from "@/services/business-pro.api";
+
+export default function BusinessProPostGenerator() {
+  const [formData, setFormData] = useState({
+    topic: "",
+    platform: "instagram",
+    postType: "promotional",
+    tone: "professional",
+    offer: "",
+    cta: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError("");
+      setResult(null);
+      const res = await generateBusinessProPost(formData);
+      setResult(res.data.output);
+    } catch (err) {
+      setError(err.message || "Failed to generate post.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <main className="min-h-screen bg-amber-50/30 p-4 font-sans sm:p-8">
+      <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-xl sm:p-10">
+        <Link href="/business-pro/dashboard" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700">
+          <ArrowLeft size={16} /> Back to Dashboard
+        </Link>
+        <h1 className="mb-2 text-3xl font-black text-zinc-900">Pro Post Generator</h1>
+        <p className="mb-8 text-zinc-500">Create high-quality promotional posts for any platform.</p>
+
+        {error && <div className="mb-6 rounded-xl bg-red-50 p-4 text-red-600">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="mb-1 block text-sm font-bold text-zinc-700">Post Topic</label>
+            <input required type="text" placeholder="e.g. Announcing our new winter collection" className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.topic} onChange={(e) => setFormData({...formData, topic: e.target.value})} />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-bold text-zinc-700">Platform</label>
+              <select className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.platform} onChange={(e) => setFormData({...formData, platform: e.target.value})}>
+                {["instagram", "facebook", "linkedin", "google-business"].map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-bold text-zinc-700">Post Type</label>
+              <select className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.postType} onChange={(e) => setFormData({...formData, postType: e.target.value})}>
+                {["promotional", "educational", "offer", "service", "testimonial", "festival", "engagement"].map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-bold text-zinc-700">Tone</label>
+              <select className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.tone} onChange={(e) => setFormData({...formData, tone: e.target.value})}>
+                {["professional", "friendly", "persuasive", "casual", "urgent", "informative"].map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-bold text-zinc-700">Custom CTA (Optional)</label>
+              <input type="text" placeholder="e.g. Link in bio!" className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.cta} onChange={(e) => setFormData({...formData, cta: e.target.value})} />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-bold text-zinc-700">Special Offer (Optional)</label>
+            <input type="text" placeholder="e.g. Use code WELCOME for 10% off" className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.offer} onChange={(e) => setFormData({...formData, offer: e.target.value})} />
+          </div>
+
+          <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 p-4 font-bold text-white hover:bg-amber-700 disabled:opacity-50">
+            {loading ? <LoaderCircle className="animate-spin" /> : <FileText />} Generate Post
+          </button>
+        </form>
+
+        {result && (
+          <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-bold text-zinc-800">Generated Post</h3>
+              <button onClick={handleCopy} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-amber-600 shadow-sm">
+                {copied ? <Check size={16} /> : <Clipboard size={16} />} {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{result}</pre>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

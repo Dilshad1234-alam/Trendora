@@ -166,6 +166,37 @@ export async function POST(request) {
       );
     }
 
+    const FREE_DAILY_CREATOR_LIMIT = 3;
+    let remainingFreeGenerations = 0;
+    const isFreeAccess = !user.planSelected || user.plan === "free";
+
+    if (isFreeAccess) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const generationsToday = await GeneratedContent.countDocuments({
+        user: user._id,
+        type: "thumbnail-title",
+        createdAt: { $gte: today },
+      });
+
+      if (generationsToday >= FREE_DAILY_CREATOR_LIMIT) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Daily free limit reached. Please upgrade your plan for unlimited access.",
+            upgradeRequired: true,
+            dailyLimit: FREE_DAILY_CREATOR_LIMIT,
+            remainingFreeGenerations: 0,
+          },
+          { status: 403 }
+        );
+      }
+
+      remainingFreeGenerations = FREE_DAILY_CREATOR_LIMIT - generationsToday - 1;
+    }
+
     const platform =
       customPlatform || creatorProfile.platform;
 
@@ -251,6 +282,10 @@ Rules:
           topic,
           output,
           createdAt: generatedContent.createdAt,
+          dailyLimit: isFreeAccess ? FREE_DAILY_CREATOR_LIMIT : null,
+          remainingFreeGenerations: isFreeAccess
+            ? remainingFreeGenerations
+            : null,
         },
       },
       { status: 201 }

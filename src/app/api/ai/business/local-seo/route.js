@@ -7,6 +7,29 @@ import { verifyToken } from "@/lib/jwt";
 
 import User from "@/models/User";
 import BusinessProfile from "@/models/BusinessProfile";
+import GeneratedContent from "@/models/GeneratedContent";
+
+const FREE_DAILY_LOCAL_SEO_LIMIT = 3;
+
+function getIndiaDayRange() {
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+  const now = new Date();
+  const indiaNow = new Date(now.getTime() + IST_OFFSET_MS);
+
+  const startOfDayUTC = Date.UTC(
+    indiaNow.getUTCFullYear(),
+    indiaNow.getUTCMonth(),
+    indiaNow.getUTCDate()
+  );
+
+  const startOfDay = new Date(startOfDayUTC - IST_OFFSET_MS);
+  const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+
+  return {
+    startOfDay,
+    endOfDay,
+  };
+}
 
 async function getAuthenticatedBusiness() {
   const cookieStore = await cookies();
@@ -30,7 +53,19 @@ async function getAuthenticatedBusiness() {
     };
   }
 
-  const user = await User.findById(decoded.userId);
+  const userId =
+    decoded?.userId ||
+    decoded?.id ||
+    decoded?._id;
+
+  if (!userId) {
+    return {
+      error: "Invalid authentication token.",
+      status: 401,
+    };
+  }
+
+  const user = await User.findById(userId);
 
   if (!user) {
     return {
@@ -66,8 +101,9 @@ async function getAuthenticatedBusiness() {
 
   if (trialExpired) {
     return {
-      error: "Please select a plan first.",
+      error: "Your free trial has expired. Please select a plan first.",
       status: 403,
+      upgradeRequired: true,
     };
   }
 
@@ -195,12 +231,15 @@ export async function POST(request) {
         {
           success: false,
           message: auth.error,
+          upgradeRequired: Boolean(auth.upgradeRequired),
         },
         {
           status: auth.status,
         }
       );
     }
+
+    const user = auth.user;
 
     let body = {};
 
@@ -230,7 +269,7 @@ export async function POST(request) {
 
     const profile =
       await BusinessProfile.findOne({
-        user: auth.user._id,
+        user: user._id,
       }).lean();
 
     if (!profile) {
@@ -309,6 +348,39 @@ export async function POST(request) {
           status: 400,
         }
       );
+    }
+
+    const isFreeAccess = !user.planSelected || user.plan === "free";
+    let generatedToday = 0;
+
+    if (isFreeAccess) {
+      const { startOfDay, endOfDay } = getIndiaDayRange();
+
+      generatedToday = await GeneratedContent.countDocuments({
+        user: user._id,
+        type: "local-seo",
+        createdAt: {
+          $gte: startOfDay,
+          $lt: endOfDay,
+        },
+      });
+
+      if (generatedToday >= FREE_DAILY_LOCAL_SEO_LIMIT) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "You have used all 3 free Local SEO package generations for today. Upgrade to Business Pro for unlimited generations.",
+            upgradeRequired: true,
+            dailyLimit: FREE_DAILY_LOCAL_SEO_LIMIT,
+            usedToday: generatedToday,
+            remainingFreeLocalSeo: 0,
+          },
+          {
+            status: 403,
+          }
+        );
+      }
     }
 
     const location = [
@@ -409,21 +481,63 @@ Return exactly this structure:
 }
 `;
 
-    const interaction =
-      await gemini.interactions.create({
-        model: "gemini-3.5-flash",
-        input: prompt,
-      });
+    let output;
+    try {
+      const interaction =
+        await gemini.interactions.create({
+          model: "gemini-3.5-flash",
+          input: prompt,
+        });
 
-    const output =
-      interaction.output_text?.trim();
+      output =
+        interaction.output_text?.trim();
 
-    if (!output) {
+      if (!output) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "AI did not generate Local SEO content.",
+          },
+          {
+            status: 502,
+          }
+        );
+      }
+    } catch (aiError) {
+      console.error(
+        "Business Local SEO AI error:",
+        aiError
+      );
+
+      if (
+        aiError?.status === 429 ||
+        aiError?.statusCode === 429 ||
+        aiError?.code === 429
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "AI request limit reached. Please wait a few minutes and try again.",
+          },
+          {
+            status: 429,
+          }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,
           message:
-            "AI did not generate Local SEO content.",
+            "AI could not generate the Local SEO package. Please try again.",
+
+          error:
+            process.env.NODE_ENV ===
+            "development"
+              ? aiError.message
+              : undefined,
         },
         {
           status: 503,
@@ -460,6 +574,17 @@ Return exactly this structure:
       );
     }
 
+    const generatedContent = await GeneratedContent.create({
+      user: user._id,
+      type: "local-seo",
+      prompt,
+      output: JSON.stringify(seoContent),
+    });
+
+    const remainingFreeLocalSeo = isFreeAccess
+      ? Math.max(0, FREE_DAILY_LOCAL_SEO_LIMIT - generatedToday - 1)
+      : null;
+
     return NextResponse.json(
       {
         success: true,
@@ -467,8 +592,8 @@ Return exactly this structure:
           "Local SEO package generated successfully.",
 
         data: {
+          id: generatedContent._id.toString(),
           seoContent,
-
           input: {
             businessName:
               finalBusinessName,
@@ -488,10 +613,15 @@ Return exactly this structure:
             audience:
               finalAudience,
           },
+          plan: user.plan || "free",
+          dailyLimit: isFreeAccess ? FREE_DAILY_LOCAL_SEO_LIMIT : null,
+          usedToday: isFreeAccess ? generatedToday + 1 : null,
+          remainingFreeLocalSeo,
+          createdAt: generatedContent.createdAt,
         },
       },
       {
-        status: 200,
+        status: 201,
       }
     );
   } catch (error) {
@@ -499,22 +629,6 @@ Return exactly this structure:
       "Business Local SEO error:",
       error
     );
-
-    if (
-      error?.status === 429 ||
-      error?.statusCode === 429
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "AI request limit reached. Please wait and try again.",
-        },
-        {
-          status: 429,
-        }
-      );
-    }
 
     return NextResponse.json(
       {

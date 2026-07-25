@@ -14,11 +14,20 @@ async function parseResponse(response) {
   }
 
   if (!response.ok) {
-    throw new Error(
+    const error = new Error(
       data?.message ||
         data?.error ||
         "Local SEO request failed."
     );
+
+    error.status = response.status;
+    error.upgradeRequired = Boolean(data.upgradeRequired);
+    error.dailyLimit = data.dailyLimit;
+    error.usedToday = data.usedToday;
+    error.remainingFreeLocalSeo = data.remainingFreeLocalSeo;
+    error.data = data;
+
+    throw error;
   }
 
   return data;
@@ -32,12 +41,9 @@ export async function generateBusinessLocalSeo(
     {
       method: "POST",
       credentials: "include",
-
       headers: {
-        "Content-Type":
-          "application/json",
+        "Content-Type": "application/json",
       },
-
       body: JSON.stringify(payload),
     }
   );

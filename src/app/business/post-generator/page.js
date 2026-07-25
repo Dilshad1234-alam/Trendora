@@ -1,21 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bookmark,
   Copy,
+  Crown,
   FileText,
   LoaderCircle,
   RefreshCw,
   Sparkles,
 } from "lucide-react";
 
+import { getCurrentUser } from "@/services/auth.api";
 import { generateBusinessPost } from "@/services/business-ai.api";
 import { saveContent } from "@/services/saved.api";
 
 export default function BusinessPostGeneratorPage() {
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     topic: "",
     platform: "instagram",
@@ -28,6 +36,10 @@ export default function BusinessPostGeneratorPage() {
   const [result, setResult] = useState("");
   const [generatedId, setGeneratedId] = useState("");
 
+  const [dailyLimit, setDailyLimit] = useState(null);
+  const [remainingFreePosts, setRemainingFreePosts] = useState(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -37,6 +49,63 @@ export default function BusinessPostGeneratorPage() {
     type: "",
     text: "",
   });
+
+  useEffect(() => {
+    async function checkUser() {
+      try {
+        const response = await getCurrentUser();
+
+        const currentUser =
+          response?.user ||
+          response?.data?.user;
+
+        if (!currentUser) {
+          router.replace("/login");
+          return;
+        }
+
+        if (currentUser.role !== "business") {
+          if (currentUser.role === "creator") {
+            router.replace("/creator/dashboard");
+          } else {
+            router.replace("/");
+          }
+
+          return;
+        }
+
+        if (!currentUser.onboardingCompleted) {
+          router.replace("/onboarding/business");
+          return;
+        }
+
+        const trialExpired =
+          !currentUser.planSelected &&
+          currentUser.trialExpired;
+
+        if (trialExpired) {
+          router.replace("/onboarding/select-plan");
+          return;
+        }
+
+        setUser(currentUser);
+      } catch {
+        router.replace("/login");
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+
+    checkUser();
+  }, [router]);
+
+  const isFreeAccess =
+    !user?.planSelected ||
+    user?.plan === "free";
+
+  const dailyLimitReached =
+    isFreeAccess &&
+    remainingFreePosts === 0;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -53,6 +122,15 @@ export default function BusinessPostGeneratorPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (dailyLimitReached) {
+      setUpgradeRequired(true);
+      setMessage({
+        type: "error",
+        text: "You have used all 3 free business-post generations for today.",
+      });
+      return;
+    }
+
     if (!formData.topic.trim()) {
       setMessage({
         type: "error",
@@ -66,6 +144,7 @@ export default function BusinessPostGeneratorPage() {
       setResult("");
       setGeneratedId("");
       setSaved(false);
+      setUpgradeRequired(false);
       setMessage({ type: "", text: "" });
 
       const data = await generateBusinessPost({
@@ -75,9 +154,59 @@ export default function BusinessPostGeneratorPage() {
         cta: formData.cta.trim(),
       });
 
-      setResult(data.data.output);
-      setGeneratedId(data.data.id);
+      const resultData = data?.data || {};
+
+      setResult(resultData.output || "");
+      setGeneratedId(resultData.id || "");
+
+      if (
+        resultData.dailyLimit !== null &&
+        resultData.dailyLimit !== undefined
+      ) {
+        setDailyLimit(resultData.dailyLimit);
+      }
+
+      if (
+        resultData.remainingFreePosts !== null &&
+        resultData.remainingFreePosts !== undefined
+      ) {
+        setRemainingFreePosts(resultData.remainingFreePosts);
+      }
+
+      setMessage({
+        type: "success",
+        text: "Business post generated successfully.",
+      });
     } catch (error) {
+      const errorDailyLimit =
+        error?.dailyLimit ??
+        error?.data?.dailyLimit;
+
+      const errorRemaining =
+        error?.remainingFreePosts ??
+        error?.data?.remainingFreePosts;
+
+      if (
+        errorDailyLimit !== null &&
+        errorDailyLimit !== undefined
+      ) {
+        setDailyLimit(errorDailyLimit);
+      }
+
+      if (
+        errorRemaining !== null &&
+        errorRemaining !== undefined
+      ) {
+        setRemainingFreePosts(errorRemaining);
+      }
+
+      setUpgradeRequired(
+        Boolean(
+          error?.upgradeRequired ||
+            error?.data?.upgradeRequired
+        )
+      );
+
       setMessage({
         type: "error",
         text: error.message || "Unable to generate post.",
@@ -135,6 +264,17 @@ export default function BusinessPostGeneratorPage() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <LoaderCircle
+          size={30}
+          className="animate-spin text-violet-700"
+        />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-white text-zinc-900 font-sans">
       {/* Subtle top gradient */}
@@ -167,6 +307,67 @@ export default function BusinessPostGeneratorPage() {
             business profile.
           </p>
         </div>
+
+        {isFreeAccess && (
+          <section className="mb-6 flex flex-col gap-4 rounded-2xl border border-violet-200 bg-violet-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles
+                  size={18}
+                  className="text-violet-700"
+                />
+
+                <p className="font-bold text-violet-800">
+                  Free Plan
+                </p>
+              </div>
+
+              <p className="mt-1 text-sm text-zinc-600">
+                Generate up to 3 business posts every day.
+              </p>
+            </div>
+
+            {dailyLimit !== null &&
+              remainingFreePosts !==
+                null && (
+                <div className="rounded-xl border border-violet-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                  <span className="font-bold text-violet-700">
+                    {
+                      remainingFreePosts
+                    }
+                  </span>{" "}
+                  of {dailyLimit} remaining
+                  today
+                </div>
+              )}
+          </section>
+        )}
+
+        {(upgradeRequired ||
+          dailyLimitReached) && (
+          <section className="mb-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-bold text-amber-800">
+                Daily Free Limit Reached
+              </p>
+
+              <p className="mt-1 text-sm text-amber-700">
+                Your free generations will
+                reset tomorrow. Upgrade to
+                Business Pro for unlimited
+                post generation.
+              </p>
+            </div>
+
+            <Link
+              href="/onboarding/select-plan"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-800"
+            >
+              <Crown size={17} />
+              Upgrade plan
+            </Link>
+          </section>
+        )}
 
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           {/* Form Panel */}
@@ -298,13 +499,18 @@ export default function BusinessPostGeneratorPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || dailyLimitReached}
                 className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-4 font-semibold text-white transition hover:bg-violet-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-violet-200 hover:shadow-xl hover:shadow-violet-200 transition-all duration-300 overflow-hidden"
               >
                 {loading ? (
                   <>
                     <LoaderCircle size={18} className="animate-spin" />
                     Generating post...
+                  </>
+                ) : dailyLimitReached ? (
+                  <>
+                    <Crown size={18} />
+                    Daily limit reached
                   </>
                 ) : (
                   <>

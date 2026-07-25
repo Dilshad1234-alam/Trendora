@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bookmark,
@@ -11,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { getCurrentUser } from "@/services/auth.api";
 import {
   deleteSavedContent,
   getSavedContents,
@@ -27,6 +29,10 @@ const filters = [
 ];
 
 export default function SavedContentPage() {
+  const router = useRouter();
+
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [items, setItems] = useState([]);
   const [selectedType, setSelectedType] = useState("all");
   const [search, setSearch] = useState("");
@@ -34,6 +40,50 @@ export default function SavedContentPage() {
   const [deletingId, setDeletingId] = useState("");
   const [copiedId, setCopiedId] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function checkUser() {
+      try {
+        const response = await getCurrentUser();
+
+        const currentUser = response?.user || response?.data?.user;
+
+        if (!currentUser) {
+          router.replace("/login");
+          return;
+        }
+
+        if (currentUser.role !== "creator") {
+          if (currentUser.role === "business") {
+            router.replace("/business/dashboard");
+          } else {
+            router.replace("/");
+          }
+          return;
+        }
+
+        if (!currentUser.onboardingCompleted) {
+          router.replace("/onboarding/creator");
+          return;
+        }
+
+        const trialExpired = !currentUser.planSelected && currentUser.trialExpired;
+
+        if (trialExpired) {
+          router.replace("/onboarding/select-plan");
+          return;
+        }
+
+        // Authentication successful
+      } catch {
+        router.replace("/login");
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+
+    checkUser();
+  }, [router]);
 
   const loadSavedContents = useCallback(async () => {
     try {
@@ -54,12 +104,14 @@ export default function SavedContentPage() {
   }, [selectedType, search]);
 
   useEffect(() => {
+    if (authLoading) return;
+
     const timeout = setTimeout(() => {
       loadSavedContents();
     }, 350);
 
     return () => clearTimeout(timeout);
-  }, [loadSavedContents]);
+  }, [loadSavedContents, authLoading]);
 
   const handleCopy = async (item) => {
     try {
@@ -97,45 +149,47 @@ export default function SavedContentPage() {
     }
   };
 
-  return (
-    <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[35%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      {/* Background Dots Grid Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+  if (authLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <LoaderCircle size={30} className="animate-spin text-violet-700" />
+      </main>
+    );
+  }
 
-      <div className="relative z-10 mx-auto max-w-6xl">
+  return (
+    <main className="min-h-screen bg-white text-zinc-900 font-sans">
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/creator/dashboard"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 transition-colors"
         >
           <ArrowLeft size={17} />
           Back to dashboard
         </Link>
 
         <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-            <Bookmark size={22} className="animate-pulse" />
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+            <Bookmark size={22} />
           </div>
 
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
             Saved Library
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            Your Saved <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">Content</span>
+          <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
+            Your Saved <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">Content</span>
           </h1>
 
-          <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
             Search, copy and reuse your generated hooks, scripts and captions.
           </p>
         </div>
 
         {/* Filter and Search Section */}
-        <section className="mb-6 rounded-2xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-4 shadow-sm">
+        <section className="mb-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-2">
               {filters.map((filter) => (
@@ -145,8 +199,8 @@ export default function SavedContentPage() {
                   onClick={() => setSelectedType(filter.value)}
                   className={`rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer ${
                     selectedType === filter.value
-                      ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]"
-                      : "bg-white/5 text-zinc-300 hover:bg-white/10"
+                      ? "bg-violet-700 text-white shadow-md shadow-violet-200"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                   }`}
                 >
                   {filter.label}
@@ -157,7 +211,7 @@ export default function SavedContentPage() {
             <div className="relative w-full lg:max-w-sm">
               <Search
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
               />
 
               <input
@@ -165,16 +219,16 @@ export default function SavedContentPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search saved content..."
-                className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 py-3 pl-11 pr-4 text-white outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
+                className="w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
               />
             </div>
           </div>
         </section>
 
         {message && (
-          <div className="mb-6 rounded-xl border p-4 text-sm flex items-start gap-3 backdrop-blur-md transition-all duration-300 border-red-500/25 bg-red-500/10 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
-            <div className="p-1 rounded-md shrink-0 bg-red-500/20">
-              <span className="text-red-400 font-bold block leading-none w-4 h-4 text-center">!</span>
+          <div className="mb-6 rounded-xl border p-4 text-sm flex items-start gap-3 transition-all duration-300 border-red-200 bg-red-50 text-red-700">
+            <div className="p-1 rounded-md shrink-0 bg-red-100">
+              <span className="text-red-600 font-bold block leading-none w-4 h-4 text-center">!</span>
             </div>
             <div>{message}</div>
           </div>
@@ -182,43 +236,47 @@ export default function SavedContentPage() {
 
         {loading ? (
           <div className="flex min-h-72 items-center justify-center">
-            <div className="flex items-center gap-3 text-violet-400">
+            <div className="flex items-center gap-3 text-violet-700">
               <LoaderCircle className="animate-spin" size={24} />
-              <span className="font-medium text-zinc-300">Loading saved content...</span>
+              <span className="font-medium text-zinc-600">Loading saved content...</span>
             </div>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/[0.01] px-6 text-center">
-            <Bookmark size={34} className="mb-4 text-zinc-600 animate-pulse" />
+          <div className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 text-center">
+            <Bookmark size={34} className="mb-4 text-zinc-400" />
 
-            <h2 className="text-lg font-bold text-zinc-300">
+            <h2 className="text-lg font-bold text-zinc-700">
               No saved content found
             </h2>
 
-            <p className="mt-2 max-w-md text-xs leading-relaxed text-zinc-500">
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
               Generate a hook, script or caption and press Save to add it here.
             </p>
           </div>
         ) : (
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2">
             {items.map((item) => (
               <article
                 key={item.id}
-                className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-sm hover:border-violet-500/20 transition-all duration-300 flex flex-col justify-between"
+                className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm hover:border-violet-300 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="mb-4 flex items-start justify-between gap-4">
                     <div>
-                      <span className="rounded-full bg-violet-500/10 border border-violet-500/20 px-3 py-1 text-[10px] font-semibold uppercase text-violet-400 tracking-wider">
+                      <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase text-violet-700 tracking-wider">
                         {item.type}
                       </span>
 
-                      <h2 className="mt-3 text-lg font-bold text-white leading-tight">
+                      <h2 className="mt-3 text-lg font-bold text-zinc-900 leading-tight">
                         {item.title}
                       </h2>
 
-                      <p className="mt-1 text-[11px] text-zinc-500">
-                        {new Date(item.createdAt).toLocaleDateString()}
+                      <p className="mt-1 text-xs text-zinc-500 font-medium">
+                        {new Date(item.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
                       </p>
                     </div>
 
@@ -226,8 +284,8 @@ export default function SavedContentPage() {
                       <button
                         type="button"
                         onClick={() => handleCopy(item)}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 border border-violet-500/20 transition-colors cursor-pointer"
-                        aria-label="Copy saved content"
+                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
+                        title="Copy content"
                       >
                         <Copy size={17} />
                       </button>
@@ -236,14 +294,11 @@ export default function SavedContentPage() {
                         type="button"
                         onClick={() => handleDelete(item.id)}
                         disabled={deletingId === item.id}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors disabled:opacity-50 cursor-pointer"
-                        aria-label="Delete saved content"
+                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 cursor-pointer"
+                        title="Delete content"
                       >
                         {deletingId === item.id ? (
-                          <LoaderCircle
-                            size={17}
-                            className="animate-spin"
-                          />
+                          <LoaderCircle size={17} className="animate-spin" />
                         ) : (
                           <Trash2 size={17} />
                         )}
@@ -251,13 +306,14 @@ export default function SavedContentPage() {
                     </div>
                   </div>
 
-                  <div className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-2xl bg-[#120f2e]/35 border border-white/5 p-4 text-sm leading-relaxed text-zinc-300">
+                  <div className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-2xl bg-zinc-50 border border-zinc-100 p-4 text-sm leading-relaxed text-zinc-700">
                     {item.content}
                   </div>
                 </div>
 
                 {copiedId === item.id && (
-                  <p className="mt-3 text-xs font-semibold text-emerald-400">
+                  <p className="mt-4 text-sm font-semibold text-emerald-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     Copied to clipboard.
                   </p>
                 )}

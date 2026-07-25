@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Check,
   Clipboard,
+  Crown,
   LoaderCircle,
   MessageCircle,
   RefreshCw,
@@ -37,6 +38,8 @@ const initialReply = {
 export default function WhatsappReplyGeneratorPage() {
   const router = useRouter();
 
+  const [user, setUser] = useState(null);
+
   const [formData, setFormData] = useState({
     customerMessage: "",
     tone: "Professional",
@@ -49,6 +52,13 @@ export default function WhatsappReplyGeneratorPage() {
 
   const [generatedReply, setGeneratedReply] =
     useState(initialReply);
+  const [generatedId, setGeneratedId] = useState("");
+
+  const [dailyLimit, setDailyLimit] = useState(null);
+  const [
+    remainingFreeWhatsAppReplies,
+    setRemainingFreeWhatsAppReplies,
+  ] = useState(null);
 
   const [authLoading, setAuthLoading] =
     useState(true);
@@ -70,6 +80,9 @@ export default function WhatsappReplyGeneratorPage() {
 
   const [success, setSuccess] =
     useState("");
+
+  const [upgradeRequired, setUpgradeRequired] =
+    useState(false);
 
   useEffect(() => {
     async function checkUser() {
@@ -99,6 +112,17 @@ export default function WhatsappReplyGeneratorPage() {
           router.replace("/onboarding/business");
           return;
         }
+
+        const trialExpired =
+          !currentUser.planSelected &&
+          currentUser.trialExpired;
+
+        if (trialExpired) {
+          router.replace("/onboarding/select-plan");
+          return;
+        }
+
+        setUser(currentUser);
       } catch {
         router.replace("/login");
       } finally {
@@ -108,6 +132,14 @@ export default function WhatsappReplyGeneratorPage() {
 
     checkUser();
   }, [router]);
+
+  const isFreeAccess =
+    !user?.planSelected ||
+    user?.plan === "free";
+
+  const dailyLimitReached =
+    isFreeAccess &&
+    remainingFreeWhatsAppReplies === 0;
 
   const hasReply = useMemo(() => {
     return Boolean(generatedReply.reply);
@@ -148,6 +180,16 @@ export default function WhatsappReplyGeneratorPage() {
   async function handleGenerate(event) {
     event?.preventDefault();
 
+    if (dailyLimitReached) {
+      setUpgradeRequired(true);
+
+      setError(
+        "You have used all 3 free whatsapp-reply generations for today."
+      );
+
+      return;
+    }
+
     if (!validateForm()) return;
 
     try {
@@ -156,6 +198,7 @@ export default function WhatsappReplyGeneratorPage() {
       setSuccess("");
       setSaved(false);
       setCopiedField("");
+      setUpgradeRequired(false);
 
       const response =
         await generateBusinessWhatsappReply({
@@ -167,15 +210,69 @@ export default function WhatsappReplyGeneratorPage() {
             formData.additionalContext.trim(),
         });
 
+      const result = response?.data || {};
+      const generatedReplyData = result.generatedReply;
+
       setGeneratedReply(
-        response?.data?.generatedReply ||
+        generatedReplyData ||
           initialReply
       );
+
+      setGeneratedId(result.id || "");
+
+      if (
+        result.dailyLimit !== null &&
+        result.dailyLimit !== undefined
+      ) {
+        setDailyLimit(result.dailyLimit);
+      }
+
+      if (
+        result.remainingFreeWhatsAppReplies !==
+          null &&
+        result.remainingFreeWhatsAppReplies !==
+          undefined
+      ) {
+        setRemainingFreeWhatsAppReplies(
+          result.remainingFreeWhatsAppReplies
+        );
+      }
 
       setSuccess(
         "WhatsApp reply generated successfully."
       );
     } catch (generateError) {
+      const errorDailyLimit =
+        generateError?.dailyLimit ??
+        generateError?.data?.dailyLimit;
+
+      const errorRemaining =
+        generateError?.remainingFreeWhatsAppReplies ??
+        generateError?.data?.remainingFreeWhatsAppReplies;
+
+      if (
+        errorDailyLimit !== null &&
+        errorDailyLimit !== undefined
+      ) {
+        setDailyLimit(errorDailyLimit);
+      }
+
+      if (
+        errorRemaining !== null &&
+        errorRemaining !== undefined
+      ) {
+        setRemainingFreeWhatsAppReplies(
+          errorRemaining
+        );
+      }
+
+      setUpgradeRequired(
+        Boolean(
+          generateError?.upgradeRequired ||
+            generateError?.data?.upgradeRequired
+        )
+      );
+
       setError(
         generateError.message ||
           "Unable to generate WhatsApp reply."
@@ -253,6 +350,7 @@ ${generatedReply.followUpMessage}`;
         title: "WhatsApp Customer Reply" ,
         prompt: JSON.stringify(formData),
         content: getFormattedContent(),
+        generatedContentId: generatedId || null,
       });
 
       setSaved(true);
@@ -328,19 +426,80 @@ ${generatedReply.followUpMessage}`;
           </div>
         </header>
 
+        {isFreeAccess && (
+          <section className="mt-6 flex flex-col gap-4 rounded-2xl border border-violet-200 bg-violet-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles
+                  size={18}
+                  className="text-violet-700"
+                />
+
+                <p className="font-bold text-violet-800">
+                  Free Plan
+                </p>
+              </div>
+
+              <p className="mt-1 text-sm text-zinc-600">
+                Generate up to 3 WhatsApp replies every day.
+              </p>
+            </div>
+
+            {dailyLimit !== null &&
+              remainingFreeWhatsAppReplies !==
+                null && (
+                <div className="rounded-xl border border-violet-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                  <span className="font-bold text-violet-700">
+                    {
+                      remainingFreeWhatsAppReplies
+                    }
+                  </span>{" "}
+                  of {dailyLimit} remaining
+                  today
+                </div>
+              )}
+          </section>
+        )}
+
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
+          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
+          <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
             {success}
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        {(upgradeRequired ||
+          dailyLimitReached) && (
+          <section className="mt-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-bold text-amber-800">
+                Daily Free Limit Reached
+              </p>
+
+              <p className="mt-1 text-sm text-amber-700">
+                Your free generations will
+                reset tomorrow. Upgrade to
+                Business Pro for unlimited
+                whatsapp-reply generation.
+              </p>
+            </div>
+
+            <Link
+              href="/onboarding/select-plan"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-800"
+            >
+              <Crown size={17} />
+              Upgrade plan
+            </Link>
+          </section>
+        )}
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <form
             onSubmit={handleGenerate}
             className="rounded-3xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm"
@@ -467,8 +626,8 @@ ${generatedReply.followUpMessage}`;
 
             <button
               type="submit"
-              disabled={generating}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-200 hover:bg-violet-800 disabled:opacity-50"
+              disabled={generating || dailyLimitReached}
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-200 hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {generating ? (
                 <>
@@ -477,6 +636,11 @@ ${generatedReply.followUpMessage}`;
                     className="animate-spin"
                   />
                   Generating reply...
+                </>
+              ) : dailyLimitReached ? (
+                <>
+                  <Crown size={18} />
+                  Daily limit reached
                 </>
               ) : (
                 <>
@@ -594,7 +758,7 @@ ${generatedReply.followUpMessage}`;
                   <button
                     type="button"
                     onClick={handleGenerate}
-                    disabled={generating}
+                    disabled={generating || dailyLimitReached}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white hover:bg-violet-800 transition-colors disabled:opacity-50"
                   >
                     {generating ? (
@@ -602,11 +766,13 @@ ${generatedReply.followUpMessage}`;
                         size={17}
                         className="animate-spin"
                       />
+                    ) : dailyLimitReached ? (
+                      <Crown size={17} />
                     ) : (
                       <RefreshCw size={17} />
                     )}
 
-                    Regenerate
+                    {dailyLimitReached ? "Limit reached" : "Regenerate"}
                   </button>
                 </div>
               </>

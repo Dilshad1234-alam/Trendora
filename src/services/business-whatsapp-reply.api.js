@@ -14,11 +14,20 @@ async function parseResponse(response) {
   }
 
   if (!response.ok) {
-    throw new Error(
+    const error = new Error(
       data.message ||
         data.error ||
         "WhatsApp reply request failed."
     );
+
+    error.status = response.status;
+    error.upgradeRequired = Boolean(data.upgradeRequired);
+    error.dailyLimit = data.dailyLimit;
+    error.usedToday = data.usedToday;
+    error.remainingFreeWhatsAppReplies = data.remainingFreeWhatsAppReplies;
+    error.data = data;
+
+    throw error;
   }
 
   return data;

@@ -1,26 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bookmark,
   Copy,
+  Crown,
   ImageIcon,
   LoaderCircle,
   RefreshCw,
   Sparkles,
 } from "lucide-react";
 
-import {
-  generateThumbnailTitles,
-} from "@/services/ai.api";
-
-import {
-  saveContent,
-} from "@/services/saved.api";
+import { getCurrentUser } from "@/services/auth.api";
+import { generateThumbnailTitles } from "@/services/ai.api";
+import { saveContent } from "@/services/saved.api";
 
 export default function ThumbnailTitleGeneratorPage() {
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     topic: "",
     platform: "",
@@ -32,6 +35,10 @@ export default function ThumbnailTitleGeneratorPage() {
   const [result, setResult] = useState("");
   const [generatedId, setGeneratedId] = useState("");
 
+  const [dailyLimit, setDailyLimit] = useState(null);
+  const [remainingFreeGenerations, setRemainingFreeGenerations] = useState(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -42,31 +49,80 @@ export default function ThumbnailTitleGeneratorPage() {
     text: "",
   });
 
+  useEffect(() => {
+    async function checkUser() {
+      try {
+        const response = await getCurrentUser();
+
+        const currentUser = response?.user || response?.data?.user;
+
+        if (!currentUser) {
+          router.replace("/login");
+          return;
+        }
+
+        if (currentUser.role !== "creator") {
+          if (currentUser.role === "business") {
+            router.replace("/business/dashboard");
+          } else {
+            router.replace("/");
+          }
+          return;
+        }
+
+        if (!currentUser.onboardingCompleted) {
+          router.replace("/onboarding/creator");
+          return;
+        }
+
+        const trialExpired = !currentUser.planSelected && currentUser.trialExpired;
+
+        if (trialExpired) {
+          router.replace("/onboarding/select-plan");
+          return;
+        }
+
+        setUser(currentUser);
+      } catch {
+        router.replace("/login");
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+
+    checkUser();
+  }, [router]);
+
+  const isFreeAccess = !user?.planSelected || user?.plan === "free";
+
+  const dailyLimitReached = isFreeAccess && remainingFreeGenerations === 0;
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormData((previous) => ({
-      ...previous,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
     }));
 
-    setMessage({
-      type: "",
-      text: "",
-    });
-
     setSaved(false);
+    setMessage({ type: "", text: "" });
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!formData.topic.trim()) {
+    if (dailyLimitReached) {
+      setUpgradeRequired(true);
       setMessage({
         type: "error",
-        text: "Please enter a video topic.",
+        text: "You have used all free thumbnail title generations for today.",
       });
+      return;
+    }
 
+    if (!formData.topic.trim()) {
+      setMessage({ type: "error", text: "Please enter a video topic." });
       return;
     }
 
@@ -75,11 +131,8 @@ export default function ThumbnailTitleGeneratorPage() {
       setResult("");
       setGeneratedId("");
       setSaved(false);
-
-      setMessage({
-        type: "",
-        text: "",
-      });
+      setUpgradeRequired(false);
+      setMessage({ type: "", text: "" });
 
       const data = await generateThumbnailTitles({
         topic: formData.topic.trim(),
@@ -89,15 +142,39 @@ export default function ThumbnailTitleGeneratorPage() {
         titleCount: Number(formData.titleCount),
       });
 
-      setResult(data.data.output);
-      setGeneratedId(data.data.id);
+      const resultData = data?.data || {};
+
+      setResult(resultData.output || "");
+      setGeneratedId(resultData.id || "");
+
+      if (resultData.dailyLimit !== null && resultData.dailyLimit !== undefined) {
+        setDailyLimit(resultData.dailyLimit);
+      }
+
+      if (
+        resultData.remainingFreeGenerations !== null &&
+        resultData.remainingFreeGenerations !== undefined
+      ) {
+        setRemainingFreeGenerations(resultData.remainingFreeGenerations);
+      }
+
+      setMessage({ type: "success", text: "Thumbnail titles generated successfully." });
     } catch (error) {
-      setMessage({
-        type: "error",
-        text:
-          error.message ||
-          "Unable to generate thumbnail titles.",
-      });
+      const errorDailyLimit = error?.dailyLimit ?? error?.data?.dailyLimit;
+      const errorRemaining =
+        error?.remainingFreeGenerations ?? error?.data?.remainingFreeGenerations;
+
+      if (errorDailyLimit !== null && errorDailyLimit !== undefined) {
+        setDailyLimit(errorDailyLimit);
+      }
+
+      if (errorRemaining !== null && errorRemaining !== undefined) {
+        setRemainingFreeGenerations(errorRemaining);
+      }
+
+      setUpgradeRequired(Boolean(error?.upgradeRequired || error?.data?.upgradeRequired));
+
+      setMessage({ type: "error", text: error.message || "Unable to generate thumbnail titles." });
     } finally {
       setLoading(false);
     }
@@ -109,246 +186,201 @@ export default function ThumbnailTitleGeneratorPage() {
     try {
       await navigator.clipboard.writeText(result);
       setCopied(true);
-
-      setTimeout(() => {
-        setCopied(false);
-      }, 1500);
+      setTimeout(() => setCopied(false), 1500);
     } catch {
-      setMessage({
-        type: "error",
-        text: "Unable to copy thumbnail titles.",
-      });
+      setMessage({ type: "error", text: "Unable to copy thumbnail titles." });
     }
   };
 
   const handleSave = async () => {
-  if (!result) return;
+    if (!result) {
+      setMessage({ type: "error", text: "Generate titles first." });
+      return;
+    }
 
-  try {
-    setSaving(true);
-    setMessage({
-      type: "",
-      text: "",
-    });
+    try {
+      setSaving(true);
+      setMessage({ type: "", text: "" });
 
-    const data = await saveContent({
-      title:
-        formData.topic.trim() || "Thumbnail Titles",
-      type: "thumbnail-title",
-      content: result,
-      generatedContentId: generatedId || null,
-    });
+      await saveContent({
+        title: formData.topic.trim() || "Thumbnail Titles",
+        type: "thumbnail-title",
+        content: result,
+        generatedContentId: generatedId || null,
+      });
 
-    setSaved(true);
+      setSaved(true);
+      setMessage({ type: "success", text: "Thumbnail titles saved successfully." });
+    } catch (error) {
+      setMessage({ type: "error", text: error.message || "Unable to save thumbnail titles." });
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    setMessage({
-      type: "success",
-      text:
-        data.message ||
-        "Thumbnail titles saved successfully.",
-    });
-  } catch (error) {
-    setMessage({
-      type: "error",
-      text:
-        error.message ||
-        "Unable to save thumbnail titles.",
-    });
-  } finally {
-    setSaving(false);
+  if (authLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <LoaderCircle size={30} className="animate-spin text-violet-700" />
+      </main>
+    );
   }
-};
 
   return (
-    <main className="min-h-screen bg-[#030014] text-white p-4 sm:p-6 md:p-8 relative overflow-hidden font-sans">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-violet-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-cyan-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[35%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-      
-      {/* Background Dots Grid Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+    <main className="min-h-screen bg-white text-zinc-900 font-sans">
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/creator/dashboard"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800 transition-colors"
         >
           <ArrowLeft size={17} />
           Back to dashboard
         </Link>
 
         <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-            <ImageIcon size={22} className="animate-pulse" />
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+            <ImageIcon size={22} />
           </div>
 
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-400">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
             AI Thumbnail Title Generator
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            Create Clickable Thumbnail <span className="bg-gradient-to-r from-violet-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">Titles</span>
+          <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
+            Create Clickable Thumbnail <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">Titles</span>
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-            Generate short and attention-grabbing titles for videos,
-            reels and social-media thumbnails.
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
+            Generate short and attention-grabbing titles for videos, reels and social-media thumbnails.
           </p>
         </div>
 
+        {isFreeAccess && (
+          <section className="mb-6 flex flex-col gap-4 rounded-2xl border border-violet-200 bg-violet-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-violet-700" />
+                <p className="font-bold text-violet-800">Free Plan</p>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">
+                Generate up to 3 thumbnail titles every day.
+              </p>
+            </div>
+            {dailyLimit !== null && remainingFreeGenerations !== null && (
+              <div className="rounded-xl border border-violet-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                <span className="font-bold text-violet-700">
+                  {remainingFreeGenerations}
+                </span>{" "}
+                of {dailyLimit} remaining today
+              </div>
+            )}
+          </section>
+        )}
+
+        {(upgradeRequired || dailyLimitReached) && (
+          <section className="mb-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-bold text-amber-800">Daily Free Limit Reached</p>
+              <p className="mt-1 text-sm text-amber-700">
+                Your free generations will reset tomorrow. Upgrade to Creator Pro for unlimited generations.
+              </p>
+            </div>
+            <Link
+              href="/onboarding/select-plan"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-800"
+            >
+              <Crown size={17} />
+              Upgrade plan
+            </Link>
+          </section>
+        )}
+
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           {/* Form Panel */}
-          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 sm:p-8">
-            <h2 className="text-xl font-bold text-white">
-              Title Details
-            </h2>
-
-            <form
-              onSubmit={handleSubmit}
-              className="mt-6 space-y-5"
-            >
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label
-                  htmlFor="topic"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Video topic
                 </label>
-
                 <textarea
-                  id="topic"
+                  rows={4}
                   name="topic"
-                  rows={5}
                   value={formData.topic}
                   onChange={handleChange}
                   placeholder="Example: How to create a resume using AI"
-                  className="w-full resize-none rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none placeholder:text-zinc-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
+                  className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label
-                  htmlFor="platform"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Platform
                 </label>
-
                 <select
-                  id="platform"
                   name="platform"
                   value={formData.platform}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
-                  <option value="">
-                    Use profile platform
-                  </option>
-                  <option value="youtube">
-                    YouTube
-                  </option>
-                  <option value="instagram">
-                    Instagram
-                  </option>
-                  <option value="facebook">
-                    Facebook
-                  </option>
-                  <option value="linkedin">
-                    LinkedIn
-                  </option>
+                  <option value="">Use profile platform</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="linkedin">LinkedIn</option>
                 </select>
               </div>
 
               <div>
-                <label
-                  htmlFor="tone"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Tone
                 </label>
-
                 <select
-                  id="tone"
                   name="tone"
                   value={formData.tone}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
-                  <option value="">
-                    Use profile tone
-                  </option>
-                  <option value="professional">
-                    Professional
-                  </option>
-                  <option value="educational">
-                    Educational
-                  </option>
-                  <option value="emotional">
-                    Emotional
-                  </option>
-                  <option value="friendly">
-                    Friendly
-                  </option>
-                  <option value="motivational">
-                    Motivational
-                  </option>
-                  <option value="bold">
-                    Bold
-                  </option>
+                  <option value="">Use profile tone</option>
+                  <option value="professional">Professional</option>
+                  <option value="educational">Educational</option>
+                  <option value="emotional">Emotional</option>
+                  <option value="friendly">Friendly</option>
+                  <option value="motivational">Motivational</option>
+                  <option value="bold">Bold</option>
                 </select>
               </div>
 
               <div>
-                <label
-                  htmlFor="titleStyle"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Title style
                 </label>
-
                 <select
-                  id="titleStyle"
                   name="titleStyle"
                   value={formData.titleStyle}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
-                  <option value="mixed">
-                    Mixed styles
-                  </option>
-                  <option value="curiosity">
-                    Curiosity
-                  </option>
-                  <option value="authority">
-                    Authority
-                  </option>
-                  <option value="emotional">
-                    Emotional
-                  </option>
-                  <option value="contrarian">
-                    Contrarian
-                  </option>
-                  <option value="educational">
-                    Educational
-                  </option>
+                  <option value="mixed">Mixed styles</option>
+                  <option value="curiosity">Curiosity</option>
+                  <option value="authority">Authority</option>
+                  <option value="emotional">Emotional</option>
+                  <option value="contrarian">Contrarian</option>
+                  <option value="educational">Educational</option>
                 </select>
               </div>
 
               <div>
-                <label
-                  htmlFor="titleCount"
-                  className="mb-2 block text-xs font-medium text-zinc-400 uppercase tracking-wider"
-                >
+                <label className="mb-2 block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Number of titles
                 </label>
-
                 <select
-                  id="titleCount"
                   name="titleCount"
                   value={formData.titleCount}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-[#120f2e]/55 px-4 py-3.5 text-white outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 [&>option]:bg-[#0c0827] [&>option]:text-white"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="5">5 titles</option>
                   <option value="10">10 titles</option>
@@ -359,19 +391,21 @@ export default function ThumbnailTitleGeneratorPage() {
 
               {message.text && (
                 <div
-                  className={`rounded-xl border p-4 text-sm flex items-start gap-3 backdrop-blur-md transition-all duration-300 ${
+                  className={`rounded-xl border p-4 text-sm flex items-start gap-3 transition-all duration-300 ${
                     message.type === "success"
-                      ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-                      : "border-red-500/25 bg-red-500/10 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-red-200 bg-red-50 text-red-700"
                   }`}
                 >
-                  <div className={`p-1 rounded-md shrink-0 ${
-                    message.type === "success" ? "bg-emerald-500/20" : "bg-red-500/20"
-                  }`}>
+                  <div
+                    className={`p-1 rounded-md shrink-0 ${
+                      message.type === "success" ? "bg-emerald-100" : "bg-red-100"
+                    }`}
+                  >
                     {message.type === "success" ? (
-                      <Sparkles size={16} className="text-emerald-400" />
+                      <Sparkles size={16} className="text-emerald-600" />
                     ) : (
-                      <span className="text-red-400 font-bold block leading-none w-4 h-4 text-center">!</span>
+                      <span className="text-red-600 font-bold block leading-none w-4 h-4 text-center">!</span>
                     )}
                   </div>
                   <div>{message.text}</div>
@@ -380,16 +414,18 @@ export default function ThumbnailTitleGeneratorPage() {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 px-5 py-4 font-semibold text-white transition hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_25px_rgba(139,92,246,0.55)] transition-all duration-300 overflow-hidden"
+                disabled={loading || dailyLimitReached}
+                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-4 font-semibold text-white transition hover:bg-violet-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-violet-200 hover:shadow-xl hover:shadow-violet-200 transition-all duration-300 overflow-hidden"
               >
                 {loading ? (
                   <>
-                    <LoaderCircle
-                      size={18}
-                      className="animate-spin"
-                    />
+                    <LoaderCircle className="animate-spin" size={18} />
                     Generating titles...
+                  </>
+                ) : dailyLimitReached ? (
+                  <>
+                    <Crown size={18} />
+                    Daily limit reached
                   </>
                 ) : (
                   <>
@@ -402,16 +438,11 @@ export default function ThumbnailTitleGeneratorPage() {
           </section>
 
           {/* Result Panel */}
-          <section className="rounded-3xl border border-white/10 bg-[#0a0520]/40 backdrop-blur-2xl p-6 shadow-2xl shadow-violet-950/20 sm:p-8 flex flex-col">
+          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 flex flex-col">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-white">
-                  Generated Titles
-                </h2>
-
-                <p className="mt-1 text-xs text-zinc-400">
-                  Your AI-generated titles will appear here.
-                </p>
+                <h2 className="text-xl font-bold text-zinc-900">Generated Titles</h2>
+                <p className="mt-1 text-xs text-zinc-500">Your AI-generated output will appear here.</p>
               </div>
 
               {result && (
@@ -420,20 +451,16 @@ export default function ThumbnailTitleGeneratorPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={saving || saved}
-                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     <Bookmark size={16} />
-                    {saving
-                      ? "Saving..."
-                      : saved
-                        ? "Saved"
-                        : "Save"}
+                    {saving ? "Saving..." : saved ? "Saved" : "Save"}
                   </button>
 
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-semibold text-violet-300 hover:bg-violet-500/20 hover:text-white transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors cursor-pointer"
                   >
                     <Copy size={16} />
                     {copied ? "Copied" : "Copy"}
@@ -444,28 +471,18 @@ export default function ThumbnailTitleGeneratorPage() {
 
             <div className="flex-1 flex flex-col justify-stretch">
               {loading ? (
-                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl bg-white/[0.02] border border-white/5 text-zinc-400">
-                  <LoaderCircle
-                    size={30}
-                    className="mb-4 animate-spin text-violet-400"
-                  />
-                  <p className="font-medium">
-                    Trendora is writing titles...
-                  </p>
+                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl bg-zinc-50 border border-zinc-200 text-zinc-500">
+                  <LoaderCircle size={30} className="mb-4 animate-spin text-violet-600" />
+                  <p className="font-medium">Trendora is writing titles...</p>
                 </div>
               ) : result ? (
-                <div className="flex-1 min-h-96 whitespace-pre-wrap rounded-2xl border border-white/5 bg-[#120f2e]/35 p-5 text-sm leading-relaxed text-zinc-300">
+                <div className="flex-1 min-h-96 whitespace-pre-wrap rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-sm leading-relaxed text-zinc-700 overflow-y-auto">
                   {result}
                 </div>
               ) : (
-                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] px-6 text-center">
-                  <RefreshCw
-                    size={28}
-                    className="mb-4 text-zinc-600 animate-pulse"
-                  />
-                  <p className="font-bold text-zinc-300 text-sm">
-                    No titles generated yet
-                  </p>
+                <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 px-6 text-center">
+                  <RefreshCw size={28} className="mb-4 text-zinc-400 animate-pulse" />
+                  <p className="font-bold text-zinc-700 text-sm">No titles generated yet</p>
                   <p className="mt-2 text-xs text-zinc-500 text-center max-w-xs leading-relaxed">
                     Enter a video topic on the left and generate titles.
                   </p>

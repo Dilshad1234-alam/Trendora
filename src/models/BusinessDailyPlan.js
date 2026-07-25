@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const FREE_PLAN_MAX_ACTIONS = 5;
+const PLAN_MAX_ACTIONS = 30;
 
 const actionStepSchema = new mongoose.Schema(
   {
@@ -93,12 +93,12 @@ const businessDailyPlanSchema = new mongoose.Schema(
           return (
             Array.isArray(steps) &&
             steps.length > 0 &&
-            steps.length <= FREE_PLAN_MAX_ACTIONS
+            steps.length <= PLAN_MAX_ACTIONS
           );
         },
 
         message:
-          "Free Plan daily plan must contain between 1 and 5 action steps.",
+          "Daily plan must contain between 1 and 30 action steps.",
       },
     },
 
@@ -156,7 +156,6 @@ const businessDailyPlanSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
-      max: 1,
     },
   },
   {
@@ -174,11 +173,13 @@ businessDailyPlanSchema.index(
   }
 );
 
-const BusinessDailyPlan =
-  mongoose.models.BusinessDailyPlan ||
-  mongoose.model(
-    "BusinessDailyPlan",
-    businessDailyPlanSchema
-  );
+if (mongoose.models.BusinessDailyPlan) {
+  delete mongoose.models.BusinessDailyPlan;
+}
+
+const BusinessDailyPlan = mongoose.model(
+  "BusinessDailyPlan",
+  businessDailyPlanSchema
+);
 
 export default BusinessDailyPlan;

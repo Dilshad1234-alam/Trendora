@@ -14,6 +14,7 @@ import {
   Building2,
   Check,
   Clipboard,
+  Crown,
   FileSearch,
   Globe2,
   KeyRound,
@@ -64,11 +65,20 @@ const initialFormData = {
 export default function BusinessLocalSeoGeneratorPage() {
   const router = useRouter();
 
+  const [user, setUser] = useState(null);
+
   const [formData, setFormData] =
     useState(initialFormData);
 
   const [seoContent, setSeoContent] =
     useState(initialSeoContent);
+  const [generatedId, setGeneratedId] = useState("");
+
+  const [dailyLimit, setDailyLimit] = useState(null);
+  const [
+    remainingFreeLocalSeo,
+    setRemainingFreeLocalSeo,
+  ] = useState(null);
 
   const [authLoading, setAuthLoading] =
     useState(true);
@@ -90,6 +100,9 @@ export default function BusinessLocalSeoGeneratorPage() {
 
   const [success, setSuccess] =
     useState("");
+
+  const [upgradeRequired, setUpgradeRequired] =
+    useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -130,6 +143,17 @@ export default function BusinessLocalSeoGeneratorPage() {
           );
           return;
         }
+
+        const trialExpired =
+          !currentUser.planSelected &&
+          currentUser.trialExpired;
+
+        if (trialExpired) {
+          router.replace("/onboarding/select-plan");
+          return;
+        }
+
+        setUser(currentUser);
       } catch {
         router.replace("/login");
       } finally {
@@ -139,6 +163,14 @@ export default function BusinessLocalSeoGeneratorPage() {
 
     checkUser();
   }, [router]);
+
+  const isFreeAccess =
+    !user?.planSelected ||
+    user?.plan === "free";
+
+  const dailyLimitReached =
+    isFreeAccess &&
+    remainingFreeLocalSeo === 0;
 
   const hasSeoContent = useMemo(() => {
     return Boolean(
@@ -180,6 +212,16 @@ export default function BusinessLocalSeoGeneratorPage() {
   async function handleGenerate(event) {
     event?.preventDefault();
 
+    if (dailyLimitReached) {
+      setUpgradeRequired(true);
+
+      setError(
+        "You have used all 3 free Local SEO package generations for today."
+      );
+
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -190,6 +232,7 @@ export default function BusinessLocalSeoGeneratorPage() {
       setSuccess("");
       setSaved(false);
       setCopied(false);
+      setUpgradeRequired(false);
 
       const response =
         await generateBusinessLocalSeo({
@@ -215,8 +258,8 @@ export default function BusinessLocalSeoGeneratorPage() {
             formData.audience.trim(),
         });
 
-      const generatedSeo =
-        response?.data?.seoContent;
+      const result = response?.data || {};
+      const generatedSeo = result.seoContent;
 
       if (!generatedSeo) {
         throw new Error(
@@ -236,8 +279,27 @@ export default function BusinessLocalSeoGeneratorPage() {
         },
       });
 
-      const input =
-        response?.data?.input;
+      setGeneratedId(result.id || "");
+
+      if (
+        result.dailyLimit !== null &&
+        result.dailyLimit !== undefined
+      ) {
+        setDailyLimit(result.dailyLimit);
+      }
+
+      if (
+        result.remainingFreeLocalSeo !==
+          null &&
+        result.remainingFreeLocalSeo !==
+          undefined
+      ) {
+        setRemainingFreeLocalSeo(
+          result.remainingFreeLocalSeo
+        );
+      }
+
+      const input = result.input;
 
       if (input) {
         setFormData((current) => ({
@@ -277,6 +339,37 @@ export default function BusinessLocalSeoGeneratorPage() {
         "Local SEO package generated successfully."
       );
     } catch (generateError) {
+      const errorDailyLimit =
+        generateError?.dailyLimit ??
+        generateError?.data?.dailyLimit;
+
+      const errorRemaining =
+        generateError?.remainingFreeLocalSeo ??
+        generateError?.data?.remainingFreeLocalSeo;
+
+      if (
+        errorDailyLimit !== null &&
+        errorDailyLimit !== undefined
+      ) {
+        setDailyLimit(errorDailyLimit);
+      }
+
+      if (
+        errorRemaining !== null &&
+        errorRemaining !== undefined
+      ) {
+        setRemainingFreeLocalSeo(
+          errorRemaining
+        );
+      }
+
+      setUpgradeRequired(
+        Boolean(
+          generateError?.upgradeRequired ||
+            generateError?.data?.upgradeRequired
+        )
+      );
+
       setError(
         generateError?.message ||
           "Unable to generate Local SEO package."
@@ -408,6 +501,9 @@ ${seoChecklist}`;
 
         prompt:
           JSON.stringify(formData),
+
+        generatedContentId:
+          generatedId || null,
       });
 
       setSaved(true);
@@ -486,19 +582,80 @@ ${seoChecklist}`;
           </div>
         </header>
 
+        {isFreeAccess && (
+          <section className="mt-6 flex flex-col gap-4 rounded-2xl border border-violet-200 bg-violet-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles
+                  size={18}
+                  className="text-violet-700"
+                />
+
+                <p className="font-bold text-violet-800">
+                  Free Plan
+                </p>
+              </div>
+
+              <p className="mt-1 text-sm text-zinc-600">
+                Generate up to 3 Local SEO packages every day.
+              </p>
+            </div>
+
+            {dailyLimit !== null &&
+              remainingFreeLocalSeo !==
+                null && (
+                <div className="rounded-xl border border-violet-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                  <span className="font-bold text-violet-700">
+                    {
+                      remainingFreeLocalSeo
+                    }
+                  </span>{" "}
+                  of {dailyLimit} remaining
+                  today
+                </div>
+              )}
+          </section>
+        )}
+
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
+          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
+          <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 shadow-sm">
             {success}
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
+        {(upgradeRequired ||
+          dailyLimitReached) && (
+          <section className="mt-6 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-bold text-amber-800">
+                Daily Free Limit Reached
+              </p>
+
+              <p className="mt-1 text-sm text-amber-700">
+                Your free generations will
+                reset tomorrow. Upgrade to
+                Business Pro for unlimited
+                local SEO generation.
+              </p>
+            </div>
+
+            <Link
+              href="/onboarding/select-plan"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-800"
+            >
+              <Crown size={17} />
+              Upgrade plan
+            </Link>
+          </section>
+        )}
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
           <form
             onSubmit={handleGenerate}
             className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
@@ -611,7 +768,7 @@ ${seoChecklist}`;
 
             <button
               type="submit"
-              disabled={generating}
+              disabled={generating || dailyLimitReached}
               className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {generating ? (
@@ -622,6 +779,11 @@ ${seoChecklist}`;
                   />
 
                   Generating Local SEO...
+                </>
+              ) : dailyLimitReached ? (
+                <>
+                  <Crown size={18} />
+                  Daily limit reached
                 </>
               ) : (
                 <>
@@ -775,7 +937,7 @@ ${seoChecklist}`;
                   <button
                     type="button"
                     onClick={handleGenerate}
-                    disabled={generating}
+                    disabled={generating || dailyLimitReached}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-800 disabled:opacity-50"
                   >
                     {generating ? (
@@ -783,11 +945,13 @@ ${seoChecklist}`;
                         size={17}
                         className="animate-spin"
                       />
+                    ) : dailyLimitReached ? (
+                      <Crown size={17} />
                     ) : (
                       <RefreshCw size={17} />
                     )}
 
-                    Regenerate
+                    {dailyLimitReached ? "Limit reached" : "Regenerate"}
                   </button>
                 </div>
               </>
