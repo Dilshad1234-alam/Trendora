@@ -235,8 +235,8 @@ export default function BusinessProDashboardPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-amber-50 via-white to-white text-zinc-900">
-        <div className="flex items-center gap-3 text-amber-600">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <div className="flex items-center gap-3 text-violet-700">
           <LoaderCircle size={24} className="animate-spin" />
           <span className="font-medium">Loading business pro dashboard...</span>
         </div>
@@ -246,17 +246,17 @@ export default function BusinessProDashboardPage() {
 
   return (
     <main className="min-h-screen bg-white font-sans text-zinc-900">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-[800px] max-w-full -translate-x-1/2 rounded-full bg-amber-300/20 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-[800px] max-w-full -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
               Business Pro Dashboard
             </p>
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
               Welcome,{" "}
-              <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-violet-700 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
                 {businessProfile?.businessName || user?.fullname || "Business"}
               </span>
             </h1>
@@ -267,7 +267,7 @@ export default function BusinessProDashboardPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/business-pro/post-generator"
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white shadow-lg shadow-amber-200 transition hover:-translate-y-0.5 hover:bg-amber-700"
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-5 py-3 font-semibold text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 hover:bg-violet-800"
             >
               Create a post <ArrowRight size={18} />
             </Link>
@@ -289,10 +289,10 @@ export default function BusinessProDashboardPage() {
           </div>
         )}
 
-        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 p-6 text-white shadow-2xl shadow-amber-200/50 sm:p-8">
+        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 via-indigo-600 to-violet-600 p-6 text-white shadow-2xl shadow-violet-200/50 sm:p-8">
           {dailyPlanLoading ? (
             <div className="flex min-h-56 items-center justify-center">
-              <LoaderCircle size={28} className="animate-spin text-amber-200" />
+              <LoaderCircle size={28} className="animate-spin text-violet-200" />
             </div>
           ) : dailyPlan ? (
             <div>
@@ -302,7 +302,7 @@ export default function BusinessProDashboardPage() {
                     <Sparkles size={24} />
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-100">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-100">
                       Today&apos;s Pro Business Plan
                     </p>
                     <span className="rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -310,7 +310,7 @@ export default function BusinessProDashboardPage() {
                     </span>
                   </div>
                   <h2 className="mt-2 max-w-3xl text-2xl font-bold text-white sm:text-3xl">{dailyPlan.topic}</h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-amber-50">{dailyPlan.businessGoal}</p>
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-violet-50">{dailyPlan.businessGoal}</p>
                 </div>
                 <div className="flex flex-col items-start gap-2 sm:items-end">
                   <div className="flex flex-wrap gap-2">
@@ -327,7 +327,7 @@ export default function BusinessProDashboardPage() {
                       type="button"
                       onClick={handlePlanStatus}
                       disabled={updatingPlan || (!dailyPlan.completed && !allStepsCompleted)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-amber-600 transition hover:bg-amber-50 disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:opacity-50"
                     >
                       <CheckCircle2 size={17} />
                       {updatingPlan ? "Updating..." : dailyPlan.completed ? "Completed" : allStepsCompleted ? "Mark complete" : "Complete all steps"}
@@ -339,8 +339,8 @@ export default function BusinessProDashboardPage() {
               <div className="mt-5 rounded-2xl bg-white/10 p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-amber-100">Today&apos;s Actions</p>
-                    <p className="mt-1 text-sm text-amber-50">{dailyPlan.completedSteps || 0} of {dailyPlan.totalSteps || 0} completed</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-violet-100">Today&apos;s Actions</p>
+                    <p className="mt-1 text-sm text-violet-50">{dailyPlan.completedSteps || 0} of {dailyPlan.totalSteps || 0} completed</p>
                   </div>
                   <p className="text-lg font-bold text-white">{dailyPlan.stepsProgress || 0}%</p>
                 </div>
@@ -373,9 +373,9 @@ export default function BusinessProDashboardPage() {
             </div>
           ) : (
             <div className="flex min-h-52 flex-col items-center justify-center text-center">
-              <Lightbulb size={30} className="text-amber-200" />
-              <p className="mt-3 text-amber-100">Today&apos;s plan could not be loaded.</p>
-              <button onClick={loadDashboard} className="mt-4 rounded-xl bg-white px-5 py-3 font-semibold text-amber-600">Try again</button>
+              <Lightbulb size={30} className="text-violet-200" />
+              <p className="mt-3 text-violet-100">Today&apos;s plan could not be loaded.</p>
+              <button onClick={loadDashboard} className="mt-4 rounded-xl bg-white px-5 py-3 font-semibold text-violet-700">Try again</button>
             </div>
           )}
         </section>
@@ -389,11 +389,11 @@ export default function BusinessProDashboardPage() {
             {quickTools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <Link key={tool.title} href={tool.href} className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 transition group-hover:bg-amber-600 group-hover:text-white group-hover:shadow-amber-200">
+                <Link key={tool.title} href={tool.href} className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 transition group-hover:bg-violet-700 group-hover:text-white group-hover:shadow-violet-200">
                     <Icon size={23} />
                   </div>
-                  <h3 className="font-bold text-zinc-900 group-hover:text-amber-600">{tool.title}</h3>
+                  <h3 className="font-bold text-zinc-900 group-hover:text-violet-700">{tool.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-zinc-600">{tool.description}</p>
                 </Link>
               );
@@ -407,15 +407,15 @@ export default function BusinessProDashboardPage() {
               <h2 className="text-xl font-bold text-zinc-900">Recent saved business content</h2>
               <p className="mt-1 text-sm text-zinc-500">Your latest saved pro content.</p>
             </div>
-            <Link href="/business-pro/saved" className="text-sm font-semibold text-amber-600 hover:text-amber-700">View all</Link>
+            <Link href="/business-pro/saved" className="text-sm font-semibold text-violet-700 hover:text-violet-800">View all</Link>
           </div>
           <div className="mt-5 space-y-3">
             {recentSavedContents.length > 0 ? (
               recentSavedContents.map((item) => (
-                <div key={item._id} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 hover:bg-white hover:shadow-sm">
+                <div key={item._id || item.id} className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 hover:bg-white hover:shadow-sm">
                   <div className="flex justify-between gap-2">
                     <p className="font-semibold text-zinc-900">{item.title}</p>
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-600">
+                    <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-medium text-violet-700">
                       {item.type.replaceAll("-", " ")}
                     </span>
                   </div>

@@ -164,36 +164,36 @@ export default function ProHashtagGeneratorPage() {
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-amber-50 via-white to-white text-zinc-900">
-        <LoaderCircle size={30} className="animate-spin text-amber-600" />
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <LoaderCircle size={30} className="animate-spin text-violet-600" />
       </main>
     );
   }
 
   return (
     <main className="min-h-screen bg-white text-zinc-900 font-sans">
-      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-amber-300/20 blur-3xl pointer-events-none" />
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/creator-pro/dashboard"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors"
         >
           <ArrowLeft size={17} />
           Back to dashboard
         </Link>
 
         <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
             <Hash size={22} />
           </div>
 
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-600">
             Pro AI Hashtag Generator
           </p>
 
           <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
-            Generate Relevant <span className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent">Hashtags</span>
+            Generate Relevant <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-red-600 bg-clip-text text-transparent">Hashtags</span>
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
@@ -215,7 +215,7 @@ export default function ProHashtagGeneratorPage() {
                   value={formData.topic}
                   onChange={handleChange}
                   placeholder="Example: AI tools for students"
-                  className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300"
+                  className="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 />
               </div>
 
@@ -227,7 +227,7 @@ export default function ProHashtagGeneratorPage() {
                   name="platform"
                   value={formData.platform}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="">Use profile platform</option>
                   <option value="instagram">Instagram</option>
@@ -245,7 +245,7 @@ export default function ProHashtagGeneratorPage() {
                   name="language"
                   value={formData.language}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="">Use profile language</option>
                   <option value="english">English</option>
@@ -263,7 +263,7 @@ export default function ProHashtagGeneratorPage() {
                   name="hashtagCount"
                   value={formData.hashtagCount}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3.5 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
                 >
                   <option value="10">10 hashtags</option>
                   <option value="15">15 hashtags</option>
@@ -299,7 +299,7 @@ export default function ProHashtagGeneratorPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-5 py-4 font-semibold text-white transition hover:bg-amber-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-amber-200 hover:shadow-xl hover:shadow-amber-200 transition-all duration-300 overflow-hidden"
+                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-4 font-semibold text-white transition hover:bg-violet-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-violet-200 hover:shadow-xl hover:shadow-violet-200 transition-all duration-300 overflow-hidden"
               >
                 {loading ? (
                   <>
@@ -339,7 +339,7 @@ export default function ProHashtagGeneratorPage() {
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 transition-colors cursor-pointer"
                   >
                     <Copy size={16} />
                     {copied ? "Copied" : "Copy"}
@@ -351,7 +351,7 @@ export default function ProHashtagGeneratorPage() {
             <div className="flex-1 flex flex-col justify-stretch">
               {loading ? (
                 <div className="flex-1 flex min-h-96 flex-col items-center justify-center rounded-2xl bg-zinc-50 border border-zinc-200 text-zinc-500">
-                  <LoaderCircle size={30} className="mb-4 animate-spin text-amber-600" />
+                  <LoaderCircle size={30} className="mb-4 animate-spin text-violet-600" />
                   <p className="font-medium">Trendora is finding hashtags...</p>
                 </div>
               ) : result ? (

@@ -140,36 +140,36 @@ export default function ProSavedContentPage() {
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-amber-50 via-white to-white text-zinc-900">
-        <LoaderCircle size={30} className="animate-spin text-amber-600" />
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 via-white to-white text-zinc-900">
+        <LoaderCircle size={30} className="animate-spin text-violet-600" />
       </main>
     );
   }
 
   return (
     <main className="min-h-screen bg-white text-zinc-900 font-sans">
-      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-amber-300/20 blur-3xl pointer-events-none" />
+      <div className="absolute left-1/2 top-0 h-96 w-[800px] -translate-x-1/2 rounded-full bg-violet-300/20 blur-3xl pointer-events-none" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/creator-pro/dashboard"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors"
         >
           <ArrowLeft size={17} />
           Back to dashboard
         </Link>
 
         <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
             <Bookmark size={22} />
           </div>
 
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-600">
             Pro Saved Library
           </p>
 
           <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-zinc-950 sm:text-4xl">
-            Your Saved <span className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent">Content</span>
+            Your Saved <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-red-600 bg-clip-text text-transparent">Content</span>
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
@@ -188,7 +188,7 @@ export default function ProSavedContentPage() {
                   onClick={() => setSelectedType(filter.value)}
                   className={`rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer ${
                     selectedType === filter.value
-                      ? "bg-amber-600 text-white shadow-md shadow-amber-200"
+                      ? "bg-violet-600 text-white shadow-md shadow-violet-200"
                       : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                   }`}
                 >
@@ -208,7 +208,7 @@ export default function ProSavedContentPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search saved content..."
-                className="w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-300"
+                className="w-full rounded-xl border border-zinc-300 bg-white py-3 pl-11 pr-4 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-300"
               />
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function ProSavedContentPage() {
 
         {loading ? (
           <div className="flex min-h-72 items-center justify-center">
-            <div className="flex items-center gap-3 text-amber-600">
+            <div className="flex items-center gap-3 text-violet-600">
               <LoaderCircle className="animate-spin" size={24} />
               <span className="font-medium text-zinc-600">Loading saved content...</span>
             </div>
@@ -247,12 +247,12 @@ export default function ProSavedContentPage() {
             {items.map((item) => (
               <article
                 key={item.id}
-                className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm hover:border-amber-300 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm hover:border-violet-300 hover:shadow-md transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="mb-4 flex items-start justify-between gap-4">
                     <div>
-                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase text-amber-600 tracking-wider">
+                      <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase text-violet-600 tracking-wider">
                         {item.type}
                       </span>
 
@@ -273,7 +273,7 @@ export default function ProSavedContentPage() {
                       <button
                         type="button"
                         onClick={() => handleCopy(item)}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors cursor-pointer"
+                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors cursor-pointer"
                         title="Copy content"
                       >
                         <Copy size={17} />

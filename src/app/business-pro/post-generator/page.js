@@ -42,9 +42,9 @@ export default function BusinessProPostGenerator() {
   };
 
   return (
-    <main className="min-h-screen bg-amber-50/30 p-4 font-sans sm:p-8">
+    <main className="min-h-screen bg-violet-50/30 p-4 font-sans sm:p-8">
       <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-xl sm:p-10">
-        <Link href="/business-pro/dashboard" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-600 hover:text-amber-700">
+        <Link href="/business-pro/dashboard" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-800">
           <ArrowLeft size={16} /> Back to Dashboard
         </Link>
         <h1 className="mb-2 text-3xl font-black text-zinc-900">Pro Post Generator</h1>
@@ -55,40 +55,40 @@ export default function BusinessProPostGenerator() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="mb-1 block text-sm font-bold text-zinc-700">Post Topic</label>
-            <input required type="text" placeholder="e.g. Announcing our new winter collection" className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.topic} onChange={(e) => setFormData({...formData, topic: e.target.value})} />
+            <input required type="text" placeholder="e.g. Announcing our new winter collection" className="w-full rounded-xl border p-3 outline-none focus:border-violet-500" value={formData.topic} onChange={(e) => setFormData({...formData, topic: e.target.value})} />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1 block text-sm font-bold text-zinc-700">Platform</label>
-              <select className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.platform} onChange={(e) => setFormData({...formData, platform: e.target.value})}>
+              <select className="w-full rounded-xl border p-3 outline-none focus:border-violet-500" value={formData.platform} onChange={(e) => setFormData({...formData, platform: e.target.value})}>
                 {["instagram", "facebook", "linkedin", "google-business"].map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-bold text-zinc-700">Post Type</label>
-              <select className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.postType} onChange={(e) => setFormData({...formData, postType: e.target.value})}>
+              <select className="w-full rounded-xl border p-3 outline-none focus:border-violet-500" value={formData.postType} onChange={(e) => setFormData({...formData, postType: e.target.value})}>
                 {["promotional", "educational", "offer", "service", "testimonial", "festival", "engagement"].map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-bold text-zinc-700">Tone</label>
-              <select className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.tone} onChange={(e) => setFormData({...formData, tone: e.target.value})}>
+              <select className="w-full rounded-xl border p-3 outline-none focus:border-violet-500" value={formData.tone} onChange={(e) => setFormData({...formData, tone: e.target.value})}>
                 {["professional", "friendly", "persuasive", "casual", "urgent", "informative"].map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-bold text-zinc-700">Custom CTA (Optional)</label>
-              <input type="text" placeholder="e.g. Link in bio!" className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.cta} onChange={(e) => setFormData({...formData, cta: e.target.value})} />
+              <input type="text" placeholder="e.g. Link in bio!" className="w-full rounded-xl border p-3 outline-none focus:border-violet-500" value={formData.cta} onChange={(e) => setFormData({...formData, cta: e.target.value})} />
             </div>
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-bold text-zinc-700">Special Offer (Optional)</label>
-            <input type="text" placeholder="e.g. Use code WELCOME for 10% off" className="w-full rounded-xl border p-3 outline-none focus:border-amber-500" value={formData.offer} onChange={(e) => setFormData({...formData, offer: e.target.value})} />
+            <input type="text" placeholder="e.g. Use code WELCOME for 10% off" className="w-full rounded-xl border p-3 outline-none focus:border-violet-500" value={formData.offer} onChange={(e) => setFormData({...formData, offer: e.target.value})} />
           </div>
 
-          <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 p-4 font-bold text-white hover:bg-amber-700 disabled:opacity-50">
+          <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 p-4 font-bold text-white hover:bg-violet-800 disabled:opacity-50">
             {loading ? <LoaderCircle className="animate-spin" /> : <FileText />} Generate Post
           </button>
         </form>
@@ -97,7 +97,7 @@ export default function BusinessProPostGenerator() {
           <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-bold text-zinc-800">Generated Post</h3>
-              <button onClick={handleCopy} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-amber-600 shadow-sm">
+              <button onClick={handleCopy} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-violet-700 shadow-sm">
                 {copied ? <Check size={16} /> : <Clipboard size={16} />} {copied ? "Copied" : "Copy"}
               </button>
             </div>

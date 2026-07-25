@@ -10,6 +10,17 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  --color-businessPro-50: #F4E8FF;
+  --color-businessPro-100: #E3CCFF;
+  --color-businessPro-200: #C99AFF;
+  --color-businessPro-300: #AD66FF;
+  --color-businessPro-400: #9133FF;
+  --color-businessPro-500: #7800FF;
+  --color-businessPro-600: #5D0EC0;
+  --color-businessPro-700: #460A90;
+  --color-businessPro-800: #2F0760;
+  --color-businessPro-900: #170330;
 }
 
 @media (prefers-color-scheme: dark) {

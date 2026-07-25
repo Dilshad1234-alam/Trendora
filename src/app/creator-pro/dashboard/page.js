@@ -393,8 +393,8 @@ export default function CreatorProDashboardPage() {
           </Link>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-700 shadow-sm">
-              <Crown size={17} className="text-amber-500" />
+            <div className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm text-violet-700 shadow-sm">
+              <Crown size={17} className="text-violet-500" />
               <span className="capitalize font-medium">
                 Creator Pro
               </span>
@@ -421,15 +421,15 @@ export default function CreatorProDashboardPage() {
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2">
-            <Crown size={20} className="text-amber-500" />
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+            <Crown size={20} className="text-violet-500" />
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-600">
               Creator Pro Dashboard
             </p>
           </div>
 
           <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
             Welcome back,{" "}
-            <span className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-red-600 bg-clip-text text-transparent">
               {user?.fullname || "Pro Creator"}
             </span>
           </h1>
@@ -450,10 +450,10 @@ export default function CreatorProDashboardPage() {
         )}
 
         {/* Daily Content Plan */}
-        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 p-6 text-white shadow-xl shadow-amber-200/50 sm:p-8">
+        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-indigo-600 to-red-600 p-6 text-white shadow-xl shadow-violet-200/50 sm:p-8">
           {dailyPlanLoading ? (
             <div className="flex min-h-52 items-center justify-center">
-              <div className="flex items-center gap-3 text-amber-200">
+              <div className="flex items-center gap-3 text-violet-200">
                 <LoaderCircle size={23} className="animate-spin" />
                 <span className="font-medium">Preparing today&apos;s Pro plan...</span>
               </div>
@@ -466,7 +466,7 @@ export default function CreatorProDashboardPage() {
                     <Sparkles size={24} className="text-white" />
                   </div>
 
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-200">
                     Pro Content Plan
                   </p>
 
@@ -481,7 +481,7 @@ export default function CreatorProDashboardPage() {
 
                     {dailyPlan.postingTime && (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
-                        <Clock3 size={13} className="text-amber-200" />
+                        <Clock3 size={13} className="text-violet-200" />
                         Post: {dailyPlan.postingTime}
                       </span>
                     )}
@@ -531,7 +531,7 @@ export default function CreatorProDashboardPage() {
                   className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                     dailyPlan.completed
                       ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 hover:bg-emerald-500/30"
-                      : "bg-white text-amber-700 hover:bg-amber-50"
+                      : "bg-white text-violet-700 hover:bg-violet-50"
                   }`}
                 >
                   {updatingPlan ? (
@@ -560,7 +560,7 @@ export default function CreatorProDashboardPage() {
 
               <div className="mt-7 grid gap-4 lg:grid-cols-2">
                 <div className="rounded-2xl bg-white/10 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">
                     Hook idea
                   </p>
                   <p className="mt-2 leading-relaxed text-white/90">
@@ -569,7 +569,7 @@ export default function CreatorProDashboardPage() {
                 </div>
 
                 <div className="rounded-2xl bg-white/10 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">
                     Call to action
                   </p>
                   <p className="mt-2 leading-relaxed text-white/90">
@@ -578,26 +578,26 @@ export default function CreatorProDashboardPage() {
                 </div>
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:col-span-2">
-                  <InfoCard icon={Target} label="Content goal" value={dailyPlan.contentGoal} colorClass="text-amber-200" />
-                  <InfoCard icon={Timer} label="Estimated time" value={dailyPlan.estimatedTime} colorClass="text-amber-200" />
-                  <InfoCard icon={Gauge} label="Difficulty" value={dailyPlan.difficulty} colorClass="text-amber-200" />
+                  <InfoCard icon={Target} label="Content goal" value={dailyPlan.contentGoal} colorClass="text-violet-200" />
+                  <InfoCard icon={Timer} label="Estimated time" value={dailyPlan.estimatedTime} colorClass="text-violet-200" />
+                  <InfoCard icon={Gauge} label="Difficulty" value={dailyPlan.difficulty} colorClass="text-violet-200" />
                   <InfoCard
                     icon={Sparkles}
                     label="Plan source"
                     value={dailyPlan.source === "fallback" ? "Fallback plan" : "Pro AI generated"}
-                    colorClass="text-amber-200"
+                    colorClass="text-violet-200"
                   />
                 </div>
 
                 {dailyPlan.aiTip && (
-                  <div className="mt-4 rounded-2xl border border-yellow-300/30 bg-yellow-500/20 p-5 lg:col-span-2">
+                  <div className="mt-4 rounded-2xl border border-blue-300/30 bg-blue-500/20 p-5 lg:col-span-2">
                     <div className="flex items-start gap-3">
-                      <Lightbulb size={20} className="mt-0.5 shrink-0 text-yellow-300" />
+                      <Lightbulb size={20} className="mt-0.5 shrink-0 text-blue-300" />
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-yellow-300">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-blue-300">
                           Pro AI Tip
                         </p>
-                        <p className="mt-2 text-sm leading-7 text-yellow-100/90">
+                        <p className="mt-2 text-sm leading-7 text-blue-100/90">
                           {dailyPlan.aiTip}
                         </p>
                       </div>
@@ -610,7 +610,7 @@ export default function CreatorProDashboardPage() {
               <div className="mt-4 rounded-2xl bg-white/10 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">
                       Today&apos;s action steps
                     </p>
                     <p className="mt-1 text-sm text-white/70">
@@ -673,7 +673,7 @@ export default function CreatorProDashboardPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href={`/creator-pro/script-generator?topic=${encodeURIComponent(dailyPlan.topic)}&hook=${encodeURIComponent(dailyPlan.hookIdea)}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-amber-700 transition hover:bg-amber-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-violet-700 transition hover:bg-violet-50"
                 >
                   Create today&apos;s script
                   <ArrowRight size={18} />
@@ -714,17 +714,17 @@ export default function CreatorProDashboardPage() {
             </div>
           ) : (
             <div className="flex min-h-48 flex-col items-center justify-center text-center">
-              <Lightbulb size={32} className="mb-4 text-amber-200" />
+              <Lightbulb size={32} className="mb-4 text-violet-200" />
               <h2 className="text-xl font-bold text-white">
                 Today&apos;s plan could not be loaded
               </h2>
-              <p className="mt-2 text-sm text-amber-200">
+              <p className="mt-2 text-sm text-violet-200">
                 Refresh the page or try again later.
               </p>
               <button
                 type="button"
                 onClick={loadDashboard}
-                className="mt-5 rounded-xl bg-white px-5 py-3 font-semibold text-amber-700 hover:bg-amber-50 transition"
+                className="mt-5 rounded-xl bg-white px-5 py-3 font-semibold text-violet-700 hover:bg-violet-50 transition"
               >
                 Try again
               </button>
@@ -734,7 +734,7 @@ export default function CreatorProDashboardPage() {
 
         {/* Stats Grid */}
         <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          <StatCard title="Saved hooks" value={stats.hooks} icon={Flame} colorClass="bg-amber-100 text-amber-700" />
+          <StatCard title="Saved hooks" value={stats.hooks} icon={Flame} colorClass="bg-violet-100 text-violet-700" />
           <StatCard title="Saved scripts" value={stats.scripts} icon={FileText} colorClass="bg-blue-100 text-blue-700" />
           <StatCard title="Saved captions" value={stats.captions} icon={FileText} colorClass="bg-emerald-100 text-emerald-700" />
           <StatCard title="Saved hashtags" value={stats.hashtags} icon={Hash} colorClass="bg-cyan-100 text-cyan-700" />
@@ -747,7 +747,7 @@ export default function CreatorProDashboardPage() {
         <section className="mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.15em] text-amber-600">
+              <p className="text-sm font-bold uppercase tracking-[0.15em] text-violet-600">
                 Today&apos;s Pro Progress
               </p>
               <h2 className="mt-2 text-xl font-bold text-zinc-950">
@@ -761,7 +761,7 @@ export default function CreatorProDashboardPage() {
             </div>
 
             <div className="min-w-44 text-right">
-              <p className="text-3xl font-extrabold text-amber-600">
+              <p className="text-3xl font-extrabold text-violet-600">
                 {progressPercentage}%
               </p>
               <p className="text-xs text-zinc-400">Daily progress</p>
@@ -773,7 +773,7 @@ export default function CreatorProDashboardPage() {
               className={`h-full rounded-full transition-all duration-500 ${
                 progressPercentage === 100
                   ? "bg-emerald-500"
-                  : "bg-gradient-to-r from-amber-500 via-orange-500 to-red-500"
+                  : "bg-gradient-to-r from-violet-500 via-indigo-500 to-red-500"
               }`}
               style={{ width: `${progressPercentage}%` }}
             />
@@ -798,13 +798,13 @@ export default function CreatorProDashboardPage() {
                 <Link
                   key={tool.title}
                   href={tool.href}
-                  className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg"
+                  className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg"
                 >
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600 transition-all duration-200 group-hover:bg-amber-600 group-hover:text-white">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-all duration-200 group-hover:bg-violet-600 group-hover:text-white">
                     <Icon size={20} />
                   </div>
 
-                  <h3 className="font-bold text-zinc-900 group-hover:text-amber-600 transition-colors">
+                  <h3 className="font-bold text-zinc-900 group-hover:text-violet-600 transition-colors">
                     {tool.title}
                   </h3>
 
@@ -812,7 +812,7 @@ export default function CreatorProDashboardPage() {
                     {tool.description}
                   </p>
 
-                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-amber-600 transition-colors">
+                  <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-violet-600 transition-colors">
                     Open tool
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -833,7 +833,7 @@ export default function CreatorProDashboardPage() {
                   Exclusive topics you can use in the AI generators.
                 </p>
               </div>
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
                 <TrendingUp size={20} />
               </div>
             </div>
@@ -842,11 +842,11 @@ export default function CreatorProDashboardPage() {
               {recommendedIdeas.map((idea) => (
                 <div
                   key={idea.title}
-                  className="flex flex-col gap-4 rounded-2xl border border-zinc-100 bg-zinc-50 p-4 sm:flex-row sm:items-center sm:justify-between hover:border-amber-200 hover:bg-amber-50 transition-all"
+                  className="flex flex-col gap-4 rounded-2xl border border-zinc-100 bg-zinc-50 p-4 sm:flex-row sm:items-center sm:justify-between hover:border-violet-200 hover:bg-violet-50 transition-all"
                 >
                   <div>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                      <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
                         {idea.category}
                       </span>
                       <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -861,14 +861,14 @@ export default function CreatorProDashboardPage() {
                       <p className="text-[10px] text-zinc-400 uppercase tracking-wider">
                         Idea score
                       </p>
-                      <p className="text-xl font-extrabold text-amber-600">
+                      <p className="text-xl font-extrabold text-violet-600">
                         {idea.score}%
                       </p>
                     </div>
 
                     <Link
                       href={`/creator-pro/hook-generator?topic=${encodeURIComponent(idea.title)}`}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-amber-600 shadow-sm transition hover:bg-amber-600 hover:text-white hover:border-amber-600"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-violet-600 shadow-sm transition hover:bg-violet-600 hover:text-white hover:border-violet-600"
                       aria-label={`Generate hooks for ${idea.title}`}
                     >
                       <ArrowRight size={18} />
@@ -881,7 +881,7 @@ export default function CreatorProDashboardPage() {
 
           {/* Daily Workflow */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
               <Lightbulb size={20} />
             </div>
 
@@ -919,10 +919,10 @@ export default function CreatorProDashboardPage() {
               ))}
             </div>
 
-            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="mt-5 rounded-xl border border-violet-200 bg-violet-50 p-4">
               <div className="flex items-start gap-3">
-                <BarChart3 size={19} className="mt-0.5 shrink-0 text-amber-600" />
-                <p className="text-sm leading-relaxed text-amber-700">
+                <BarChart3 size={19} className="mt-0.5 shrink-0 text-violet-600" />
+                <p className="text-sm leading-relaxed text-violet-700">
                   Complete your hook, script, caption, hashtag, thumbnail
                   title and video-description workflow, then mark today&apos;s
                   AI plan as completed.
@@ -977,7 +977,7 @@ export default function CreatorProDashboardPage() {
                     name={name}
                     value={editForm[name]}
                     onChange={handleEditChange}
-                    className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                    className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
                   />
                 </div>
               ))}
@@ -990,7 +990,7 @@ export default function CreatorProDashboardPage() {
                   name="difficulty"
                   value={editForm.difficulty}
                   onChange={handleEditChange}
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all appearance-none"
+                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all appearance-none"
                 >
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
@@ -1001,7 +1001,7 @@ export default function CreatorProDashboardPage() {
               <button
                 type="submit"
                 disabled={savingEdit}
-                className="sm:col-span-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-5 py-4 font-semibold text-white shadow-lg shadow-amber-200 transition hover:bg-amber-700 disabled:opacity-50"
+                className="sm:col-span-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-4 font-semibold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-700 disabled:opacity-50"
               >
                 {savingEdit ? (
                   <>
@@ -1043,7 +1043,7 @@ function InfoCard({ icon: Icon, label, value, colorClass = "text-violet-200" }) 
 
 function StatCard({ title, value, icon: Icon, colorClass }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-amber-200 hover:shadow-md">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:shadow-md">
       <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}>
         <Icon size={21} />
       </div>
