@@ -312,27 +312,25 @@ export default function BusinessProDashboardPage() {
                   <h2 className="mt-2 max-w-3xl text-2xl font-bold text-white sm:text-3xl">{dailyPlan.topic}</h2>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-violet-50">{dailyPlan.businessGoal}</p>
                 </div>
-                <div className="flex flex-col items-start gap-2 sm:items-end">
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={handleRegeneratePlan}
-                      disabled={regeneratingPlan || dailyPlan.completed}
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
-                    >
-                      <RefreshCw size={17} className={regeneratingPlan ? "animate-spin" : ""} />
-                      {regeneratingPlan ? "Regenerating..." : "Regenerate (Pro)"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handlePlanStatus}
-                      disabled={updatingPlan || (!dailyPlan.completed && !allStepsCompleted)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:opacity-50"
-                    >
-                      <CheckCircle2 size={17} />
-                      {updatingPlan ? "Updating..." : dailyPlan.completed ? "Completed" : allStepsCompleted ? "Mark complete" : "Complete all steps"}
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRegeneratePlan}
+                    disabled={regeneratingPlan || dailyPlan.completed}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
+                  >
+                    <RefreshCw size={17} className={regeneratingPlan ? "animate-spin" : ""} />
+                    {regeneratingPlan ? "Regenerating..." : "Regenerate (Pro)"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePlanStatus}
+                    disabled={updatingPlan || (!dailyPlan.completed && !allStepsCompleted)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:opacity-50"
+                  >
+                    <CheckCircle2 size={17} />
+                    {updatingPlan ? "Updating..." : dailyPlan.completed ? "Completed" : allStepsCompleted ? "Mark complete" : "Complete all steps"}
+                  </button>
                 </div>
               </div>
 

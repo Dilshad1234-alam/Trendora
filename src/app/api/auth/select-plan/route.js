@@ -6,8 +6,8 @@ import { verifyToken } from "@/lib/jwt";
 import User from "@/models/User";
 
 const allowedPlansByRole = {
-  creator: ["free", "creator-pro"],
-  business: ["free", "business-pro"],
+  creator: ["free", "creator-pro", "agency"],
+  business: ["free", "business-pro", "agency"],
 };
 
 export async function PATCH(request) {
@@ -102,11 +102,15 @@ export async function PATCH(request) {
 
     let nextRoute = "/";
 
-    if (user.role === "creator") {
+    if (plan === "agency") {
+      nextRoute = "/agency/dashboard";
+    } else if (plan === "creator-pro") {
+      nextRoute = "/creator-pro/dashboard";
+    } else if (plan === "business-pro") {
+      nextRoute = "/business-pro/dashboard";
+    } else if (user.role === "creator") {
       nextRoute = "/creator/dashboard";
-    }
-
-    if (user.role === "business") {
+    } else if (user.role === "business") {
       nextRoute = "/business/dashboard";
     }
 

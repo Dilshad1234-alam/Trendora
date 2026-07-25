@@ -517,63 +517,65 @@ export default function CreatorDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={openEditPlan}
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-                  >
-                    <Edit3 size={17} />
-                    Edit plan
-                  </button>
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={openEditPlan}
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+                    >
+                      <Edit3 size={17} />
+                      Edit plan
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleRegeneratePlan}
+                      disabled={regeneratingPlan}
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-50"
+                    >
+                      {regeneratingPlan ? (
+                        <LoaderCircle size={17} className="animate-spin" />
+                      ) : (
+                        <RefreshCw size={17} />
+                      )}
+                      {regeneratingPlan ? "Regenerating..." : "Regenerate"}
+                    </button>
+                  </div>
 
                   <button
                     type="button"
-                    onClick={handleRegeneratePlan}
-                    disabled={regeneratingPlan}
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-50"
+                    onClick={handlePlanStatus}
+                    disabled={updatingPlan || (!dailyPlan.completed && !allPlanStepsCompleted)}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                      dailyPlan.completed
+                        ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 hover:bg-emerald-500/30"
+                        : "bg-white text-violet-700 hover:bg-violet-50"
+                    }`}
                   >
-                    {regeneratingPlan ? (
-                      <LoaderCircle size={17} className="animate-spin" />
+                    {updatingPlan ? (
+                      <>
+                        <LoaderCircle size={18} className="animate-spin" />
+                        Updating...
+                      </>
+                    ) : dailyPlan.completed ? (
+                      <>
+                        <CheckCircle2 size={18} />
+                        Completed
+                      </>
+                    ) : !allPlanStepsCompleted ? (
+                      <>
+                        <CheckCircle2 size={18} />
+                        Complete all steps first
+                      </>
                     ) : (
-                      <RefreshCw size={17} />
+                      <>
+                        <CheckCircle2 size={18} />
+                        Mark complete
+                      </>
                     )}
-                    {regeneratingPlan ? "Regenerating..." : "Regenerate"}
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handlePlanStatus}
-                  disabled={updatingPlan || (!dailyPlan.completed && !allPlanStepsCompleted)}
-                  className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                    dailyPlan.completed
-                      ? "bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 hover:bg-emerald-500/30"
-                      : "bg-white text-violet-700 hover:bg-violet-50"
-                  }`}
-                >
-                  {updatingPlan ? (
-                    <>
-                      <LoaderCircle size={18} className="animate-spin" />
-                      Updating...
-                    </>
-                  ) : dailyPlan.completed ? (
-                    <>
-                      <CheckCircle2 size={18} />
-                      Completed
-                    </>
-                  ) : !allPlanStepsCompleted ? (
-                    <>
-                      <CheckCircle2 size={18} />
-                      Complete all steps first
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={18} />
-                      Mark complete
-                    </>
-                  )}
-                </button>
               </div>
 
               <div className="mt-7 grid gap-4 lg:grid-cols-2">

@@ -170,15 +170,10 @@ export default function SelectPlanPage() {
         ];
 
     const agencyFeatures = [
-      "Everything in Creator & Business Pro",
-      "Multi-Client Workspace",
-      "Team Collaboration",
-      "Unlimited AI Generations",
-      "White Label Branding",
-      "AI Automation",
-      "Advanced Analytics",
-      "Priority Support",
-      "API Access", 
+      "Multiple client management",
+      "Creator + business mode",
+      "Monthly reports",
+      "Priority support",
     ];
 
     return [

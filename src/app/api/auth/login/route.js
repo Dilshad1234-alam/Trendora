@@ -111,8 +111,8 @@ export async function POST(request) {
       nextRoute = "/onboarding/business";
     } else if (trialExpired) {
       nextRoute = "/onboarding/select-plan";
-    } else if (user.plan === "agent") {
-      nextRoute = "/agent/dashboard";
+    } else if (user.plan === "agency") {
+      nextRoute = "/agency/dashboard";
     } else if (
       user.role === "creator" &&
       user.plan === "creator-pro"

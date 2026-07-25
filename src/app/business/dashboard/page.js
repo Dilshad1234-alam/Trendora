@@ -678,13 +678,11 @@ export default function BusinessDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-start gap-2 sm:items-end">
-                  <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col items-start gap-2 sm:items-end shrink-0">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <button
                       type="button"
-                      onClick={
-                        handleRegeneratePlan
-                      }
+                      onClick={handleRegeneratePlan}
                       disabled={
                         regeneratingPlan ||
                         freeRegenerationUsed ||
@@ -695,7 +693,7 @@ export default function BusinessDashboardPage() {
                           ? "Free Plan allows one regeneration per day."
                           : "Generate a different plan"
                       }
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {regeneratingPlan ? (
                         <LoaderCircle
@@ -717,15 +715,13 @@ export default function BusinessDashboardPage() {
 
                     <button
                       type="button"
-                      onClick={
-                        handlePlanStatus
-                      }
+                      onClick={handlePlanStatus}
                       disabled={
                         updatingPlan ||
                         (!dailyPlan.completed &&
                           !allStepsCompleted)
                       }
-                      className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {updatingPlan ? (
                         <>
@@ -754,17 +750,14 @@ export default function BusinessDashboardPage() {
                           <CheckCircle2
                             size={17}
                           />
-                          Complete all
-                          steps
+                          Complete all steps first
                         </>
                       )}
                     </button>
                   </div>
-
                   {isFreePlan && (
                     <p className="text-xs text-violet-200">
-                      Free Plan: one
-                      regeneration per day
+                      Free Plan: one regeneration per day
                     </p>
                   )}
                 </div>
