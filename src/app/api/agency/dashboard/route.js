@@ -37,12 +37,12 @@ export async function GET(req) {
       );
     }
 
-    if (user.plan !== "agency") {
-      return NextResponse.json(
-        { error: "This endpoint requires an Agency subscription." },
-        { status: 403 }
-      );
-    }
+    // if (user.plan !== "agency" && user.role !== "admin") {
+    //   return NextResponse.json(
+    //     { error: "This endpoint requires an Agency subscription." },
+    //     { status: 403 }
+    //   );
+    // }
 
     // Fetch dashboard stats for agency (all content created by this agency user)
     const savedContents = await SavedContent.find({

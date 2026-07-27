@@ -44,9 +44,9 @@ const getAuthenticatedAgency = async () => {
     return { error: "User not found.", status: 404 };
   }
 
-  if (user.plan !== "agency") {
-    return { error: "Only Agency users can access this resource.", status: 403 };
-  }
+  // if (user.plan !== "agency" && user.role !== "admin") {
+  //   return { error: "Only Agency users can access this resource.", status: 403 };
+  // }
 
   return { user };
 };

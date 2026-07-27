@@ -56,6 +56,7 @@ const savedContentSchema = new mongoose.Schema(
         "local-seo",
         "review-reply",
         "whatsapp-reply",
+        "competitor-analysis",
       ],
       required: true,
       index: true,

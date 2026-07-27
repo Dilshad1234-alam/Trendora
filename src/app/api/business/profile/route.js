@@ -123,6 +123,11 @@ export async function GET() {
           targetCustomers: profile.targetCustomers || "",
           goal: profile.goal,
           onlinePresence: profile.onlinePresence || "",
+          photos: profile.photos || [],
+          workingHours: profile.workingHours || "",
+          contactEmail: profile.contactEmail || "",
+          contactPhone: profile.contactPhone || "",
+          googleBusinessInfo: profile.googleBusinessInfo || "",
           createdAt: profile.createdAt,
           updatedAt: profile.updatedAt,
         },
@@ -146,6 +151,63 @@ export async function GET() {
       {
         status: 500,
       }
+    );
+  }
+}
+
+export async function PUT(request) {
+  try {
+    await connectDB();
+    const auth = await getAuthenticatedBusiness();
+
+    if (auth.error) {
+      return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    }
+
+    const body = await request.json();
+
+    const updatedProfile = await BusinessProfile.findOneAndUpdate(
+      { user: auth.user._id },
+      {
+        $set: {
+          businessName: body.businessName,
+          businessType: body.businessType,
+          city: body.city,
+          services: body.services,
+          targetCustomers: body.targetCustomers,
+          goal: body.goal,
+          onlinePresence: body.onlinePresence,
+          photos: body.photos,
+          workingHours: body.workingHours,
+          contactEmail: body.contactEmail,
+          contactPhone: body.contactPhone,
+          googleBusinessInfo: body.googleBusinessInfo,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProfile) {
+      return NextResponse.json({ success: false, message: "Profile not found." }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Business profile updated successfully.",
+        data: updatedProfile,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Business profile PUT error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unable to update business profile.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      },
+      { status: 500 }
     );
   }
 }

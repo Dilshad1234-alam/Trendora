@@ -1250,7 +1250,7 @@ export default function BusinessDashboardPage() {
             </div>
 
             <Link
-              href="/business/settings"
+              href="/business/profile"
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-5 py-3 font-semibold text-zinc-700 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700"
             >
               Update profile

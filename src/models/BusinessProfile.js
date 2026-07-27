@@ -45,6 +45,42 @@ const businessProfileSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    
+    photos: [
+      {
+        type: String,
+      },
+    ],
+    
+    workingHours: {
+      type: String,
+      default: "",
+    },
+    
+    contactEmail: {
+      type: String,
+      default: "",
+    },
+    
+    contactPhone: {
+      type: String,
+      default: "",
+    },
+    
+    googleBusinessInfo: {
+      type: String,
+      default: "",
+    },
+    
+    brandVoiceTone: {
+      type: String,
+      default: "Professional",
+    },
+    
+    brandVoiceInstructions: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
