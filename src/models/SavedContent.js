@@ -11,16 +11,53 @@ const savedContentSchema = new mongoose.Schema(
 
     ownerType: {
       type: String,
-      enum: ["creator", "business"],
+      enum: ["creator", "business", "agency"],
       required: true,
       index: true,
+    },
+
+    agencyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
+    },
+    
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AgencyClient",
+      default: null,
+      index: true,
+    },
+    
+    generatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AgencyTeam",
+      default: null,
+    },
+    
+    clientType: {
+      type: String,
+      enum: ["creator", "business"],
+      default: null,
+    },
+    
+    campaignId: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
     generatedContent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "GeneratedContent",
       default: null,
-      // required: false,
     },
 
     title: {
@@ -62,16 +99,87 @@ const savedContentSchema = new mongoose.Schema(
       index: true,
     },
 
+    pipelineStage: {
+      type: String,
+      enum: [
+        "ideation",
+        "drafted",
+        "draft",
+        "internal-review",
+        "review",
+        "client-review",
+        "approved",
+        "rejected",
+        "scheduled",
+        "published"
+      ],
+      default: "ideation",
+    },
+
+    contentStatus: {
+      type: String,
+      enum: [
+        "draft",
+        "internal-review",
+        "client-review",
+        "approved",
+        "rejected",
+        "scheduled",
+        "published"
+      ],
+      default: "draft",
+    },
+
     content: {
       type: String,
       required: true,
       trim: true,
+    },
+
+    platform: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    scheduledFor: {
+      type: Date,
+      default: null,
+    },
+
+    approvalRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
+    approvedAt: {
+      type: Date,
+      default: null,
+    },
+
+    rejectedAt: {
+      type: Date,
+      default: null,
+    },
+
+    publishedAt: {
+      type: Date,
+      default: null,
+    },
+
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: () => ({}),
     },
   },
   {
     timestamps: true,
   }
 );
+
+savedContentSchema.index({ agencyId: 1, clientId: 1, pipelineStage: 1 });
+savedContentSchema.index({ agencyId: 1, createdAt: -1 });
+savedContentSchema.index({ user: 1, ownerType: 1, createdAt: -1 });
 
 const SavedContent =
   mongoose.models.SavedContent ||

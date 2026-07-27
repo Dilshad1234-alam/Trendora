@@ -39,7 +39,7 @@ export default function SelectPlanPage() {
     const plan = currentUser.plan || "free";
 
     if (plan === "agency") {
-      return "/agency/dashboard";
+      return currentUser.agencyOnboardingCompleted ? "/agency/dashboard" : "/agency/setup";
     }
 
     if (role === "creator") {

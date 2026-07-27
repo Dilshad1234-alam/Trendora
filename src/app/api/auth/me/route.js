@@ -104,8 +104,8 @@ export async function GET() {
       nextRoute = "/onboarding/business";
     } else if (trialExpired) {
       nextRoute = "/onboarding/select-plan";
-    } else if (user.plan === "agent") {
-      nextRoute = "/agent/dashboard";
+    } else if (user.plan === "agency") {
+      nextRoute = user.agencyOnboardingCompleted ? "/agency/dashboard" : "/agency/setup";
     } else if (
       user.role === "creator" &&
       user.plan === "creator-pro"
@@ -138,6 +138,9 @@ export async function GET() {
           planSelected: Boolean(user.planSelected),
           onboardingCompleted: Boolean(
             user.onboardingCompleted
+          ),
+          agencyOnboardingCompleted: Boolean(
+            user.agencyOnboardingCompleted
           ),
 
           trialStartDate: user.trialStartDate,

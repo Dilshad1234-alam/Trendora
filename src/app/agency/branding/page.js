@@ -38,6 +38,7 @@ export default function AgencyBrandingPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line
     fetchBranding();
   }, []);
 

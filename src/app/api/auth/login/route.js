@@ -112,7 +112,7 @@ export async function POST(request) {
     } else if (trialExpired) {
       nextRoute = "/onboarding/select-plan";
     } else if (user.plan === "agency") {
-      nextRoute = "/agency/dashboard";
+      nextRoute = user.agencyOnboardingCompleted ? "/agency/dashboard" : "/agency/setup";
     } else if (
       user.role === "creator" &&
       user.plan === "creator-pro"
@@ -148,6 +148,9 @@ export async function POST(request) {
 
           onboardingCompleted: Boolean(
             user.onboardingCompleted
+          ),
+          agencyOnboardingCompleted: Boolean(
+            user.agencyOnboardingCompleted
           ),
 
           plan: user.plan || "free",

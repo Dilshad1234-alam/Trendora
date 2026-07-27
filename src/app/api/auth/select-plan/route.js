@@ -103,7 +103,7 @@ export async function PATCH(request) {
     let nextRoute = "/";
 
     if (plan === "agency") {
-      nextRoute = "/agency/dashboard";
+      nextRoute = user.agencyOnboardingCompleted ? "/agency/dashboard" : "/agency/setup";
     } else if (plan === "creator-pro") {
       nextRoute = "/creator-pro/dashboard";
     } else if (plan === "business-pro") {
@@ -122,6 +122,7 @@ export async function PATCH(request) {
           role: user.role,
           plan: user.plan,
           planSelected: user.planSelected,
+          agencyOnboardingCompleted: Boolean(user.agencyOnboardingCompleted),
           subscriptionStatus: user.subscriptionStatus,
           trialStartDate: user.trialStartDate,
           trialEndsAt: user.trialEndsAt,

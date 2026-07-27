@@ -23,33 +23,7 @@ const cleanJsonOutput = (output = "") =>
     .replace(/```$/i, "")
     .trim();
 
-const getAuthenticatedAgency = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) {
-    return { error: "Unauthorized. Please login first.", status: 401 };
-  }
-
-  let decoded;
-  try {
-    decoded = verifyToken(token);
-  } catch {
-    return { error: "Invalid or expired token.", status: 401 };
-  }
-
-  const user = await User.findById(decoded.userId);
-
-  if (!user) {
-    return { error: "User not found.", status: 404 };
-  }
-
-  // if (user.plan !== "agency" && user.role !== "admin") {
-  //   return { error: "Only Agency users can access this resource.", status: 403 };
-  // }
-
-  return { user };
-};
+import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
 
 const normalizeActionSteps = (steps = []) => {
   if (!Array.isArray(steps)) return [];

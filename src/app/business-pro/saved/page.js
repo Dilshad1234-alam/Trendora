@@ -36,7 +36,7 @@ export default function BusinessProSavedPage() {
   const [savedContents, setSavedContents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedType, useState] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
   const [copiedId, setCopiedId] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [message, setMessage] = useState("");
@@ -134,7 +134,7 @@ export default function BusinessProSavedPage() {
               <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search saved pro content..." className="w-full rounded-xl border border-zinc-300 py-3 pl-11 pr-4 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20" />
             </div>
-            <select value={selectedType} onChange={(e) => useState(e.target.value)} className="rounded-xl border border-zinc-300 px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20">
+            <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="rounded-xl border border-zinc-300 px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20">
               {contentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
             </select>
           </div>

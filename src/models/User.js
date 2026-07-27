@@ -39,6 +39,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    agencyOnboardingCompleted: {
+      type: Boolean,
+      default: false,
+    },
+
     plan: {
       type: String,
       enum: ["free", "creator-pro", "business-pro", "agency"],
