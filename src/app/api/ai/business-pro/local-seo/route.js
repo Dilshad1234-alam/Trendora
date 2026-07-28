@@ -251,7 +251,7 @@ Return exactly this structure:
     let output;
     try {
       const interaction = await gemini.interactions.create({
-        model: "gemini-3.5-flash",
+        model: "gemini-1.5-flash",
         input: prompt,
       });
       output = interaction.output_text?.trim();
