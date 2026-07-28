@@ -238,7 +238,10 @@ export default function CreatorProDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    loadDashboard();
+    const fetchIt = async () => {
+      await loadDashboard();
+    };
+    fetchIt();
   }, [loadDashboard]);
 
   const stats = useMemo(() => {

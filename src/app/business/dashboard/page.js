@@ -329,7 +329,10 @@ export default function BusinessDashboardPage() {
     }, [router]);
 
   useEffect(() => {
-    loadDashboard();
+    const fetchIt = async () => {
+      await loadDashboard();
+    };
+    fetchIt();
   }, [loadDashboard]);
 
   const stats = useMemo(() => {

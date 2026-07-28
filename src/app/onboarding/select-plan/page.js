@@ -209,14 +209,14 @@ export default function SelectPlanPage() {
         id: "free",
         name: "Free Trial",
         price: "₹0",
-        period: "3 days",
+        period: "7 days",
         description: trialExpired
-          ? "Your 3-day free trial has ended. Select a paid plan to continue."
+          ? "Your 7-day free trial has ended. Select a paid plan to continue."
           : isAgency
-          ? "Try Trendora's full agency suite free for 3 days."
+          ? "Try Trendora's full agency suite free for 7 days."
           : isCreator
-          ? "Try Trendora's essential creator tools free for 3 days."
-          : "Try Trendora's essential business tools free for 3 days.",
+          ? "Try Trendora's essential creator tools free for 7 days."
+          : "Try Trendora's essential business tools free for 7 days.",
         features: freeFeatures,
         icon: Sparkles,
         popular: false,
@@ -358,7 +358,7 @@ export default function SelectPlanPage() {
               <LockKeyhole size={20} />
 
               <h2 className="font-bold">
-                Your 3-day free trial has ended
+                Your 7-day free trial has ended
               </h2>
             </div>
 

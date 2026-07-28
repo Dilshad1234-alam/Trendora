@@ -182,7 +182,7 @@ export default function CreatorDashboardPage() {
         return;
       }
 
-    // 3-day trial complete hone ke baad hi plan page khulega
+    // 7-day trial complete hone ke baad hi plan page khulega
       if (
         currentUser.trialExpired &&
         !currentUser.planSelected
@@ -252,7 +252,10 @@ export default function CreatorDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    loadDashboard();
+    const fetchIt = async () => {
+      await loadDashboard();
+    };
+    fetchIt();
   }, [loadDashboard]);
 
   const stats = useMemo(() => {

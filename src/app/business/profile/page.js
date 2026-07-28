@@ -23,10 +23,6 @@ export default function BusinessProfilePage() {
     googleBusinessInfo: "",
   });
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const fetchProfile = async () => {
     try {
       setLoading(true);
@@ -56,6 +52,10 @@ export default function BusinessProfilePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -198,7 +198,7 @@ export default function BusinessProfilePage() {
           <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
             <div className="border-b border-zinc-100 bg-zinc-50/50 p-6">
               <h2 className="text-lg font-bold text-zinc-900">Contact & Operations</h2>
-              <p className="text-sm text-zinc-500 mt-1">How customers can reach you and when you're open.</p>
+              <p className="text-sm text-zinc-500 mt-1">How customers can reach you and when you&apos;re open.</p>
             </div>
             <div className="p-6 grid gap-6 sm:grid-cols-2">
               <div>

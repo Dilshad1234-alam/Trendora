@@ -59,9 +59,12 @@ export default function BusinessProSavedPage() {
       setLoading(false);
     }
   }, [router]);
-
-  useEffect(() => { loadSavedContents(); }, [loadSavedContents]);
-
+  useEffect(() => {
+    const fetchIt = async () => {
+      await loadSavedContents();
+    };
+    fetchIt();
+  }, [loadSavedContents]);
   const filteredContents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     return savedContents.filter((item) => {

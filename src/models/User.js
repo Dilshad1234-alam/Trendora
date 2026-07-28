@@ -71,6 +71,21 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     
+    suspended: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+    
+    country: {
+      type: String,
+      default: null,
+    },
+    
   },
   {
     timestamps: true,

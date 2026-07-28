@@ -117,7 +117,7 @@ export default function CreatorLandingPage() {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-8 py-4 font-bold text-white shadow-xl shadow-violet-200 transition hover:bg-violet-800"
             >
               <Sparkles size={20} />
-              Start 3-Day Free Trial
+              Start 7-Day Free Trial
             </Link>
           </div>
         </div>

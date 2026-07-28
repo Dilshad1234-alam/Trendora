@@ -130,7 +130,7 @@ export async function POST(request) {
     const trialStartDate = new Date();
 
     const trialEndsAt = new Date(
-      trialStartDate.getTime() + 3 * 24 * 60 * 60 * 1000
+      trialStartDate.getTime() + 7 * 24 * 60 * 60 * 1000
     );
 
     user.onboardingCompleted = true;

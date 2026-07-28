@@ -15,7 +15,7 @@ if (!cached) {
   };
 }
 
-const connectDB = async () => {
+export const connectDB = async () => {
   if (cached.connection) {
     return cached.connection;
   }
@@ -34,6 +34,10 @@ const connectDB = async () => {
   }
 
   return cached.connection;
+};
+
+export const isConnected = () => {
+  return mongoose.connection.readyState === 1;
 };
 
 export default connectDB;

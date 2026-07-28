@@ -188,7 +188,10 @@ export default function BusinessSavedPage() {
     }, [router]);
 
   useEffect(() => {
-    loadSavedContents();
+    const fetchIt = async () => {
+      await loadSavedContents();
+    };
+    fetchIt();
   }, [loadSavedContents]);
 
   const filteredContents = useMemo(
