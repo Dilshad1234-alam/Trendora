@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function POST(request) {
   try {
-    const auth = await getAuthenticatedAgency();
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await agencyAccess();
+    if (auth.error) return NextResponse.json({ error: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
 
     const { client, dateRange } = await request.json();
 

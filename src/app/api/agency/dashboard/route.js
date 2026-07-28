@@ -6,7 +6,7 @@ import AgencyTeam from "@/models/AgencyTeam";
 import AgencyTask from "@/models/AgencyTask";
 import AgencyActivity from "@/models/AgencyActivity";
 import AgencyUsage from "@/models/AgencyUsage";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import mongoose from "mongoose";
 
 const AI_TIME_SAVED_MAP = {
@@ -30,8 +30,8 @@ const AI_TIME_SAVED_MAP = {
 
 export async function GET(req) {
   try {
-    const auth = await getAuthenticatedAgency();
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await agencyAccess();
+    if (auth.error) return NextResponse.json({ error: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
 
     await connectDB();
     const agencyId = auth.user._id;

@@ -429,7 +429,7 @@ export default function CreatorProDashboardPage() {
 
           <h1 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl">
             Welcome back,{" "}
-            <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-red-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
               {user?.fullname || "Pro Creator"}
             </span>
           </h1>
@@ -450,7 +450,7 @@ export default function CreatorProDashboardPage() {
         )}
 
         {/* Daily Content Plan */}
-        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-indigo-600 to-red-600 p-6 text-white shadow-xl shadow-violet-200/50 sm:p-8">
+        <section className="mb-8 overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-600 p-6 text-white shadow-xl shadow-violet-200/50 sm:p-8">
           {dailyPlanLoading ? (
             <div className="flex min-h-52 items-center justify-center">
               <div className="flex items-center gap-3 text-violet-200">

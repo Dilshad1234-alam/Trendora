@@ -11,11 +11,14 @@ import {
   LoaderCircle,
   Sparkles,
   UserRound,
+  Briefcase,
+  LogOut
 } from "lucide-react";
 
 import {
   getCurrentUser,
   selectUserRole,
+  logoutUser
 } from "@/services/auth.api";
 
 const roleOptions = [
@@ -43,6 +46,19 @@ const roleOptions = [
       "Local SEO keyword suggestions",
       "Professional review replies",
       "Weekly growth actions",
+    ],
+  },
+  {
+    id: "agency",
+    title: "I run an Agency",
+    description:
+      "Manage multiple clients, generate content in bulk, and create white-label reports with advanced tools.",
+    icon: Briefcase,
+    features: [
+      "Manage multiple clients",
+      "Bulk content generation",
+      "White-label client reports",
+      "Team collaboration",
     ],
   },
 ];
@@ -139,6 +155,15 @@ export default function SelectRolePage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   if (checkingUser) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
@@ -166,13 +191,24 @@ export default function SelectRolePage() {
             />
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {user?.fullname && (
-              <span className="hidden text-sm text-zinc-500 sm:block">
-                Signed in as{" "}
-                <span className="font-semibold text-zinc-800">{user.fullname}</span>
-              </span>
+              <div className="flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50/50 py-1.5 pl-1.5 pr-4 transition hover:bg-zinc-50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">
+                  {user.fullname.charAt(0).toUpperCase()}
+                </div>
+                <span className="hidden text-sm font-medium text-zinc-700 sm:block">
+                  {user.fullname}
+                </span>
+              </div>
             )}
+            <button
+              onClick={handleLogout}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 transition hover:bg-red-50 hover:text-red-600"
+              title="Logout"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </nav>
       </header>
@@ -181,7 +217,7 @@ export default function SelectRolePage() {
       <section className="relative overflow-hidden bg-gradient-to-b from-violet-50 via-white to-white">
         <div className="absolute left-1/2 top-24 h-96 w-96 -translate-x-1/2 rounded-full bg-violet-300/25 blur-3xl" />
 
-        <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           {/* Header */}
           <div className="mb-12 text-center">
             <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
@@ -240,7 +276,7 @@ export default function SelectRolePage() {
           )}
 
           {/* Role Cards */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {roleOptions.map((role) => {
               const Icon = role.icon;
               const isSelected = selectedRole === role.id;

@@ -1,4 +1,4 @@
-import gemini from "@/lib/gemini";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import SavedContent from "@/models/SavedContent";
 import GeneratedContent from "@/models/GeneratedContent";
 import AgencyUsage from "@/models/AgencyUsage";
@@ -187,28 +187,28 @@ export async function generateAgencyClientContent({ agencyUser, client, contentT
     let successGeneration = false;
     let aiErrorToReport = null;
 
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
     while (attempt <= MAX_RETRIES && !successGeneration) {
       attempt++;
       try {
-        const generationPromise = gemini.models.generateContent({
-          model: "gemini-1.5-flash",
-          contents: fullPrompt,
-        });
+        const generationPromise = model.generateContent(fullPrompt);
 
         // 15 seconds timeout
         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000));
         
         const interaction = await Promise.race([generationPromise, timeoutPromise]);
         
-        output = interaction?.text?.trim();
+        output = interaction.response.text().trim();
 
         if (!output) throw new Error("AI returned empty response");
 
         // Try to parse tokens if available, else approximate
         try {
-          if (interaction.usageMetadata) {
-            inputTokens = interaction.usageMetadata.promptTokenCount || 0;
-            outputTokens = interaction.usageMetadata.candidatesTokenCount || 0;
+          if (interaction.response.usageMetadata) {
+            inputTokens = interaction.response.usageMetadata.promptTokenCount || 0;
+            outputTokens = interaction.response.usageMetadata.candidatesTokenCount || 0;
           } else {
             inputTokens = Math.ceil(fullPrompt.length / 4);
             outputTokens = Math.ceil(output.length / 4);

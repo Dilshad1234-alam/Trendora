@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,7 +13,10 @@ import {
   ShieldCheck,
   Sparkles,
   UserRound,
+  LogOut,
 } from "lucide-react";
+
+import { getCurrentUser, logoutUser } from "@/services/auth.api";
 
 import { completeCreatorOnboarding } from "@/services/onboarding.api";
 
@@ -214,6 +217,29 @@ export default function CreatorOnboardingPage() {
     type: "",
     text: "",
   });
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await getCurrentUser();
+        setUser(data.user);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   const progress = Math.round((step / TOTAL_STEPS) * 100);
 
@@ -422,15 +448,30 @@ export default function CreatorOnboardingPage() {
             />
           </Link>
 
-          <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5">
-            <Sparkles
-              size={14}
-              className="text-violet-700"
-            />
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5">
+              <Sparkles size={14} className="text-violet-700" />
+              <span className="text-xs font-semibold text-violet-700">Creator Onboarding</span>
+            </div>
 
-            <span className="text-xs font-semibold text-violet-700">
-              Creator Onboarding
-            </span>
+            {user?.fullname && (
+              <div className="flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50/50 py-1.5 pl-1.5 pr-4 transition hover:bg-zinc-50">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">
+                  {user.fullname.charAt(0).toUpperCase()}
+                </div>
+                <span className="hidden text-sm font-medium text-zinc-700 sm:block">
+                  {user.fullname}
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 transition hover:bg-red-50 hover:text-red-600"
+              title="Logout"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </nav>
       </header>

@@ -5,13 +5,13 @@ import AgencyTask from "@/models/AgencyTask";
 import AgencyClient from "@/models/AgencyClient";
 import AgencyTeam from "@/models/AgencyTeam";
 import SavedContent from "@/models/SavedContent";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth);
     if (!perm.success) {
@@ -45,7 +45,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth);
     if (!perm.success) {
@@ -114,7 +114,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // Only admins or owners can delete tasks
     const perm = await checkAgencyPermission(auth, "manage_team"); // Requires admin level

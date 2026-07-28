@@ -53,7 +53,9 @@ export async function PATCH(request) {
       );
     }
 
-    if (!user.role) {
+    const isWorkspaceAgency = user.workspace === "agency";
+
+    if (!user.role && !isWorkspaceAgency) {
       return NextResponse.json(
         {
           success: false,
@@ -63,7 +65,7 @@ export async function PATCH(request) {
       );
     }
 
-    if (!user.onboardingCompleted) {
+    if (!user.onboardingCompleted && !user.agencyOnboardingCompleted) {
       return NextResponse.json(
         {
           success: false,
@@ -76,14 +78,16 @@ export async function PATCH(request) {
     const body = await request.json();
     const plan = body.plan?.trim().toLowerCase();
 
-    const allowedPlans =
-      allowedPlansByRole[user.role] || [];
+    let allowedPlans = allowedPlansByRole[user.role] || [];
+    if (isWorkspaceAgency) {
+      allowedPlans = ["free", "agency"];
+    }
 
     if (!plan || !allowedPlans.includes(plan)) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid plan for selected role.",
+          message: "Invalid plan for selected role/workspace.",
         },
         { status: 400 }
       );

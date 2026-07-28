@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import AgencyNotification from "@/models/AgencyNotification";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function GET(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await agencyAccess();
+    if (auth.error) return NextResponse.json({ error: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
 
     const notifications = await AgencyNotification.find({ userId: auth.user._id })
       .sort({ createdAt: -1 })

@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import AgencyClient from "@/models/AgencyClient";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function GET(request, { params }) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }
@@ -33,7 +33,7 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }
@@ -89,7 +89,7 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }

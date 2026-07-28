@@ -23,7 +23,7 @@ const cleanJsonOutput = (output = "") =>
     .replace(/```$/i, "")
     .trim();
 
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 const normalizeActionSteps = (steps = []) => {
   if (!Array.isArray(steps)) return [];
@@ -155,9 +155,9 @@ Rules:
 export async function GET() {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
-      return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+      return NextResponse.json({ success: false, message: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
     }
 
     const dateKey = getDateKey();
@@ -225,9 +225,9 @@ export async function GET() {
 export async function PATCH(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
-      return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+      return NextResponse.json({ success: false, message: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
     }
 
     let body;
@@ -286,9 +286,9 @@ export async function PATCH(request) {
 export async function POST(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
-      return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+      return NextResponse.json({ success: false, message: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
     }
 
     let body;

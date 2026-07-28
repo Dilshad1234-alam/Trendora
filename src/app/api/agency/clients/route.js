@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import AgencyClient from "@/models/AgencyClient";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function GET(request) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }
@@ -65,7 +65,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }

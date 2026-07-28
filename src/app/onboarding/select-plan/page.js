@@ -83,12 +83,15 @@ export default function SelectPlanPage() {
           return;
         }
 
-        if (!currentUser.role) {
+        if (currentUser.workspace === "agency" || currentUser.plan === "agency") {
+          if (!currentUser.agencyOnboardingCompleted) {
+            router.replace("/onboarding/agency");
+            return;
+          }
+        } else if (!currentUser.role) {
           router.replace("/onboarding/select-role");
           return;
-        }
-
-        if (!currentUser.onboardingCompleted) {
+        } else if (!currentUser.onboardingCompleted) {
           router.replace(
             currentUser.role === "creator"
               ? "/onboarding/creator"
@@ -103,6 +106,14 @@ export default function SelectPlanPage() {
         }
 
         setUser(currentUser);
+
+        if (currentUser.workspace === "agency") {
+          setSelectedPlan("agency");
+        } else if (currentUser.role === "creator") {
+          setSelectedPlan("creator-pro");
+        } else if (currentUser.role === "business") {
+          setSelectedPlan("business-pro");
+        }
       } catch (error) {
         console.error("Load user error:", error);
         router.replace("/login");
@@ -115,6 +126,7 @@ export default function SelectPlanPage() {
   }, [router]);
 
   const isCreator = user?.role === "creator";
+  const isAgency = user?.workspace === "agency" || user?.plan === "agency";
   const trialExpired = Boolean(user?.trialExpired);
 
   const plans = useMemo(() => {
@@ -122,7 +134,16 @@ export default function SelectPlanPage() {
       return [];
     }
 
-    const freeFeatures = isCreator
+    const freeFeatures = isAgency
+      ? [
+          "Agency dashboard access",
+          "Limited client management",
+          "Creator & Business tools preview",
+          "Basic pipeline management",
+          "Basic notifications",
+          "Limited AI Generations",
+        ]
+      : isCreator
       ? [
           "Creator dashboard access",
           "Hook generator",
@@ -170,13 +191,20 @@ export default function SelectPlanPage() {
         ];
 
     const agencyFeatures = [
-      "Multiple client management",
-      "Creator + business mode",
-      "Monthly reports",
-      "Priority support",
+      "Multiple Creator Clients",
+      "Multiple Business Clients",
+      "Team Members",
+      "Pipeline",
+      "Reports",
+      "White Label",
+      "Bulk AI",
+      "Daily Planner",
+      "Notifications",
+      "Activity Logs",
+      "Priority Support"
     ];
 
-    return [
+    const allPlans = [
       {
         id: "free",
         name: "Free Trial",
@@ -184,6 +212,8 @@ export default function SelectPlanPage() {
         period: "3 days",
         description: trialExpired
           ? "Your 3-day free trial has ended. Select a paid plan to continue."
+          : isAgency
+          ? "Try Trendora's full agency suite free for 3 days."
           : isCreator
           ? "Try Trendora's essential creator tools free for 3 days."
           : "Try Trendora's essential business tools free for 3 days.",
@@ -218,7 +248,15 @@ export default function SelectPlanPage() {
         disabled: false,
       },
     ];
-  }, [user, isCreator, trialExpired]);
+
+    if (isAgency) {
+      return allPlans.filter(p => p.id === "free" || p.id === "agency");
+    } else if (isCreator) {
+      return allPlans.filter(p => p.id === "free" || p.id === "creator-pro");
+    } else {
+      return allPlans.filter(p => p.id === "free" || p.id === "business-pro");
+    }
+  }, [user, isCreator, isAgency, trialExpired]);
 
   const handlePlanSelect = (plan) => {
     if (plan.disabled) {
@@ -331,7 +369,7 @@ export default function SelectPlanPage() {
           </div>
         )}
 
-        <div className="mt-14 grid gap-8 lg:grid-cols-3">
+        <div className={`mx-auto mt-14 grid gap-8 ${plans.length === 2 ? "max-w-4xl md:grid-cols-2" : "lg:grid-cols-3"}`}>
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isSelected = selectedPlan === plan.id;
@@ -464,7 +502,7 @@ export default function SelectPlanPage() {
             </>
           ) : (
             <>
-              {trialExpired ? "Upgrade Now" : "Continue"}
+              {trialExpired ? (isAgency ? "Upgrade to Agency Pro" : "Upgrade Now") : "Continue"}
               <ArrowRight size={20} />
             </>
           )}

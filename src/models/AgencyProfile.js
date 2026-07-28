@@ -56,6 +56,21 @@ const agencyProfileSchema = new mongoose.Schema(
       type: String,
       default: "#c4b5fd",
     },
+    teamSize: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    timezone: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    firstClient: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   {
     timestamps: true,

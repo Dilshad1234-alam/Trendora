@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight, LoaderCircle, LogOut, Sparkles, RefreshCw, CheckCircle2,
   Check, Lightbulb, Building2, Users, BarChart as BarChartIcon, Crown,
-  Clock, CheckSquare, AlertCircle, FileText, Bell, Settings, Link as LinkIcon
+  Clock, CheckSquare, AlertCircle, FileText, Bell, Settings, Link as LinkIcon, Lock
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
@@ -70,7 +70,7 @@ export default function AgencyDashboardPage() {
         setGenerationTrend(dashboardRes.value.data.generationTrendByWeek);
         setIndustryData(dashboardRes.value.data.clientIndustryDistribution);
       } else {
-        throw new Error(dashboardRes.reason?.message || "Failed to load dashboard data.");
+        throw dashboardRes.reason || new Error("Failed to load dashboard data.");
       }
 
       if (notifRes.status === "fulfilled" && notifRes.value?.data) {
@@ -84,10 +84,12 @@ export default function AgencyDashboardPage() {
         console.error("Plan Error:", planRes.reason?.message);
       }
     } catch (error) {
-      console.error("Dashboard error:", error);
-      if (error.message?.includes("Unauthorized") || error.message?.includes("token")) {
+      if (error.code === "TRIAL_EXPIRED") {
+        router.replace("/onboarding/select-plan?recommended=agency");
+      } else if (error.message?.includes("Unauthorized") || error.message?.includes("token") || error.status === 401) {
         router.replace("/login");
       } else {
+        console.error("Dashboard error:", error);
         setMessage(error.message || "An error occurred.");
       }
     } finally {
@@ -619,7 +621,8 @@ export default function AgencyDashboardPage() {
           </div>
         </section>
 
-        <section className="mb-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className="mb-8">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-zinc-900">Recent Agency Activity</h2>
@@ -647,6 +650,63 @@ export default function AgencyDashboardPage() {
                 No recent activity recorded yet.
               </p>
             )}
+          </div>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          {/* Agency Pro Promo Card */}
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="absolute right-0 top-0 h-full w-1/3 rounded-l-full bg-violet-100 blur-3xl opacity-50" />
+            
+            <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+              <div className="flex-1">
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500">
+                  <Lock size={21} />
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl font-bold text-zinc-900">
+                    Agency Growth Plan
+                  </h2>
+                  <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-violet-700">
+                    Agency Pro
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-500 max-w-md">
+                  Unlock a complete agency marketing strategy, priority tasks, unlimited regenerations and advanced team features.
+                </p>
+              </div>
+              
+              <div className="flex-1 shrink-0 w-full lg:max-w-md">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {[
+                    "Unlimited team members",
+                    "White-label reports",
+                    "Client branded portals",
+                    "Advanced AI recommendations",
+                  ].map((feature) => (
+                    <div
+                      key={feature}
+                      className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs font-medium text-zinc-600"
+                    >
+                      <Lock size={14} className="text-zinc-400 shrink-0" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="shrink-0">
+                <Link
+                  href="/onboarding/select-plan"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-violet-700 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800"
+                >
+                  View Agency Pro
+                  <ArrowRight size={17} />
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 

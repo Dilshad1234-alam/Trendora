@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
 import AgencyClient from "@/models/AgencyClient";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 const AI_TIME_SAVED_MAP = {
@@ -28,7 +28,7 @@ const AI_TIME_SAVED_MAP = {
 export async function GET(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth);
     if (!perm.success) {

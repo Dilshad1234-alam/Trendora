@@ -1130,7 +1130,7 @@ export default function BusinessDashboardPage() {
         </section>
 
         <section className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm self-start">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-zinc-900">

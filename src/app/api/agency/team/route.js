@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import AgencyTeam from "@/models/AgencyTeam";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 export async function GET(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // In a full multi-tenant system, any member could fetch the team list if they have 'manage_team' or 'read_team'.
     // For now, the owner always passes checkAgencyPermission.

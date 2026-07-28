@@ -34,6 +34,12 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    workspace: {
+      type: String,
+      enum: ["creator", "business", "agency"],
+      default: null,
+    },
+
     onboardingCompleted: {
       type: Boolean,
       default: false,

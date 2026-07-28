@@ -28,7 +28,8 @@ import {
   Crown,
   ShieldAlert,
   Settings,
-  Layers
+  Layers,
+  Hash
 } from "lucide-react";
 
 import { getCurrentUser, logoutUser } from "@/services/auth.api";
@@ -93,6 +94,18 @@ const proTools = [
     description: "Draft quick customer replies.",
     icon: MessageSquareText,
     href: "/business-pro/whatsapp-reply-generator",
+  },
+  {
+    title: "Ad Copy Generator",
+    description: "Generate converting ad copies instantly.",
+    icon: Target,
+    href: "/business-pro/ad-copy-generator",
+  },
+  {
+    title: "Hashtag Generator",
+    description: "Find the best local and viral hashtags.",
+    icon: Hash,
+    href: "/business-pro/hashtag-generator",
   }
 ];
 

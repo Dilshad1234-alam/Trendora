@@ -13,6 +13,7 @@ export async function POST(request) {
     const fullname = body.fullname?.trim();
     const email = body.email?.trim().toLowerCase();
     const password = body.password;
+    const workspace = body.workspace?.trim().toLowerCase();
 
     // Required fields validation
     if (!fullname || !email || !password) {
@@ -76,11 +77,25 @@ export async function POST(request) {
     // Password hash
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Determine workspace and initial role
+    let initialRole = null;
+    let initialWorkspace = null;
+
+    if (["creator", "business", "agency"].includes(workspace)) {
+      initialWorkspace = workspace;
+      
+      if (workspace === "creator" || workspace === "business") {
+        initialRole = workspace;
+      }
+    }
+
     // User create
     const user = await User.create({
       fullname,
       email,
       password: hashedPassword,
+      workspace: initialWorkspace,
+      role: initialRole,
     });
 
     return NextResponse.json(
@@ -92,6 +107,7 @@ export async function POST(request) {
           fullname: user.fullname,
           email: user.email,
           role: user.role,
+          workspace: user.workspace,
           onboardingCompleted: user.onboardingCompleted,
           plan: user.plan,
         },

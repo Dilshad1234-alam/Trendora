@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import {
   ArrowRight,
   Eye,
@@ -20,8 +20,10 @@ import {
 
 import { registerUser } from "@/services/auth.api";
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const workspace = searchParams.get("workspace");
 
   const [formData, setFormData] = useState({
     fullname: "",
@@ -103,6 +105,7 @@ export default function RegisterPage() {
         fullname: formData.fullname.trim(),
         email: formData.email.trim(),
         password: formData.password,
+        workspace: workspace || null,
       });
 
       setMessage({
@@ -537,5 +540,13 @@ export default function RegisterPage() {
         </div>
       </footer>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <RegisterContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
 import ContentStatusHistory from "@/models/ContentStatusHistory";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import mongoose from "mongoose";
 
 const VALID_STATUSES = [
@@ -17,7 +17,7 @@ const VALID_STATUSES = [
 
 export async function PATCH(request, { params }) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }

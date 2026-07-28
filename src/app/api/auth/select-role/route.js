@@ -55,8 +55,8 @@ export async function PATCH(request) {
 
     const role = body.role?.trim().toLowerCase();
 
-    // Sirf creator aur business allowed hain
-    const allowedRoles = ["creator", "business"];
+    // Sirf creator, business aur agency allowed hain
+    const allowedRoles = ["creator", "business", "agency"];
 
     if (!role) {
       return NextResponse.json(
@@ -72,7 +72,7 @@ export async function PATCH(request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Role must be creator or business.",
+          message: "Role must be creator, business, or agency.",
         },
         { status: 400 }
       );
@@ -102,22 +102,31 @@ export async function PATCH(request) {
     }
 
     // Existing role ko dobara change hone se rokein
-    if (user.role) {
+    if (user.role || (user.workspace === "agency" && user.agencyOnboardingCompleted)) {
       return NextResponse.json(
         {
           success: false,
-          message: `Your role is already set as ${user.role}.`,
+          message: `Your account role is already set.`,
         },
         { status: 409 }
       );
     }
 
-    user.role = role;
+    if (role === "agency") {
+      user.workspace = "agency";
+    } else {
+      user.role = role;
+      user.workspace = role;
+    }
 
     // Abhi onboarding complete nahi hua
     user.onboardingCompleted = false;
 
     await user.save();
+    
+    let nextRoute = "/onboarding/creator";
+    if (role === "business") nextRoute = "/onboarding/business";
+    if (role === "agency") nextRoute = "/onboarding/agency";
 
     return NextResponse.json(
       {
@@ -128,13 +137,11 @@ export async function PATCH(request) {
           fullname: user.fullname,
           email: user.email,
           role: user.role,
+          workspace: user.workspace,
           onboardingCompleted: user.onboardingCompleted,
           plan: user.plan,
         },
-        nextRoute:
-          role === "creator"
-            ? "/onboarding/creator"
-            : "/onboarding/business",
+        nextRoute: nextRoute,
       },
       { status: 200 }
     );

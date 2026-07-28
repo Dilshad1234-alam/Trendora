@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 export async function PATCH(request, { params }) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth);
     if (!perm.success) {

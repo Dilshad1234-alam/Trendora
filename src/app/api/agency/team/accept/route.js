@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import connectDB from "@/lib/db";
 import AgencyTeam from "@/models/AgencyTeam";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function POST(request) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request) {
     // The user accepting the invite must be logged in.
     // They may or may not be an agency owner, they just need to be a valid user.
     // We will use the same helper but we don't strictly require 'agency' plan.
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // Actually, getAuthenticatedAgency checks if role==="agency" or similar.
     // Let's assume they must be logged in. If they are invited, they could be any user.

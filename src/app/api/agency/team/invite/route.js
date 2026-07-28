@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import connectDB from "@/lib/db";
 import AgencyTeam from "@/models/AgencyTeam";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 export async function POST(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth, "manage_team");
     if (!perm.success) {

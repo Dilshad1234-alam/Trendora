@@ -56,18 +56,20 @@ export async function GET() {
       
     const isTrialUser =
       user.role === "creator" ||
-      user.role === "business";
+      user.role === "business" ||
+      user.workspace === "agency";
 
+    const hasCompletedOnboarding = user.onboardingCompleted || user.agencyOnboardingCompleted;
 
     const trialExpired = Boolean( isTrialUser &&
-      user.onboardingCompleted &&
+      hasCompletedOnboarding &&
         !user.planSelected &&
         trialEndsAt &&
         now >= trialEndsAt
     );
 
     const trialActive = Boolean( isTrialUser &&
-      user.onboardingCompleted &&
+      hasCompletedOnboarding &&
         !user.planSelected &&
         trialEndsAt &&
         now < trialEndsAt
@@ -90,6 +92,12 @@ export async function GET() {
 
     if (user.role === "admin") {
       nextRoute = "/admin/dashboard";
+    } else if (trialExpired) {
+      nextRoute = "/onboarding/select-plan";
+    } else if (user.workspace === "agency" && !user.agencyOnboardingCompleted) {
+      nextRoute = "/onboarding/agency";
+    } else if (user.workspace === "agency" && user.agencyOnboardingCompleted) {
+      nextRoute = "/agency/dashboard";
     } else if (!user.role) {
       nextRoute = "/onboarding/select-role";
     } else if (
@@ -102,8 +110,6 @@ export async function GET() {
       !user.onboardingCompleted
     ) {
       nextRoute = "/onboarding/business";
-    } else if (trialExpired) {
-      nextRoute = "/onboarding/select-plan";
     } else if (user.plan === "agency") {
       nextRoute = user.agencyOnboardingCompleted ? "/agency/dashboard" : "/agency/setup";
     } else if (
@@ -133,6 +139,7 @@ export async function GET() {
           email: user.email,
           image: user.image || "",
           role: user.role,
+          workspace: user.workspace || "",
 
           plan: user.plan || "free",
           planSelected: Boolean(user.planSelected),

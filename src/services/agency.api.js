@@ -5,7 +5,12 @@ export const getAgencyDashboard = async () => {
     cache: "no-store",
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.message || data.error || "Dashboard error.");
+  if (!response.ok) {
+    const error = new Error(data.message || data.error || "Dashboard error.");
+    error.code = data.code;
+    error.status = response.status;
+    throw error;
+  }
   return data;
 };
 

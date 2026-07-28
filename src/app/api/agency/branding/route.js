@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import AgencyBranding from "@/models/AgencyBranding";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function GET(request) {
   try {
-    const auth = await getAuthenticatedAgency();
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await agencyAccess();
+    if (auth.error) return NextResponse.json({ error: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
 
     await connectDB();
     let branding = await AgencyBranding.findOne({ agencyId: auth.user._id });
@@ -22,8 +22,8 @@ export async function GET(request) {
 
 export async function PUT(request) {
   try {
-    const auth = await getAuthenticatedAgency();
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await agencyAccess();
+    if (auth.error) return NextResponse.json({ error: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
 
     const body = await request.json();
     const { brandName, logoUrl, primaryColor, customDomain } = body;

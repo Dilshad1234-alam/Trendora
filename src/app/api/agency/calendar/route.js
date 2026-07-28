@@ -3,13 +3,13 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
 import AgencyClient from "@/models/AgencyClient";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 export async function GET(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth);
     if (!perm.success) {
@@ -69,7 +69,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // Writers might not be allowed to schedule depending on policy, but we'll allow editors and up.
     // Assuming checkAgencyPermission allows full access to owners, let's just check basic access

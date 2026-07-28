@@ -4,13 +4,13 @@ import connectDB from "@/lib/db";
 import AgencyTask from "@/models/AgencyTask";
 import AgencyClient from "@/models/AgencyClient";
 import AgencyTeam from "@/models/AgencyTeam";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import { checkAgencyPermission } from "@/lib/auth/checkAgencyPermission";
 
 export async function GET(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // Anyone in the agency can read tasks.
     const perm = await checkAgencyPermission(auth);
@@ -62,7 +62,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     const perm = await checkAgencyPermission(auth);
     if (!perm.success) {

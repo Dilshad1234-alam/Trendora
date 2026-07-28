@@ -97,7 +97,13 @@ export async function POST(request) {
 
     let nextRoute = "/";
 
-    if (!user.role) {
+    if (user.workspace === "agency" || user.plan === "agency") {
+      if (!user.agencyOnboardingCompleted) {
+        nextRoute = "/onboarding/agency";
+      } else {
+        nextRoute = "/agency/dashboard";
+      }
+    } else if (!user.role) {
       nextRoute = "/onboarding/select-role";
     } else if (
       user.role === "creator" &&
@@ -111,8 +117,6 @@ export async function POST(request) {
       nextRoute = "/onboarding/business";
     } else if (trialExpired) {
       nextRoute = "/onboarding/select-plan";
-    } else if (user.plan === "agency") {
-      nextRoute = user.agencyOnboardingCompleted ? "/agency/dashboard" : "/agency/setup";
     } else if (
       user.role === "creator" &&
       user.plan === "creator-pro"
@@ -145,6 +149,7 @@ export async function POST(request) {
           email: user.email,
           image: user.image || "",
           role: user.role,
+          workspace: user.workspace,
 
           onboardingCompleted: Boolean(
             user.onboardingCompleted

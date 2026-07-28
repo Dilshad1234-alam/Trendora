@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
 import AgencyClient from "@/models/AgencyClient";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function GET(request, { params }) {
   try {
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     if (auth.error) {
       return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }

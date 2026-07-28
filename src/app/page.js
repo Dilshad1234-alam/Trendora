@@ -19,7 +19,65 @@ import {
   Users,
   WandSparkles,
   Zap,
+  Briefcase,
+  ChevronDown
 } from "lucide-react";
+
+const pricingConfig = [
+  {
+    id: "free",
+    name: "Free",
+    price: "₹0",
+    interval: "forever",
+    description: "Start building your content workflow with zero risk.",
+    features: ["Limited AI", "Limited Daily Usage"],
+    buttonText: "Start Free",
+    buttonLink: "/register",
+    highlight: false
+  },
+  {
+    id: "creator-pro",
+    name: "Creator Pro",
+    price: "₹499",
+    interval: "per month",
+    description: "Unlock unlimited tools to grow your personal brand.",
+    features: ["Unlimited Hooks", "Unlimited Scripts", "Unlimited Captions", "Unlimited Hashtags", "Priority AI"],
+    buttonText: "Start Free",
+    buttonLink: "/register?workspace=creator",
+    highlight: false
+  },
+  {
+    id: "business-pro",
+    name: "Business Pro",
+    price: "₹999",
+    interval: "per month",
+    description: "Generate unlimited marketing materials for your local business.",
+    features: ["Business Posts", "Ads", "SEO", "Review Reply", "Priority AI"],
+    buttonText: "Start Free",
+    buttonLink: "/register?workspace=business",
+    highlight: false
+  },
+  {
+    id: "agency",
+    name: "Agency",
+    price: "₹2999",
+    interval: "per month",
+    description: "The ultimate workspace to manage unlimited clients at scale.",
+    features: ["Unlimited Creator Clients", "Unlimited Business Clients", "Team Members", "Bulk AI", "Pipeline", "Reports", "Calendar", "Notifications", "White Label", "Activity Logs"],
+    buttonText: "Start Free",
+    buttonLink: "/register?workspace=agency",
+    highlight: true
+  }
+];
+
+const faqData = [
+  { q: "Who should buy Creator Pro?", a: "Creator Pro is ideal for YouTubers, Instagram Influencers, and Personal Brands who need unlimited scripts, hooks, and captions without hitting any daily limits." },
+  { q: "Who should buy Business Pro?", a: "Business Pro is perfect for local businesses, clinics, restaurants, and startups looking to generate posts, review replies, and local SEO strategies consistently." },
+  { q: "Who should buy Agency?", a: "The Agency plan is built for marketing agencies, freelancers, and social media managers who handle multiple clients and need a unified dashboard, white labeling, and team collaboration." },
+  { q: "Can I upgrade later?", a: "Absolutely! You can start on the Free plan or a Pro plan and upgrade to Agency at any time directly from your dashboard." },
+  { q: "Can I downgrade later?", a: "Yes, you can downgrade your plan from your billing settings before your next billing cycle begins." },
+  { q: "Can I switch plans?", a: "Yes, you can switch seamlessly between Creator Pro, Business Pro, and Agency depending on what fits your current needs best." },
+];
 
 const creatorTools = [
   {
@@ -92,25 +150,25 @@ const steps = [
     number: "01",
     title: "Create your account",
     description:
-      "Register securely and choose whether you are a creator or business.",
+      "Register securely and choose whether you want to use the Creator or Business workspace.",
   },
   {
     number: "02",
-    title: "Complete your profile",
+    title: "Start Free",
     description:
-      "Tell Trendora about your niche, platform, audience or business.",
+      "Enjoy a free trial with zero risk to see exactly how Trendora can accelerate your growth.",
   },
   {
     number: "03",
     title: "Generate with AI",
     description:
-      "Create hooks, scripts, captions, posts and marketing content.",
+      "Create hooks, scripts, captions, posts, and manage clients in a single unified dashboard.",
   },
   {
     number: "04",
-    title: "Save and grow",
+    title: "Upgrade anytime",
     description:
-      "Save your best content and follow personalized daily action plans.",
+      "When you are ready to scale, choose Creator Pro, Business Pro, or our powerful Agency plan.",
   },
 ];
 
@@ -125,7 +183,7 @@ const benefits = [
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white text-zinc-900">
+    <main className="min-h-screen bg-white text-zinc-900 scroll-smooth">
       {/* Navbar */}
       <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
@@ -140,34 +198,14 @@ export default function HomePage() {
             />
           </Link>
 
-          <div className="hidden items-center gap-8 text-sm font-medium text-zinc-600 md:flex">
-            <Link
-              href="#features"
-              className="transition hover:text-violet-700"
-            >
-              Features
-            </Link>
-
-            <Link
-              href="#creators"
-              className="transition hover:text-violet-700"
-            >
-              Creators
-            </Link>
-
-            <Link
-              href="#business"
-              className="transition hover:text-violet-700"
-            >
-              Business
-            </Link>
-
-            <Link
-              href="#how-it-works"
-              className="transition hover:text-violet-700"
-            >
-              How it works
-            </Link>
+          <div className="hidden items-center gap-6 text-sm font-medium text-zinc-600 lg:flex">
+            <Link href="/" className="transition hover:text-violet-700">Home</Link>
+            <Link href="#features" className="transition hover:text-violet-700">Features</Link>
+            <Link href="#pricing" className="transition hover:text-violet-700">Pricing</Link>
+            <Link href="/creator" className="transition hover:text-violet-700">Creator</Link>
+            <Link href="/business" className="transition hover:text-violet-700">Business</Link>
+            <Link href="/agency" className="transition hover:text-violet-700">Agency</Link>
+            <Link href="#faq" className="transition hover:text-violet-700">FAQ</Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -182,7 +220,7 @@ export default function HomePage() {
               href="/register"
               className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800"
             >
-              Get started
+              Start Free
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -200,16 +238,14 @@ export default function HomePage() {
           </div>
 
           <h1 className="mx-auto mt-7 max-w-5xl text-4xl font-black tracking-tight text-zinc-950 sm:text-6xl lg:text-7xl">
-            Create better content.
+            AI Workspace for Creators,
             <span className="block bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
-              Grow faster with AI.
+              Businesses & Agencies
             </span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-zinc-600 sm:text-lg">
-            Trendora helps creators and local businesses generate personalized
-            hooks, scripts, captions, posts, hashtags, thumbnail titles and
-            daily growth plans—all from one intelligent workspace.
+            Generate content, grow your audience, manage clients and scale your workflow using AI.
           </p>
 
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -217,32 +253,32 @@ export default function HomePage() {
               href="/register"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-6 py-3.5 font-semibold text-white shadow-xl shadow-violet-200 transition hover:-translate-y-0.5 hover:bg-violet-800 sm:w-auto"
             >
-              Start creating for free
+              Start Free
               <ArrowRight size={18} />
             </Link>
 
             <Link
-              href="#features"
+              href="#pricing"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-6 py-3.5 font-semibold text-zinc-700 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:w-auto"
             >
-              Explore features
+              View Pricing
             </Link>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-zinc-500">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-semibold text-zinc-500">
             <span className="flex items-center gap-2">
               <Check size={16} className="text-emerald-600" />
-              No credit card required
+              Creator
             </span>
 
             <span className="flex items-center gap-2">
               <Check size={16} className="text-emerald-600" />
-              Personalized AI results
+              Business
             </span>
 
             <span className="flex items-center gap-2">
               <Check size={16} className="text-emerald-600" />
-              Creator and business tools
+              Agency
             </span>
           </div>
 
@@ -358,10 +394,98 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Choose Your Workspace */}
+      <section id="workspaces" className="border-t border-zinc-200 bg-zinc-50 py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
+              Workspaces
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 sm:text-5xl">
+              Choose your ideal setup
+            </h2>
+            <p className="mt-5 text-base leading-7 text-zinc-600">
+              Trendora provides tailored workspaces designed specifically for your goals.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 lg:grid-cols-3">
+            {/* Creator */}
+            <div className="flex flex-col rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm transition hover:shadow-xl hover:shadow-violet-100">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <Users size={28} />
+              </div>
+              <h3 className="mt-6 text-2xl font-bold text-zinc-950">Creator</h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Perfect for YouTubers, Instagram Creators, Influencers and Personal Brands.
+              </p>
+              <div className="mt-8 flex-1 space-y-4">
+                {["Hooks", "Scripts", "Captions", "Hashtags", "Planner"].map(f => (
+                  <div key={f} className="flex items-center gap-3 text-sm font-medium text-zinc-700">
+                    <Check size={18} className="text-violet-600" /> {f}
+                  </div>
+                ))}
+              </div>
+              <Link href="/creator" className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-50 px-5 py-3.5 font-semibold text-violet-700 transition hover:bg-violet-100">
+                Explore Creator
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+
+            {/* Business */}
+            <div className="flex flex-col rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm transition hover:shadow-xl hover:shadow-violet-100">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <Building2 size={28} />
+              </div>
+              <h3 className="mt-6 text-2xl font-bold text-zinc-950">Business</h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Perfect for Restaurants, Hotels, Clinics, Salons, Startups and Local Businesses.
+              </p>
+              <div className="mt-8 flex-1 space-y-4">
+                {["Business Posts", "Ads", "SEO", "Review Reply", "WhatsApp Reply"].map(f => (
+                  <div key={f} className="flex items-center gap-3 text-sm font-medium text-zinc-700">
+                    <Check size={18} className="text-violet-600" /> {f}
+                  </div>
+                ))}
+              </div>
+              <Link href="/business" className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-50 px-5 py-3.5 font-semibold text-violet-700 transition hover:bg-violet-100">
+                Explore Business
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+
+            {/* Agency */}
+            <div className="relative flex flex-col rounded-[2rem] border-2 border-violet-600 bg-white p-8 shadow-2xl shadow-violet-200">
+              <div className="absolute -top-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-violet-600 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
+                <Star size={14} fill="currentColor" /> Most Popular
+              </div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <Briefcase size={28} />
+              </div>
+              <h3 className="mt-6 text-2xl font-bold text-zinc-950">Agency</h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Perfect for Freelancers, Marketing Agencies and Social Media Managers.
+              </p>
+              <div className="mt-8 flex-1 space-y-4">
+                {["Unlimited Clients", "Creator Clients", "Business Clients", "Team Members", "Reports", "Pipeline", "Calendar", "White Label", "Bulk AI"].map(f => (
+                  <div key={f} className="flex items-center gap-3 text-sm font-medium text-zinc-700">
+                    <Check size={18} className="text-violet-600" /> {f}
+                  </div>
+                ))}
+              </div>
+              <Link href="/agency" className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-5 py-3.5 font-semibold text-white transition hover:bg-violet-800">
+                Explore Agency
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Main features */}
       <section
         id="features"
-        className="border-y border-zinc-200 bg-zinc-50 py-20 sm:py-24"
+        className="border-y border-zinc-200 bg-white py-20 sm:py-24"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
@@ -423,7 +547,7 @@ export default function HomePage() {
               return (
                 <article
                   key={feature.title}
-                  className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg"
+                  className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm transition hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg"
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
                     <Icon size={23} />
@@ -444,7 +568,7 @@ export default function HomePage() {
       </section>
 
       {/* Creator section */}
-      <section id="creators" className="py-20 sm:py-24">
+      <section id="creators" className="bg-zinc-50 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr]">
             <div>
@@ -555,8 +679,109 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Why Agency */}
+      <section className="bg-zinc-900 py-20 text-white sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-400">
+                Scale Your Business
+              </p>
+              <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
+                Why Agency Plan?
+              </h2>
+              <p className="mt-6 text-base leading-8 text-zinc-400">
+                Let&apos;s look at a real example. Rahul runs a marketing agency. He manages ABC Restaurant, Royal Gym, Hotel Paradise, and a Dental Clinic.
+              </p>
+              <p className="mt-4 text-base leading-8 text-zinc-400">
+                Instead of using ChatGPT separately for every client, losing brand voice, and constantly copy-pasting, Trendora lets Rahul:
+              </p>
+              <div className="mt-8 flex flex-col gap-3 font-semibold text-zinc-200">
+                <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 border border-white/10">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">1</span>
+                  Select Client
+                </div>
+                <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 border border-white/10">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">2</span>
+                  Generate Content
+                </div>
+                <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 border border-white/10">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">3</span>
+                  Save & Approve
+                </div>
+                <div className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 border border-white/10">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">4</span>
+                  Generate Reports
+                </div>
+              </div>
+            </div>
+            
+            <div className="rounded-3xl border border-violet-500/30 bg-violet-500/10 p-8 lg:p-12">
+              <h3 className="text-2xl font-bold text-white mb-4">Everything from one dashboard</h3>
+              <p className="text-zinc-300 leading-relaxed mb-8">
+                Manage 100+ clients with unique profiles, tones, and history. Build a pipeline and assign team members.
+              </p>
+              
+              <div className="rounded-2xl bg-black/40 p-6 border border-white/10">
+                <div className="flex items-center gap-3 mb-2">
+                  <Lightbulb className="text-amber-400" size={24} />
+                  <span className="font-bold text-white">Important Note</span>
+                </div>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Trendora DOES NOT provide clients for your agency. Users bring their own existing clients to the platform. Trendora simply provides the ultimate professional AI workspace to manage and deliver for them.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Real Use Cases */}
+      <section className="bg-white py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
+              Built for Scale
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 sm:text-5xl">
+              Real Use Cases
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <article className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-zinc-900">Freelancer</h3>
+              <p className="mt-3 text-sm leading-7 text-zinc-600">
+                Manage multiple client businesses from one powerful dashboard without juggling separate tools.
+              </p>
+            </article>
+
+            <article className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-zinc-900">Marketing Agency</h3>
+              <p className="mt-3 text-sm leading-7 text-zinc-600">
+                Manage 100+ clients seamlessly with dedicated client profiles, team members and beautiful reports.
+              </p>
+            </article>
+
+            <article className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-zinc-900">Content Creator Agency</h3>
+              <p className="mt-3 text-sm leading-7 text-zinc-600">
+                Manage multiple personal brands and creators. Generate personalized scripts and hooks in seconds using AI.
+              </p>
+            </article>
+
+            <article className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-zinc-900">Business Group</h3>
+              <p className="mt-3 text-sm leading-7 text-zinc-600">
+                Manage multiple brands and local branches, ensuring brand voice consistency across all locations.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
-      <section id="how-it-works" className="py-20 sm:py-24">
+      <section id="how-it-works" className="border-t border-zinc-200 bg-zinc-50 py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
@@ -587,6 +812,95 @@ export default function HomePage() {
                 </p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="bg-white py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-violet-700">
+              Pricing Plans
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 sm:text-5xl">
+              Choose the right plan for you
+            </h2>
+          </div>
+
+          <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {pricingConfig.map((plan) => (
+              <div 
+                key={plan.id}
+                className={`relative flex flex-col rounded-[2rem] border-2 bg-white p-8 ${plan.highlight ? 'border-violet-600 shadow-xl shadow-violet-200' : 'border-zinc-200 shadow-sm'}`}
+              >
+                {plan.highlight && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-violet-600 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
+                    Most Popular
+                  </div>
+                )}
+                
+                <h3 className="text-xl font-bold text-zinc-900">{plan.name}</h3>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-zinc-950">{plan.price}</span>
+                  <span className="text-sm font-medium text-zinc-500">/{plan.interval}</span>
+                </div>
+                
+                <p className="mt-4 text-sm text-zinc-600">{plan.description}</p>
+                
+                <Link
+                  href={plan.buttonLink}
+                  className={`mt-8 flex justify-center rounded-xl px-5 py-3.5 font-bold transition ${plan.highlight ? 'bg-violet-700 text-white hover:bg-violet-800' : 'bg-violet-50 text-violet-700 hover:bg-violet-100'}`}
+                >
+                  {plan.buttonText}
+                </Link>
+
+                <div className="mt-8 flex-1 space-y-4">
+                  {plan.features.map(f => (
+                    <div key={f} className="flex items-start gap-3 text-sm text-zinc-700">
+                      <Check size={16} className="mt-0.5 shrink-0 text-violet-600" /> 
+                      {f}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Compare Plans Table */}
+          <div className="mt-24 overflow-x-auto rounded-[2rem] border border-zinc-200 bg-white shadow-sm">
+            <table className="w-full min-w-[800px] text-left text-sm">
+              <thead className="border-b border-zinc-200 bg-zinc-50">
+                <tr>
+                  <th className="p-6 font-bold text-zinc-900">Features</th>
+                  <th className="p-6 font-bold text-zinc-900">Free</th>
+                  <th className="p-6 font-bold text-zinc-900">Creator Pro</th>
+                  <th className="p-6 font-bold text-zinc-900">Business Pro</th>
+                  <th className="p-6 font-bold text-violet-700">Agency</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200">
+                {[
+                  { name: "Hooks, Scripts & Captions", f: "Limited", cp: "Unlimited", bp: "-", a: "Unlimited" },
+                  { name: "Business Posts & Ads", f: "Limited", cp: "-", bp: "Unlimited", a: "Unlimited" },
+                  { name: "Local SEO & Review Reply", f: "Limited", cp: "-", bp: "Unlimited", a: "Unlimited" },
+                  { name: "Creator Clients", f: "-", cp: "-", bp: "-", a: "Unlimited" },
+                  { name: "Business Clients", f: "-", cp: "-", bp: "-", a: "Unlimited" },
+                  { name: "Team Members", f: "-", cp: "-", bp: "-", a: "Yes" },
+                  { name: "Pipeline & Calendar", f: "-", cp: "-", bp: "-", a: "Yes" },
+                  { name: "Reports & White Label", f: "-", cp: "-", bp: "-", a: "Yes" },
+                  { name: "Priority Support", f: "-", cp: "Yes", bp: "Yes", a: "Yes" },
+                ].map((row, i) => (
+                  <tr key={i}>
+                    <td className="p-6 font-medium text-zinc-900">{row.name}</td>
+                    <td className="p-6 text-zinc-600">{row.f === "-" ? <span className="text-zinc-300">—</span> : row.f}</td>
+                    <td className="p-6 text-zinc-600">{row.cp === "Yes" ? <Check size={18} className="text-emerald-500"/> : row.cp === "-" ? <span className="text-zinc-300">—</span> : row.cp}</td>
+                    <td className="p-6 text-zinc-600">{row.bp === "Yes" ? <Check size={18} className="text-emerald-500"/> : row.bp === "-" ? <span className="text-zinc-300">—</span> : row.bp}</td>
+                    <td className="p-6 font-semibold text-violet-700">{row.a === "Yes" ? <Check size={18} className="text-violet-600"/> : row.a === "-" ? <span className="text-zinc-300">—</span> : row.a}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -627,6 +941,33 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section id="faq" className="bg-white py-20 sm:py-24">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black tracking-tight text-zinc-950 sm:text-5xl">
+              Frequently Asked Questions
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            {faqData.map((faq, i) => (
+              <details key={i} className="group rounded-2xl border border-zinc-200 bg-zinc-50 p-6 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between gap-1.5 font-bold text-zinc-900">
+                  {faq.q}
+                  <span className="transition duration-300 group-open:-rotate-180">
+                    <ChevronDown size={20} className="text-violet-700" />
+                  </span>
+                </summary>
+                <p className="mt-4 leading-relaxed text-zinc-600">
+                  {faq.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
         <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-600 px-6 py-14 text-center text-white shadow-2xl shadow-violet-200 sm:px-10">
@@ -648,15 +989,15 @@ export default function HomePage() {
               href="/register"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 font-semibold text-violet-700 transition hover:bg-violet-50"
             >
-              Create free account
+              Start Free
               <ArrowRight size={18} />
             </Link>
 
             <Link
-              href="/login"
+              href="#pricing"
               className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 font-semibold text-white transition hover:bg-white/15"
             >
-              Login to Trendora
+              Compare Plans
             </Link>
           </div>
         </div>
@@ -664,22 +1005,21 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-200 bg-zinc-950 text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-3 lg:px-8">
-          <div>
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
+          <div className="md:col-span-2">
             <Link href="/" className="inline-flex items-center">
               <Image
-                src="/ChatGPT image jul 15, 2026, 12_11_21 PM.png"
+                src="/Trendora_Landing_Logo.png"
                 alt="Trendora Logo"
                 width={240}
                 height={70}
                 priority
-                className="h-14 w-auto object-contain"
+                className="h-14 w-auto object-contain brightness-0 invert"
               />
             </Link>
 
             <p className="mt-4 max-w-sm text-sm leading-7 text-zinc-400">
-              AI-powered content and growth workspace for creators and local
-              businesses.
+              AI-powered content and growth workspace for creators, businesses and agencies.
             </p>
           </div>
 
@@ -690,11 +1030,17 @@ export default function HomePage() {
               <Link href="#features" className="block hover:text-white">
                 Features
               </Link>
-              <Link href="#creators" className="block hover:text-white">
-                Creator tools
+              <Link href="#pricing" className="block hover:text-white">
+                Pricing
               </Link>
-              <Link href="#business" className="block hover:text-white">
-                Business tools
+              <Link href="/creator" className="block hover:text-white">
+                Creator Workspace
+              </Link>
+              <Link href="/business" className="block hover:text-white">
+                Business Workspace
+              </Link>
+              <Link href="/agency" className="block hover:text-white">
+                Agency Workspace
               </Link>
             </div>
           </div>
@@ -704,7 +1050,7 @@ export default function HomePage() {
 
             <div className="mt-4 space-y-3 text-sm text-zinc-400">
               <Link href="/register" className="block hover:text-white">
-                Create account
+                Start Free
               </Link>
               <Link href="/login" className="block hover:text-white">
                 Login

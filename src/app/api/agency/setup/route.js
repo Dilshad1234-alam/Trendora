@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 import AgencyProfile from "@/models/AgencyProfile";
 import AgencyTeam from "@/models/AgencyTeam";
 import AgencyClient from "@/models/AgencyClient";
@@ -9,7 +9,7 @@ import User from "@/models/User";
 export async function GET() {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // We allow users with pending setup to access this GET route
     if (auth.error && auth.status !== 403) {
@@ -47,7 +47,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     await connectDB();
-    const auth = await getAuthenticatedAgency();
+    const auth = await agencyAccess();
     
     // We allow users with pending setup to access this POST route
     if (auth.error && auth.status !== 403) {

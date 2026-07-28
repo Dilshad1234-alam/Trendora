@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import SavedContent from "@/models/SavedContent";
-import { getAuthenticatedAgency } from "@/lib/auth/getAuthenticatedAgency";
+import { agencyAccess } from "@/lib/agencyAccess";
 
 export async function GET(request) {
   try {
-    const auth = await getAuthenticatedAgency();
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await agencyAccess();
+    if (auth.error) return NextResponse.json({ error: auth.error, code: auth.code, redirectTo: auth.redirectTo }, { status: auth.status });
 
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get("clientId");
