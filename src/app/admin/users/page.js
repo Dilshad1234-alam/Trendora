@@ -103,7 +103,11 @@ export default function AdminUsersPage() {
       key: "createdAt",
       label: "Joined",
       sortable: true,
-      render: (row) => <span className="text-zinc-500">{format(new Date(row.createdAt), "MMM d, yyyy")}</span>,
+      render: (row) => (
+        <span className="text-zinc-500">
+          {row.createdAt ? format(new Date(row.createdAt), "MMM d, yyyy") : "N/A"}
+        </span>
+      ),
     },
   ];
 

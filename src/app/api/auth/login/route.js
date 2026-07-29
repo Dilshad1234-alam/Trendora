@@ -135,7 +135,7 @@ export async function POST(request) {
       nextRoute = "/admin/dashboard";
     }
 
-    const token = generateToken(user._id.toString());
+    const token = generateToken(user._id.toString(), user.role);
 
     const response = NextResponse.json(
       {

@@ -338,7 +338,7 @@ RULES
     try {
       const interaction =
         await gemini.interactions.create({
-          model: "gemini-1.5-flash",
+          model: "gemini-3.6-flash",
           input: prompt,
         });
 

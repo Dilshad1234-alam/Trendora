@@ -1,3 +1,4 @@
+import { verifyAdmin } from "@/lib/auth/verifyAdmin";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
@@ -6,21 +7,9 @@ import Subscription from "@/models/Subscription";
 import AdminLog from "@/models/AdminLog";
 import jwt from "jsonwebtoken";
 
-const verifyAdmin = (request) => {
-  try {
-    const token = request.cookies.get("token")?.value;
-    if (!token) return null;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "admin") return null;
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-};
-
 export async function GET(req, { params }) {
   try {
-    const admin = verifyAdmin(req);
+    const admin = await verifyAdmin();
     if (!admin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
@@ -60,7 +49,7 @@ export async function GET(req, { params }) {
 
 export async function PATCH(req, { params }) {
   try {
-    const admin = verifyAdmin(req);
+    const admin = await verifyAdmin();
     if (!admin) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }

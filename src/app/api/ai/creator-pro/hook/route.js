@@ -159,7 +159,7 @@ Rules:
 
     // 7. Gemini call
     const interaction = await gemini.interactions.create({
-      model: "gemini-1.5-flash",
+      model: "gemini-3.6-flash",
       input: prompt,
       generation_config: {
         thinking_level: "low",
