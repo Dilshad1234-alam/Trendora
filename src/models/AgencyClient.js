@@ -80,6 +80,19 @@ const agencyClientSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
+    // Financials
+    budget: { type: Number, default: 0 },
+    spent: { type: Number, default: 0 },
+
+    // Archive
+    archivedAt: { type: Date, default: null },
+
+    // Brand Kit
+    brandKit: {
+      colors: { type: [String], default: [] },
+      fonts: { type: [String], default: [] },
+    },
   },
   {
     timestamps: true,

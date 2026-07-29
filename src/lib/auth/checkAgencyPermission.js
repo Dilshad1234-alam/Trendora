@@ -15,8 +15,8 @@ export async function checkAgencyPermission(authResult, requiredPermission = nul
   const agencyId = user._id; // The main agency ID we operate under for standalone owners
 
   // 1. Is the current user the primary Agency Owner?
-  // We determine this if they have the 'agency' plan and are accessing their own workspace
-  if (user.plan === "agency") {
+  // We determine this if they have the 'agency' plan or if they are on an active agency free trial
+  if (user.plan === "agency" || user.workspace === "agency") {
     // If no specific permission is required, they pass.
     // Owners have 'full_access'.
     return { success: true, role: "owner" };

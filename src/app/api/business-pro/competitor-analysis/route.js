@@ -60,9 +60,32 @@ export async function POST(request) {
       Make it punchy, insightful, and strictly formatted using Markdown. Keep it concise.
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest"];
+    let responseText = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            responseText = data.candidates[0].content.parts[0].text;
+            break;
+          }
+        }
+      } catch (e) {
+        console.error(`Gemini Fetch Error (${modelName}):`, e.message || e);
+      }
+    }
+
+    if (!responseText) {
+      throw new Error("All Gemini models failed to generate content.");
+    }
 
     const savedItem = await SavedContent.create({
       user: auth.user._id,

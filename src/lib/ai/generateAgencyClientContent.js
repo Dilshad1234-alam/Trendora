@@ -187,52 +187,59 @@ export async function generateAgencyClientContent({ agencyUser, client, contentT
     let successGeneration = false;
     let aiErrorToReport = null;
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest"];
+    
     while (attempt <= MAX_RETRIES && !successGeneration) {
       attempt++;
-      try {
-        const generationPromise = model.generateContent(fullPrompt);
-
-        // 15 seconds timeout
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000));
-        
-        const interaction = await Promise.race([generationPromise, timeoutPromise]);
-        
-        output = interaction.response.text().trim();
-
-        if (!output) throw new Error("AI returned empty response");
-
-        // Try to parse tokens if available, else approximate
+      
+      for (const modelName of modelsToTry) {
         try {
-          if (interaction.response.usageMetadata) {
-            inputTokens = interaction.response.usageMetadata.promptTokenCount || 0;
-            outputTokens = interaction.response.usageMetadata.candidatesTokenCount || 0;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+          
+          const fetchPromise = fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: fullPrompt }] }]
+            })
+          });
+
+          // 15 seconds timeout
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000));
+          
+          const res = await Promise.race([fetchPromise, timeoutPromise]);
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+              output = data.candidates[0].content.parts[0].text.trim();
+              
+              if (data.usageMetadata) {
+                inputTokens = data.usageMetadata.promptTokenCount || 0;
+                outputTokens = data.usageMetadata.candidatesTokenCount || 0;
+              } else {
+                inputTokens = Math.ceil(fullPrompt.length / 4);
+                outputTokens = Math.ceil(output.length / 4);
+              }
+
+              successGeneration = true;
+              break; // Stop trying models
+            }
           } else {
-            inputTokens = Math.ceil(fullPrompt.length / 4);
-            outputTokens = Math.ceil(output.length / 4);
+            const errData = await res.json();
+            aiErrorToReport = errData;
+            if (res.status === 429) {
+               break; // Don't retry on rate limit
+            }
           }
-        } catch (e) {
-          inputTokens = Math.ceil(fullPrompt.length / 4);
-          outputTokens = Math.ceil(output.length / 4);
+        } catch (aiError) {
+          console.error(`Gemini Fetch Error (${modelName}):`, aiError.message || aiError);
+          aiErrorToReport = aiError;
         }
-
-        successGeneration = true;
-      } catch (aiError) {
-        console.error(`Gemini Generation Error (Attempt ${attempt}):`, aiError.message || aiError);
-        aiErrorToReport = aiError;
-
-        // If it's a 429, don't retry, just break out immediately
-        if (aiError.status === 429 || aiError.message?.includes("429")) {
-          break;
-        }
-        
-        // If it's a timeout or 503, maybe retry
-        if (attempt <= MAX_RETRIES) {
-          // Exponential backoff
-          await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt - 1)));
-        }
+      }
+      
+      if (!successGeneration && attempt <= MAX_RETRIES && aiErrorToReport?.error?.code !== 429) {
+        await new Promise(r => setTimeout(r, 2000 * Math.pow(2, attempt - 1)));
       }
     }
 

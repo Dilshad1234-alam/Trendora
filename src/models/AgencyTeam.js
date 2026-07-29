@@ -2,9 +2,12 @@ import mongoose from "mongoose";
 
 const ROLE_PERMISSIONS = {
   owner: ["full_access"],
-  admin: ["manage_clients", "manage_content", "manage_team"],
-  editor: ["create_content", "edit_content", "review_content", "approve_content"],
-  writer: ["create_content", "edit_content"],
+  admin: ["manage_clients", "manage_content", "manage_team", "manage_finance", "manage_projects"],
+  manager: ["manage_clients", "manage_content", "manage_projects", "manage_team"],
+  content_writer: ["create_content", "edit_content"],
+  designer: ["create_content", "edit_content", "manage_files"],
+  video_editor: ["create_content", "edit_content", "manage_files"],
+  seo: ["create_content", "edit_content", "manage_projects"],
   viewer: ["read_content"]
 };
 
@@ -35,7 +38,7 @@ const agencyTeamSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["owner", "admin", "editor", "writer", "viewer"],
+      enum: ["owner", "admin", "manager", "content_writer", "designer", "video_editor", "seo", "viewer"],
       default: "viewer",
     },
     permissions: {

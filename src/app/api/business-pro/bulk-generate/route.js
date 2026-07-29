@@ -45,39 +45,64 @@ export async function POST(request) {
     }
 
     const brandVoice = `Tone: ${profile.brandVoiceTone || "Professional"}. Instructions: ${profile.brandVoiceInstructions || "None"}.`;
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest"];
     const results = [];
 
     // Process all topics in parallel for speed
-    const generationPromises = topics.map(async (topic) => {
+    await Promise.all(topics.map(async (topic) => {
       const prompt = `
-        You are an expert copywriter.
-        Write a ${contentType} about "${topic}".
-        My business: ${profile.businessName} (${profile.businessType}) in ${profile.city}.
-        Target audience: ${profile.targetCustomers}.
-        BRAND VOICE Rules: ${brandVoice}.
+        You are an elite AI copywriter.
+        Brand Name: ${profile.businessName}
+        ${brandVoice}
+        Target Audience: ${profile.targetAudience || "General"}
         
-        Provide only the final content, ready to be copied and pasted.
+        Generate a highly engaging, converting piece of content for a ${contentType} about "${topic}".
+        Do NOT wrap in markdown code blocks. Just output the content directly.
       `;
-      
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      
-      return SavedContent.create({
-        user: auth.user._id,
-        ownerType: "business",
-        type: contentType || "business-post",
-        title: topic,
-        content: text,
-      });
-    });
 
-    const generatedItems = await Promise.all(generationPromises);
+      let output = null;
+      for (const modelName of modelsToTry) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+              output = data.candidates[0].content.parts[0].text;
+              break;
+            }
+          }
+        } catch (e) {
+          console.error(`Gemini Fetch Error (${modelName}):`, e.message || e);
+        }
+      }
+
+      if (output) {
+        const saved = await SavedContent.create({
+          user: auth.user._id,
+          ownerType: "business",
+          type: contentType || "business-post",
+          title: topic,
+          content: output,
+        });
+        results.push(saved);
+      } else {
+        results.push({
+          topic,
+          content: "Failed to generate content for this topic.",
+          error: true
+        });
+      }
+    }));
 
     return NextResponse.json({ 
       success: true,
-      message: `Successfully generated ${generatedItems.length} items.`,
-      data: generatedItems 
+      message: `Successfully generated ${results.length} items.`,
+      data: results 
     }, { status: 201 });
 
   } catch (error) {

@@ -199,13 +199,13 @@ export default function HomePage() {
           </Link>
 
           <div className="hidden items-center gap-6 text-sm font-medium text-zinc-600 lg:flex">
-            <Link href="/" className="transition hover:text-violet-700">Home</Link>
-            <Link href="#features" className="transition hover:text-violet-700">Features</Link>
-            <Link href="#pricing" className="transition hover:text-violet-700">Pricing</Link>
+            <a href="#" className="transition hover:text-violet-700">Home</a>
+            <a href="#features" className="transition hover:text-violet-700">Features</a>
+            <a href="#pricing" className="transition hover:text-violet-700">Pricing</a>
             <Link href="/creator" className="transition hover:text-violet-700">Creator</Link>
             <Link href="/business" className="transition hover:text-violet-700">Business</Link>
             <Link href="/agency" className="transition hover:text-violet-700">Agency</Link>
-            <Link href="#faq" className="transition hover:text-violet-700">FAQ</Link>
+            <a href="#faq" className="transition hover:text-violet-700">FAQ</a>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -257,12 +257,12 @@ export default function HomePage() {
               <ArrowRight size={18} />
             </Link>
 
-            <Link
+            <a
               href="#pricing"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-6 py-3.5 font-semibold text-zinc-700 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 sm:w-auto"
             >
               View Pricing
-            </Link>
+            </a>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-semibold text-zinc-500">
@@ -993,12 +993,12 @@ export default function HomePage() {
               <ArrowRight size={18} />
             </Link>
 
-            <Link
+            <a
               href="#pricing"
               className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 font-semibold text-white transition hover:bg-white/15"
             >
               Compare Plans
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -1027,12 +1027,12 @@ export default function HomePage() {
             <h3 className="font-bold">Product</h3>
 
             <div className="mt-4 space-y-3 text-sm text-zinc-400">
-              <Link href="#features" className="block hover:text-white">
+              <a href="#features" className="block hover:text-white">
                 Features
-              </Link>
-              <Link href="#pricing" className="block hover:text-white">
+              </a>
+              <a href="#pricing" className="block hover:text-white">
                 Pricing
-              </Link>
+              </a>
               <Link href="/creator" className="block hover:text-white">
                 Creator Workspace
               </Link>

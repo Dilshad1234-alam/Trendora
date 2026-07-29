@@ -19,6 +19,12 @@ const agencyTaskSchema = new mongoose.Schema(
       ref: "SavedContent",
       default: null,
     },
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AgencyProject",
+      default: null,
+      index: true,
+    },
     title: {
       type: String,
       required: [true, "Task title is required"],
@@ -56,6 +62,15 @@ const agencyTaskSchema = new mongoose.Schema(
     completedAt: {
       type: Date,
       default: null,
+    },
+    recurring: {
+      type: String,
+      enum: ["none", "daily", "weekly", "monthly"],
+      default: "none",
+    },
+    tags: {
+      type: [String],
+      default: [],
     },
   },
   {
